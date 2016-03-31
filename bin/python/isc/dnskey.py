@@ -20,9 +20,9 @@ import os, time, calendar
 # Class dnskey
 ########################################################################
 class TimePast(Exception):
-    def __init__(self, key, prop):
-        super(TimePast, self).__init__('%s time for key %s is already past'
-                                       % (prop, key))
+    def __init__(self, key, prop, value):
+        super(TimePast, self).__init__('%s time for key %s (%d) is already past'
+                                       % (prop, key, value))
 
 class dnskey:
     """An individual DNSSEC key.  Identified by path, name, algorithm, keyid.
@@ -151,8 +151,7 @@ class dnskey:
         if alg:
             a = "-a %s" % alg
 
-        # XXX: change this to run the command, or modify the private
-        # file directly
+        # XXX: change this to run the command
         print ("dnssec-keygen -K %s %s %s %s %s %s" %
                 (directory, a, b, pub, act, name))
 
@@ -189,8 +188,9 @@ class dnskey:
         return time.strftime("%Y%m%d%H%M%S", t)
 
     def setmeta(self, prop, secs, now, force):
-        if self._timestamps[prop] < now and not force:
-            raise TimePast(self, prop)
+        if self._timestamps[prop] and \
+           self._timestamps[prop] < now and not force:
+            raise TimePast(self, prop, self._timestamps[prop])
         if self._timestamps[prop] == secs:
             return
         t = self.timefromepoch(secs)
@@ -227,7 +227,7 @@ class dnskey:
         return self._timestamps["Activate"]
 
     def setactivate(self, secs, now=time.time(), force=False):
-        self.setmeta("Active", secs, now, force)
+        self.setmeta("Activate", secs, now, force)
 
     def revoke(self):
         return self._timestamps["Revoke"]

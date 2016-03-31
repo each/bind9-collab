@@ -19,6 +19,7 @@ from .dnskey import *
 from .keyzone import *
 from .keydict import *
 from .keyevent import *
+from .policy import *
 import time
 
 class keyseries:
@@ -27,7 +28,7 @@ class keyseries:
     _zones = set()
     _kdict = None
 
-    def __init__(self, kdict):
+    def __init__(self, kdict, now=time.time()):
         self._kdict = kdict
         for zone in kdict.zones():
             self._zones.add(zone)
@@ -60,17 +61,22 @@ class keyseries:
     def fixseries(self, keys, policy, now):
         # handle the first key
         key = keys[0]
-        rp = policy.rollperiod(key.sep)
-        prepub = policy.prepublish(key.sep) or (30 * 86400)
-        postpub = policy.postpublish(key.sep) or (30 * 86400)
+        if key.sep:
+            rp = policy.ksk_rollperiod
+            prepub = policy.ksk_prepublish or (30 * 86400)
+            postpub = policy.ksk_postpublish or (30 * 86400)
+        else:
+            rp = policy.zsk_rollperiod
+            prepub = policy.zsk_prepublish or (30 * 86400)
+            postpub = policy.zsk_postpublish or (30 * 86400)
 
         # the first key should be published and active
         p = key.publish()
-        a = key.active()
+        a = key.activate()
         if not p or p > now:
             key.setpublish(now)
         if not a or a > now:
-            key.setactive(now)
+            key.setactivate(now)
 
         if not rp:
             key.setinactive(None)
@@ -86,7 +92,7 @@ class keyseries:
             # (XXX: we need to change this to allow standby keys)
             if not rp:
                 key.setpublish(None)
-                key.setactive(None)
+                key.setactivate(None)
                 key.setinactive(None)
                 key.setdelete(None)
                 continue
@@ -95,7 +101,7 @@ class keyseries:
             # the initial key
             a = prev.inactive()
             p = a - prepub
-            key.setactive(a)
+            key.setactivate(a)
             key.setpublish(p)
             key.setinactive(a + rp)
             prev.setdelete(a + postpub)
@@ -103,7 +109,7 @@ class keyseries:
 
         # if we haven't got sufficient coverage, create
         # successor keys until we do
-        while rp and prev.inactive() < now + coverage:
+        while rp and prev.inactive() < now + policy.coverage:
             key = prev.generate_successor()
             key.setinactive(key.active() + rp)
             prev.setdelete(key.active() + postpub)
@@ -121,27 +127,29 @@ class keyseries:
         for key in keys:
             key.commit()
 
-    def enforce_policy(self, zones=None, policy_file=None, **kwargs):
+    def enforce_policy(self, zones=None, policy_file=None,
+                       now=time.time(), **kwargs):
         dp = dnssec_policy(policy_file)
         if not zones:
             zones = self._zones
 
         for zone in self._zones:
             collections = []
-            coverage = dp.coverage or (365 * 86400) # default 1 year
-            if not 'ksk' in kwargs:
+            policy = dp.policy(zone)
+            coverage = policy.coverage or (365 * 86400) #default 1 year
+            if not 'ksk' in kwargs or not kwargs['ksk']:
                 if not self._Z[zone]:
-                    dnskey.generate(zone, policy.algorithm,
-                                    policy.zsk_keysize, False)
-                else:
-                    collections.append(self._Z[zone])
+                    k = dnskey.generate(zone, policy.algorithm,
+                                        policy.zsk_keysize, False)
+                    self._Z[zone].append(k)
+                collections.append(self._Z[zone])
 
-            if not 'zsk' in kwargs:
-                if not self._Z[zone]:
-                    dnskey.generate(zone, policy.algorithm,
-                                    policy.ksk_keysize, True)
-                else:
-                    collections.append(self._K[zone])
+            if not 'zsk' in kwargs or not kwargs['zsk']:
+                if not self._K[zone]:
+                    k = dnskey.generate(zone, policy.algorithm,
+                                        policy.ksk_keysize, True)
+                    self._K[zone].append(k)
+                collections.append(self._K[zone])
 
             for collection in collections:
                 for alg, keys in collection.items():

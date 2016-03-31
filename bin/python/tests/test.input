@@ -11,6 +11,8 @@ policy default {
         algorithm rsasha1;
         coverage 1y;            # another comment
         roll-period zsk 6mo;    // and yet another
+        pre-publish zsk 6w;
+        post-publish zsk 6w;
         keyttl 1h;
 };
 
@@ -19,6 +21,8 @@ policy extra {
         coverage 5y;
         roll-period KSK 1 year;
         roll-period zsk 3mo;
+        pre-publish ksk 3mo;
+        post-publish zsk 1w;
         keyttl 2h;
 };
 

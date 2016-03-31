@@ -34,6 +34,8 @@ class policylex:
                  'KEYTTL',
                  'KEY_SIZE',
                  'ROLL_PERIOD',
+                 'PRE_PUBLISH',
+                 'POST_PUBLISH',
                  'COVERAGE',
                  'STANDBY',
                  'NONE' )
@@ -114,6 +116,10 @@ class Policy:
     is_constructed = False
     ksk_rollperiod = None
     zsk_rollperiod = None
+    ksk_prepublish = None
+    zsk_prepublish = None
+    ksk_postpublish = None
+    zsk_postpublish = None
     ksk_keysize = None
     zsk_keysize = None
     ksk_standby = None
@@ -136,6 +142,10 @@ class Policy:
                 "\tzsk_keysize %s\n"
                 "\tksk_rollperiod %s\n"
                 "\tzsk_rollperiod %s\n"
+                "\tksk_prepublish %s\n"
+                "\tksk_postpublish %s\n"
+                "\tzsk_prepublish %s\n"
+                "\tzsk_postpublish %s\n"
                 "\tksk_standby %s\n"
                 "\tzsk_standby %s\n"
                 "\tkeyttl %s\n"
@@ -151,6 +161,10 @@ class Policy:
                  self.zsk_keysize and str(self.zsk_keysize) or 'None',
                  self.ksk_rollperiod and str(self.ksk_rollperiod) or 'None',
                  self.zsk_rollperiod and str(self.zsk_rollperiod) or 'None',
+                 self.ksk_prepublish and str(self.ksk_prepublish) or 'None',
+                 self.ksk_postpublish and str(self.ksk_postpublish) or 'None',
+                 self.zsk_prepublish and str(self.zsk_prepublish) or 'None',
+                 self.zsk_postpublish and str(self.zsk_postpublish) or 'None',
                  self.ksk_standby and str(self.ksk_standby) or 'None',
                  self.zsk_standby and str(self.zsk_standby) or 'None',
                  self.keyttl and str(self.keyttl) or 'None'))
@@ -188,8 +202,12 @@ class dnssec_policy:
                                        key-size zsk 1024;
                                        standby ksk 0;
                                        standby zsk 0;
+                                       roll-period ksk 0;
+                                       pre-publish ksk 1mo;
+                                       post-publish ksk 1mo;
                                        roll-period zsk 1y;
-                                       roll-period ksk none;
+                                       pre-publish zsk 1mo;
+                                       post-publish zsk 1mo;
                                        coverage 1y; };''')
 
         p = Policy()
@@ -306,13 +324,43 @@ class dnssec_policy:
             parent = p.parent or self.named_policy['default']
             while parent.parent and not parent.ksk_rollperiod:
                 parent = parent.parent
-            p.ksk_rollperiod = parent and parent.ksk_rollperiod or ap.ksk_rollperiod
+            p.ksk_rollperiod = parent and \
+                parent.ksk_rollperiod or ap.ksk_rollperiod
 
         if not p.zsk_rollperiod:
             parent = p.parent or self.named_policy['default']
             while parent.parent and not parent.zsk_rollperiod:
                 parent = parent.parent
-            p.zsk_rollperiod = parent and parent.zsk_rollperiod or ap.zsk_rollperiod
+            p.zsk_rollperiod = parent and \
+                parent.zsk_rollperiod or ap.zsk_rollperiod
+
+        if not p.ksk_prepublish:
+            parent = p.parent or self.named_policy['default']
+            while parent.parent and not parent.ksk_prepublish:
+                parent = parent.parent
+            p.ksk_prepublish = parent and \
+                parent.ksk_prepublish or ap.ksk_prepublish
+
+        if not p.zsk_prepublish:
+            parent = p.parent or self.named_policy['default']
+            while parent.parent and not parent.zsk_prepublish:
+                parent = parent.parent
+            p.zsk_prepublish = parent and \
+                parent.zsk_prepublish or ap.zsk_prepublish
+
+        if not p.ksk_postpublish:
+            parent = p.parent or self.named_policy['default']
+            while parent.parent and not parent.ksk_postpublish:
+                parent = parent.parent
+            p.ksk_postpublish = parent and \
+                parent.ksk_postpublish or ap.ksk_postpublish
+
+        if not p.zsk_postpublish:
+            parent = p.parent or self.named_policy['default']
+            while parent.parent and not parent.zsk_postpublish:
+                parent = parent.parent
+            p.zsk_postpublish = parent and \
+                parent.zsk_postpublish or ap.zsk_postpublish
 
         return p
 
@@ -404,6 +452,8 @@ class dnssec_policy:
         '''policy_option : parent_option
                          | coverage_option
                          | rollperiod_option
+                         | prepublish_option
+                         | postpublish_option
                          | keysize_option
                          | algorithm_option
                          | keyttl_option
@@ -422,6 +472,8 @@ class dnssec_policy:
     def p_alg_option(self, p):
         '''alg_option : coverage_option
                       | rollperiod_option
+                      | prepublish_option
+                      | postpublish_option
                       | keyttl_option
                       | keysize_option
                       | standby_option'''
@@ -441,6 +493,20 @@ class dnssec_policy:
             self.current.ksk_rollperiod = p[3]
         else:
             self.current.zsk_rollperiod = p[3]
+
+    def p_prepublish_option(self, p):
+        "prepublish_option : PRE_PUBLISH KEYTYPE duration"
+        if p[2] == "KSK":
+            self.current.ksk_prepublish = p[3]
+        else:
+            self.current.zsk_prepublish = p[3]
+
+    def p_postpublish_option(self, p):
+        "postpublish_option : POST_PUBLISH KEYTYPE duration"
+        if p[2] == "KSK":
+            self.current.ksk_postpublish = p[3]
+        else:
+            self.current.zsk_postpublish = p[3]
 
     def p_keysize_option(self, p):
         "keysize_option : KEY_SIZE KEYTYPE NUMBER"

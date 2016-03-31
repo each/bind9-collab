@@ -171,15 +171,25 @@ def parse_args():
                         type=str, help='the RRSIG refresh interval '
                                        'in seconds [default: 22.5 days]',
                         metavar='time')
-    parser.add_argument('-k', dest='keygen', default=keygen, type=str,
+    parser.add_argument('-g', dest='keygen', default=keygen, type=str,
                         help='path to \'dnssec-keygen\'',
                         metavar='path')
     parser.add_argument('-s', dest='settime', default=settime, type=str,
                         help='path to \'dnssec-settime\'',
                         metavar='path')
+    parser.add_argument('-z', dest='no_ksk',
+                        action='store_true', default=False,
+                        help='Only apply policy to zone-signing keys (ZSKs)')
+    parser.add_argument('-k', dest='no_zsk',
+                        action='store_true', default=False,
+                        help='Only apply policy to key-signing keys (KSKs)')
     parser.add_argument('-v', '--version', action='version', version='9.1.1')
 
     args = parser.parse_args()
+
+    if args.no_zsk and args.no_ksk:
+        print("ERROR: -z and -k cannot be used together.");
+        exit(1)
 
     # convert from time arguments to seconds
     try:
@@ -216,8 +226,5 @@ if __name__ == "__main__":
     parse_args()
 
     kd = keydict(args.path, zone=args.zone, keyttl=args.keyttl)
-    elist = eventlist(kd)
-    if elist.coverage(args.zone, None, None, None):
-        exit(0)
-    else:
-        exit(1)
+    ks = keyseries(kd)
+    ks.enforce_policy(ksk=args.no_zsk, zsk=args.no_ksk)
