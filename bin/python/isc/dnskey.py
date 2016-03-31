@@ -97,6 +97,7 @@ class dnskey:
 
         self.metadata = dict()
         self._changed = dict()
+        self._delete = dict()
         self._times = dict()
         self._fmttime = dict()
         self._timestamps = dict()
@@ -131,8 +132,15 @@ class dnskey:
         for prop, opt in zip(dnskey._PROPS, dnskey._OPTS):
             if not opt or not self._changed[prop]:
                 continue
-            cmd += "%s%s %s" % ('' if first else ' ', opt, self._fmttime[prop])
+
+            delete = False
+            if prop in self._delete and self._delete[prop]:
+                delete = True
+
+            when = 'none' if delete else self._fmttime[prop]
+            cmd += "%s%s %s" % ('' if first else ' ', opt, when)
             first = False
+
         if cmd:
             # XXX: change this to run the command, or modify the private
             # file directly
@@ -188,15 +196,21 @@ class dnskey:
         return time.strftime("%Y%m%d%H%M%S", t)
 
     def setmeta(self, prop, secs, now, force):
-        if self._timestamps[prop] and \
+        if not secs:
+            self._delete[prop] = True
+            self._timestamps[prop] = None
+            self._times[prop] = None
+            self._fmttime[prop] = None
+        elif self._timestamps[prop] and \
            self._timestamps[prop] < now and not force:
             raise TimePast(self, prop, self._timestamps[prop])
-        if self._timestamps[prop] == secs:
+        elif self._timestamps[prop] == secs:
             return
-        t = self.timefromepoch(secs)
-        self._timestamps[prop] = secs
-        self._times[prop] = t
-        self._fmttime[prop] = self.formattime(t)
+        else:
+            t = self.timefromepoch(secs)
+            self._timestamps[prop] = secs
+            self._times[prop] = t
+            self._fmttime[prop] = self.formattime(t)
         self._changed[prop] = True
 
     def gettime(self, prop):
