@@ -197,20 +197,25 @@ class dnskey:
 
     def setmeta(self, prop, secs, now, force):
         if not secs:
+            if not self._timestamps[prop]:
+                return
             self._delete[prop] = True
             self._timestamps[prop] = None
             self._times[prop] = None
             self._fmttime[prop] = None
-        elif self._timestamps[prop] and \
+            self._changed[prop] = True
+            return
+
+        if self._timestamps[prop] and \
            self._timestamps[prop] < now and not force:
             raise TimePast(self, prop, self._timestamps[prop])
         elif self._timestamps[prop] == secs:
             return
-        else:
-            t = self.timefromepoch(secs)
-            self._timestamps[prop] = secs
-            self._times[prop] = t
-            self._fmttime[prop] = self.formattime(t)
+
+        t = self.timefromepoch(secs)
+        self._timestamps[prop] = secs
+        self._times[prop] = t
+        self._fmttime[prop] = self.formattime(t)
         self._changed[prop] = True
 
     def gettime(self, prop):
