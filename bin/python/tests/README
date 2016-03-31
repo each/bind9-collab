@@ -1,0 +1,6 @@
+This is a basic test for the policy file reader; it compares
+actual to expected results of loading a sample policy file.
+To run the test:
+
+$ python policy-test.py test.input > policy.out
+$ diff policy.out policy.good 

@@ -1,0 +1,108 @@
+policy default:
+	inherits None
+	algorithm RSASHA256
+	coverage 31536000
+	ksk_keysize 2048
+	zsk_keysize 1024
+	ksk_rollperiod None
+	zsk_rollperiod 31536000
+	ksk_standby None
+	zsk_standby None
+	keyttl 3600
+
+constructed policy example.com:
+	inherits None
+	algorithm RSASHA256
+	coverage 31536000
+	ksk_keysize 2048
+	zsk_keysize 1024
+	ksk_rollperiod None
+	zsk_rollperiod 31536000
+	ksk_standby None
+	zsk_standby None
+	keyttl 3600
+
+policy default:
+	inherits None
+	algorithm RSASHA1
+	coverage 31536000
+	ksk_keysize None
+	zsk_keysize None
+	ksk_rollperiod None
+	zsk_rollperiod 15552000
+	ksk_standby None
+	zsk_standby None
+	keyttl 3600
+
+zone policy example.com:
+	inherits extra
+	algorithm NSEC3RSASHA1
+	coverage 12960000
+	ksk_keysize 2048
+	zsk_keysize 2048
+	ksk_rollperiod 31536000
+	zsk_rollperiod 7776000
+	ksk_standby None
+	zsk_standby None
+	keyttl None
+
+constructed policy example.org:
+	inherits None
+	algorithm RSASHA1
+	coverage 31536000
+	ksk_keysize 2048
+	zsk_keysize 1024
+	ksk_rollperiod None
+	zsk_rollperiod 15552000
+	ksk_standby None
+	zsk_standby None
+	keyttl 3600
+
+constructed policy example.net:
+	inherits None
+	algorithm RSASHA1
+	coverage 31536000
+	ksk_keysize 2048
+	zsk_keysize 1024
+	ksk_rollperiod None
+	zsk_rollperiod 15552000
+	ksk_standby None
+	zsk_standby None
+	keyttl 3600
+
+algorithm policy RSASHA1:
+	inherits None
+	algorithm None
+	coverage None
+	ksk_keysize 2048
+	zsk_keysize 1024
+	ksk_rollperiod None
+	zsk_rollperiod None
+	ksk_standby None
+	zsk_standby None
+	keyttl None
+
+algorithm policy DSA:
+	inherits None
+	algorithm DSA
+	coverage None
+	ksk_keysize 1024
+	zsk_keysize 2048
+	ksk_rollperiod None
+	zsk_rollperiod None
+	ksk_standby None
+	zsk_standby None
+	keyttl None
+
+policy extra:
+	inherits default
+	algorithm None
+	coverage 157680000
+	ksk_keysize None
+	zsk_keysize None
+	ksk_rollperiod 31536000
+	zsk_rollperiod 7776000
+	ksk_standby None
+	zsk_standby None
+	keyttl 7200
+
