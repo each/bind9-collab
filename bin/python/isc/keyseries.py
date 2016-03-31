@@ -59,6 +59,9 @@ class keyseries:
             print("%s" % repr(k))
 
     def fixseries(self, keys, policy, now):
+        if len(keys) == 0:
+            return
+
         # handle the first key
         key = keys[0]
         if key.sep:
