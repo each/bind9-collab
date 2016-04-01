@@ -1,6 +1,20 @@
+These are very simple preliminary tests for the dnssec-keymgr work;
+they will be rolled into a "keymgr" system test later.
+
+Poilcy test:
+
 This is a basic test for the policy file reader; it compares
 actual to expected results of loading a sample policy file.
 To run the test:
 
 $ python policy-test.py test.input > policy.out
 $ diff policy.out policy.good 
+
+Keymgr test:
+
+This creates a series of keys scheduled for rollovers every six
+months, then applies a policy to them to reschedule the rollovers
+every 12 months.  Review the correctness of the outcome with
+dnssec-coverage.
+
+(This is going to need a lot more test cases.)
