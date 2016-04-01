@@ -114,8 +114,8 @@ class keyseries:
         # successor keys until we do
         while rp and prev.inactive() < now + policy.coverage:
             key = prev.generate_successor()
-            key.setinactive(key.active() + rp)
-            prev.setdelete(key.active() + postpub)
+            key.setinactive(key.activate() + rp)
+            prev.setdelete(key.activate() + postpub)
             keys.append(key)
             prev = key
 

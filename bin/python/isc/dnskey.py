@@ -162,14 +162,24 @@ class dnskey:
             a = "-a %s" % alg
 
         # XXX: change this to run the command
-        print ("dnssec-keygen -K %s -L %d %s %s %s %s %s" %
+        print ("dnssec-keygen -q -K %s -L %d %s %s %s %s %s" %
                 (directory, ttl, a, b, pub, act, name))
 
     def generate_successor(self):
         if not self.inactive():
-            raise Exception("predecessor key has no inactive date")
-        # XXX: change this to run the command
-        print ("dnssec-keygen -K %s -S %s" % (self._dir, cmd, self.keystr))
+            raise Exception("predecessor key %s has no inactive date" % self)
+
+        fp = os.popen("dnssec-keygen -q -K %s -S %s" % (self._dir, self.keystr))
+        for line in fp:
+            break
+        fp.close()
+
+        try:
+            newkey = dnskey(line, self._dir, self.ttl)
+            return newkey
+        except:
+            raise Exception('unable to generate successor for key %s' % self)
+
 
     @staticmethod
     def algstr(alg):
