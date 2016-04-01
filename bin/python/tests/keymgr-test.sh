@@ -24,12 +24,8 @@ echo "initial coverage:"
 $COVERAGE -z example.com
 
 echo "--------------------------------------------"
-echo "recommended policy changes for 1-year rollover cycle:"
+echo "applying policy for 1-year rollover cycle"
 $KEYMGR -z example.com
-
-echo "--------------------------------------------"
-echo "applying policy..."
-$KEYMGR -z example.com | sh
 
 echo "--------------------------------------------"
 echo "coverage with new policy:"
@@ -47,12 +43,8 @@ echo "initial coverage:"
 $COVERAGE -z -l1y example.com
 
 echo "--------------------------------------------"
-echo "recommended policy changes for 1-year coverage:"
+echo "applying policy for 1-year coverage"
 $KEYMGR -z example.com
-
-echo "--------------------------------------------"
-echo "applying policy..."
-$KEYMGR -z example.com | sh
 
 echo "--------------------------------------------"
 echo "coverage with new policy:"

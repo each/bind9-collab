@@ -213,4 +213,4 @@ if __name__ == "__main__":
 
     kd = keydict(args.path, zone=args.zone, keyttl=args.keyttl)
     ks = keyseries(kd)
-    ks.enforce_policy(ksk=args.no_zsk, zsk=args.no_ksk)
+    ks.enforce_policy(None, args.policyfile, ksk=args.no_zsk, zsk=args.no_ksk)

@@ -86,6 +86,7 @@ class keyseries:
             key.setdelete(None)
         else:
             key.setinactive(a + rp)
+            key.setdelete(a + rp + postpub)
 
         # handle all the subsequent keys
         prev = key
@@ -118,9 +119,12 @@ class keyseries:
         # successor keys until we do
         while rp and prev.inactive() and \
                 prev.inactive() < now + policy.coverage:
-            key = prev.generate_successor()
+            try:
+                key = prev.generate_successor()
+            except:
+                break
             key.setinactive(key.activate() + rp)
-            prev.setdelete(key.activate() + postpub)
+            key.setdelete(key.inactive() + postpub)
             keys.append(key)
             prev = key
 
@@ -138,7 +142,7 @@ class keyseries:
         if not zones:
             zones = self._zones
 
-        for zone in self._zones:
+        for zone in zones:
             collections = []
             policy = dp.policy(zone)
             coverage = policy.coverage or (365 * 86400) #default 1 year

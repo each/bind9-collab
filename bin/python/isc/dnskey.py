@@ -166,16 +166,18 @@ class dnskey:
             a = "-a %s" % alg
 
         # debug
-        print("dnssec-keygen -q -K %s -L %d %s %s %s %s %s" %
-              (directory, ttl, a, b, pub, act, name))
-        fp = os.popen("dnssec-keygen -q -K %s -L %d %s %s %s %s %s" %
-                      (directory, ttl, a, b, pub, act, name))
+        flagopt="-fk" if sep else ""
+        print("dnssec-keygen -q %s -K %s -L %d %s %s %s %s %s" %
+              (flagopt, directory, ttl, a, b, pub, act, name))
+        fp = os.popen("dnssec-keygen -q %s -K %s -L %d %s %s %s %s %s" %
+                      (flagopt, directory, ttl, a, b, pub, act, name))
         for line in fp:
             break
         fp.close()
 
         try:
             newkey = dnskey(line, directory, ttl)
+            print(newkey)
             return newkey
         except Exception as e:
             raise Exception('unable to generate key: %s' % e.args[0])
