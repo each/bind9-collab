@@ -89,7 +89,7 @@ class keyseries:
 
         # handle all the subsequent keys
         prev = key
-        for key in keys[1:-1]:
+        for key in keys[1:]:
             # if no rollperiod, then all keys after the first in
             # the series kept inactive.
             # (XXX: we need to change this to allow standby keys)
