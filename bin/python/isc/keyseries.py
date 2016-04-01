@@ -110,9 +110,14 @@ class keyseries:
             prev.setdelete(a + postpub)
             prev = key
 
+        # commit any changes we've made so far
+        for key in keys:
+            key.commit()
+
         # if we haven't got sufficient coverage, create
         # successor keys until we do
-        while rp and prev.inactive() < now + policy.coverage:
+        while rp and prev.inactive() and \
+                prev.inactive() < now + policy.coverage:
             key = prev.generate_successor()
             key.setinactive(key.activate() + rp)
             prev.setdelete(key.activate() + postpub)
@@ -125,10 +130,7 @@ class keyseries:
         # in the series will at least remain usable.
         prev.setinactive(None)
         prev.setdelete(None)
-
-        # commit any changes we've made
-        for key in keys:
-            key.commit()
+        prev.commit()
 
     def enforce_policy(self, zones=None, policy_file=None,
                        now=time.time(), **kwargs):
@@ -141,19 +143,23 @@ class keyseries:
             policy = dp.policy(zone)
             coverage = policy.coverage or (365 * 86400) #default 1 year
             if not 'ksk' in kwargs or not kwargs['ksk']:
-                if not self._Z[zone]:
-                    k = dnskey.generate(zone, policy.algorithm,
-                                        policy.zsk_keysize, False,
-                                        policy.keyttl)
-                    self._Z[zone].append(k)
+                for alg in self._Z[zone]:
+                    if len(self._Z[zone][alg]) == 0:
+                        # XXX: need to pass through the directory
+                        k = dnskey.generate('.', zone, policy.algorithm,
+                                            policy.zsk_keysize, False,
+                                            policy.keyttl)
+                        self._Z[zone][alg].append(k)
                 collections.append(self._Z[zone])
 
             if not 'zsk' in kwargs or not kwargs['zsk']:
-                if not self._K[zone]:
-                    k = dnskey.generate(zone, policy.algorithm,
-                                        policy.ksk_keysize, True,
-                                        policy.keyttl)
-                    self._K[zone].append(k)
+                for alg in self._K[zone]:
+                    if len(self._K[zone][alg]) == 0:
+                        # XXX: need to pass through the directory
+                        k = dnskey.generate('.', zone, policy.algorithm,
+                                            policy.ksk_keysize, True,
+                                            policy.keyttl)
+                        self._K[zone][alg].append(k)
                 collections.append(self._K[zone])
 
             for collection in collections:

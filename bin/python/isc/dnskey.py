@@ -142,33 +142,50 @@ class dnskey:
             first = False
 
         if cmd:
-            # XXX: change this to run the command, or modify the private
-            # file directly
+            # debug
             print ("dnssec-settime -K %s -L %d %s %s" %
                    (self._dir, self.ttl, cmd, self.keystr))
+            fp = os.popen('dnssec-settime -K %s -L %d %s %s' %
+                          (self._dir, self.ttl, cmd, self.keystr))
+            fp.close()
 
-    @staticmethod
-    def generate(directory, name, alg, keysize, sep, ttl=604800,
-                 publish=None, active=None):
+    @classmethod
+    def generate(cls, directory, name, alg, keysize, sep, ttl=604800,
+                 publish=None, activate=None):
         pub = act = a = b = ''
         if publish:
-            pub = "-P %s" % dnskey.formattime(publish)
-        if active:
-            act = "-A %s" % dnskey.formattime(active)
+            t = dnskey.timefromepoch(publish)
+            pub = "-P %s" % dnskey.formattime(t)
+        if activate:
+            t = dnskey.timefromepoch(activate)
+            act = "-A %s" % dnskey.formattime(activate)
 
         if keysize:
             b = "-b %s" % keysize
         if alg:
             a = "-a %s" % alg
 
-        # XXX: change this to run the command
-        print ("dnssec-keygen -q -K %s -L %d %s %s %s %s %s" %
-                (directory, ttl, a, b, pub, act, name))
+        # debug
+        print("dnssec-keygen -q -K %s -L %d %s %s %s %s %s" %
+              (directory, ttl, a, b, pub, act, name))
+        fp = os.popen("dnssec-keygen -q -K %s -L %d %s %s %s %s %s" %
+                      (directory, ttl, a, b, pub, act, name))
+        for line in fp:
+            break
+        fp.close()
+
+        try:
+            newkey = dnskey(line, directory, ttl)
+            return newkey
+        except Exception as e:
+            raise Exception('unable to generate key: %s' % e.args[0])
 
     def generate_successor(self):
         if not self.inactive():
             raise Exception("predecessor key %s has no inactive date" % self)
 
+        # debug
+        print("dnssec-keygen -q -K %s -S %s" % (self._dir, self.keystr))
         fp = os.popen("dnssec-keygen -q -K %s -S %s" % (self._dir, self.keystr))
         for line in fp:
             break
