@@ -152,37 +152,36 @@ def parse_args():
     settime = set_path('dnssec-settime',
                        os.path.join(prefix('sbin'), 'dnssec-settime'))
 
-    parser = argparse.ArgumentParser(description=prog + ': ensure future ' +
-                                     'DNSKEY coverage for one or more zones')
+    parser = argparse.ArgumentParser(description=prog + ': schedule '
+                                     'DNSSEC key rollovers according to a '
+                                     'pre-defined policy')
 
     parser.add_argument('zone', type=str, nargs='?', default=None,
-                        help='zone to cover')
+                        help='Zone to which the policy should to be applied ' +
+                        '(default: all zones in the directory)')
     parser.add_argument('-K', dest='path', default='.', type=str,
-                        help='a directory containing keys', metavar='dir')
+                        help='Directory containing keys', metavar='dir')
     parser.add_argument('-c', dest='policyfile', type=str,
-                        help='policy file', metavar='file')
-    parser.add_argument('-m', dest='maxttl', default='1209600', type=str,
-                        help='longest TTL in a zone [default: 2 weeks]',
-                        metavar='time')
+                        help='Policy definition file', metavar='file')
     parser.add_argument('-d', dest='keyttl', default='604800', type=str,
                         help='DNSKEY TTL [default: 1 week]',
                         metavar='time')
     parser.add_argument('-r', dest='resign', default='1944000', 
-                        type=str, help='the RRSIG refresh interval '
+                        type=str, help='The RRSIG refresh interval '
                                        'in seconds [default: 22.5 days]',
                         metavar='time')
     parser.add_argument('-g', dest='keygen', default=keygen, type=str,
-                        help='path to \'dnssec-keygen\'',
+                        help='Path to \'dnssec-keygen\'',
                         metavar='path')
     parser.add_argument('-s', dest='settime', default=settime, type=str,
-                        help='path to \'dnssec-settime\'',
+                        help='Path to \'dnssec-settime\'',
                         metavar='path')
-    parser.add_argument('-z', dest='no_ksk',
-                        action='store_true', default=False,
-                        help='Only apply policy to zone-signing keys (ZSKs)')
     parser.add_argument('-k', dest='no_zsk',
                         action='store_true', default=False,
                         help='Only apply policy to key-signing keys (KSKs)')
+    parser.add_argument('-z', dest='no_ksk',
+                        action='store_true', default=False,
+                        help='Only apply policy to zone-signing keys (ZSKs)')
     parser.add_argument('-v', '--version', action='version', version='9.1.1')
 
     args = parser.parse_args()
@@ -192,13 +191,6 @@ def parse_args():
         exit(1)
 
     # convert from time arguments to seconds
-    try:
-        if args.maxttl:
-            m = parse_time(args.maxttl)
-            args.maxttl = m
-    except:
-        pass
-
     try:
         if args.keyttl:
             k = parse_time(args.keyttl)
@@ -212,12 +204,6 @@ def parse_args():
             args.resign = r
     except:
         pass
-
-    if not args.maxttl:
-        output("WARNING: Maximum TTL value was not specified.  Using 1 week\n"
-               "\t (604800 seconds); re-run with the -m option to get more\n"
-               "\t accurate results.")
-        args.maxttl = 604800
 
 ############################################################################
 # main

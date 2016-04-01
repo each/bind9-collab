@@ -144,10 +144,12 @@ class dnskey:
         if cmd:
             # XXX: change this to run the command, or modify the private
             # file directly
-            print ("dnssec-settime -K %s %s %s" % (self._dir, cmd, self.keystr))
+            print ("dnssec-settime -K %s -L %d %s %s" %
+                   (self._dir, self.ttl, cmd, self.keystr))
 
     @staticmethod
-    def generate(directory, name, alg, keysize, sep, publish=None, active=None):
+    def generate(directory, name, alg, keysize, sep, ttl=604800,
+                 publish=None, active=None):
         pub = act = a = b = ''
         if publish:
             pub = "-P %s" % dnskey.formattime(publish)
@@ -160,8 +162,8 @@ class dnskey:
             a = "-a %s" % alg
 
         # XXX: change this to run the command
-        print ("dnssec-keygen -K %s %s %s %s %s %s" %
-                (directory, a, b, pub, act, name))
+        print ("dnssec-keygen -K %s -L %d %s %s %s %s %s" %
+                (directory, ttl, a, b, pub, act, name))
 
     def generate_successor(self):
         if not self.inactive():

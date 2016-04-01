@@ -89,7 +89,7 @@ class keyseries:
 
         # handle all the subsequent keys
         prev = key
-        for key in keys[1:]:
+        for key in keys[1:-1]:
             # if no rollperiod, then all keys after the first in
             # the series kept inactive.
             # (XXX: we need to change this to allow standby keys)
@@ -119,10 +119,10 @@ class keyseries:
             keys.append(key)
             prev = key
 
-        # last key. we know we have sufficient coverage now, so
-        # disable the inactivation of the final key, ensuring that
-        # if dnssec-keymgr isn't run again, the last key in the series
-        # will at least remain usable.
+        # last key? we already know we have sufficient coverage now, so
+        # disable the inactivation of the final key (if it was set),
+        # ensuring that if dnssec-keymgr isn't run again, the last key
+        # in the series will at least remain usable.
         prev.setinactive(None)
         prev.setdelete(None)
 
@@ -143,14 +143,16 @@ class keyseries:
             if not 'ksk' in kwargs or not kwargs['ksk']:
                 if not self._Z[zone]:
                     k = dnskey.generate(zone, policy.algorithm,
-                                        policy.zsk_keysize, False)
+                                        policy.zsk_keysize, False,
+                                        policy.keyttl)
                     self._Z[zone].append(k)
                 collections.append(self._Z[zone])
 
             if not 'zsk' in kwargs or not kwargs['zsk']:
                 if not self._K[zone]:
                     k = dnskey.generate(zone, policy.algorithm,
-                                        policy.ksk_keysize, True)
+                                        policy.ksk_keysize, True,
+                                        policy.keyttl)
                     self._K[zone].append(k)
                 collections.append(self._K[zone])
 
