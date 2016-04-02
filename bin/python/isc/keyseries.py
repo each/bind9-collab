@@ -22,9 +22,10 @@ from .keyevent import *
 from .policy import *
 import time
 
+
 class keyseries:
-    _K = defaultdict(lambda : defaultdict(list))
-    _Z = defaultdict(lambda : defaultdict(list))
+    _K = defaultdict(lambda: defaultdict(list))
+    _Z = defaultdict(lambda: defaultdict(list))
     _zones = set()
     _kdict = None
     _context = None
@@ -43,7 +44,7 @@ class keyseries:
                     else:
                         self._Z[zone][alg].append(k)
 
-                for group in [ self._K[zone][alg], self._Z[zone][alg] ]:
+                for group in [self._K[zone][alg], self._Z[zone][alg]]:
                     group.sort()
                     for k in group:
                         if k.delete() and k.delete() < now:
@@ -51,7 +52,7 @@ class keyseries:
 
     def __iter__(self):
         for zone in self._zones:
-            for collection in [ self._K, self._Z ]:
+            for collection in [self._K, self._Z]:
                 if zone not in collection:
                     continue
                 for alg, keys in collection[zone].items():

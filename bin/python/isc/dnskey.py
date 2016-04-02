@@ -14,7 +14,10 @@
 # PERFORMANCE OF THIS SOFTWARE.
 ############################################################################
 
-import os, time, calendar
+import os
+import time
+import calendar
+
 
 ########################################################################
 # Class dnskey
@@ -29,7 +32,7 @@ class dnskey:
     Contains a dictionary of metadata events."""
 
     _PROPS = ('Created', 'Publish', 'Activate', 'Inactive', 'Delete',
-                  'Revoke', 'DSPublish', 'SyncPublish', 'SyncDelete')
+              'Revoke', 'DSPublish', 'SyncPublish', 'SyncDelete')
     _OPTS = (None, '-P', '-A', '-I', '-D', '-R', None, '-Psync', '-Dsync')
 
     _ALGNAMES = (None, 'RSAMD5', 'DH', 'DSA', 'ECC', 'RSASHA1',
@@ -43,7 +46,7 @@ class dnskey:
         if isinstance(key, tuple) and len(key) == 3:
             self._dir = directory or '.'
             (name, alg, keyid) = key
-            return self.fromtuple(name, alg, keyid, keyttl)
+            self.fromtuple(name, alg, keyid, keyttl)
 
         self._dir = directory or os.path.dirname(key) or '.'
         key = os.path.basename(key)
@@ -52,7 +55,7 @@ class dnskey:
         name = name[1:-1]
         alg = int(alg)
         keyid = int(keyid.split('.')[0])
-        return self.fromtuple(name, alg, keyid, keyttl)
+        self.fromtuple(name, alg, keyid, keyttl)
 
     def fromtuple(self, name, alg, keyid, keyttl):
         if name[-1] == '.':
@@ -63,8 +66,8 @@ class dnskey:
 
         keystr = "K%s+%03d+%05d" % (fullname, alg, keyid)
         key_file = self._dir + (self._dir and os.sep or '') + keystr + ".key"
-        private_file = (self._dir + (self._dir and os.sep or '')
-                        + keystr + ".private")
+        private_file = (self._dir + (self._dir and os.sep or '') +
+                        keystr + ".private")
 
         self.keystr = keystr
 
@@ -108,9 +111,9 @@ class dnskey:
             if len(line) == 0 or line[0] in ('!#'):
                 continue
             punctuation = [line.find(c) for c in ':= '] + [len(line)]
-            found = min([ pos for pos in punctuation if pos != -1 ])
+            found = min([pos for pos in punctuation if pos != -1])
             name = line[:found].rstrip()
-            value =  line[found:].lstrip(":= ").rstrip()
+            value = line[found:].lstrip(":= ").rstrip()
             self.metadata[name] = value
 
         for prop in dnskey._PROPS:
@@ -128,8 +131,8 @@ class dnskey:
         pfp.close()
 
     def commit(self, settime_bin):
-        cmd=''
-        first=True
+        cmd = ''
+        first = True
         for prop, opt in zip(dnskey._PROPS, dnskey._OPTS):
             if not opt or not self._changed[prop]:
                 continue
@@ -167,7 +170,7 @@ class dnskey:
             a = "-a %s" % alg
 
         # debug
-        flagopt="-fk" if sep else ""
+        flagopt = "-fk" if sep else ""
         keygen_cmd = "%s -q %s -K %s -L %d %s %s %s %s %s" %\
                      (keygen_bin, flagopt, keys_dir, ttl, a, b, pub, act, name)
         print(keygen_cmd)
@@ -200,7 +203,6 @@ class dnskey:
             return newkey
         except:
             raise Exception('unable to generate successor for key %s' % self)
-
 
     @staticmethod
     def algstr(alg):
@@ -340,7 +342,7 @@ class dnskey:
             return self.alg < other.alg
         return self.date() < other.date()
 
-    def check_prepub(self, output = None):
+    def check_prepub(self, output=None):
         def noop(*args, **kwargs): pass
         if not output:
             output = noop
@@ -373,10 +375,10 @@ class dnskey:
 
         if a < p:
             output("WARNING: Key %s is active before it is published"
-                    % repr(self))
+                   % repr(self))
             return False
 
-        if (a - p < self.ttl):
+        if a - p < self.ttl:
             output("WARNING: Key %s is activated too soon\n"
                    "\t after publication; this could result in coverage \n"
                    "\t gaps due to resolver caches containing old data.\n"
@@ -388,10 +390,10 @@ class dnskey:
 
     def check_postpub(self, output = None, timespan = None):
         def noop(*args, **kwargs): pass
-        if not output:
+        if output is None:
             output = noop
 
-        if not timespan:
+        if timespan is None:
             timespan = self.ttl
 
         now = time.time()
@@ -422,7 +424,7 @@ class dnskey:
                    "\t result in coverage gaps due to resolver caches\n"
                    "\t containing old data.  Deletion should be at least\n"
                    "\t %s after inactivation."
-                  % (repr(self), dnskey.duration(timespan)))
+                   % (repr(self), dnskey.duration(timespan)))
             return False
 
         return True
@@ -432,14 +434,14 @@ class dnskey:
         bigunit = secs // size
         if bigunit:
             secs %= size
-        return (bigunit, secs)
+        return bigunit, secs
 
     @staticmethod
     def addtime(output, unit, t):
         if t:
             output += ("%s%d %s%s" %
-                      ((", " if output else ""),
-                       t, unit, ("s" if t > 1 else "")))
+                       ((", " if output else ""),
+                        t, unit, ("s" if t > 1 else "")))
 
         return output
 

@@ -14,11 +14,13 @@
 # PERFORMANCE OF THIS SOFTWARE.
 ############################################################################
 
-import sys, unittest
+import sys
+import unittest
 sys.path.append('../..')
 from isc import *
 
 kdict = None
+
 
 def getkey():
     global kdict
@@ -26,7 +28,8 @@ def getkey():
         kd = keydict('testdata')
     for key in kd:
         return key
-        
+
+
 class DnskeyTest(unittest.TestCase):
     def test_metdata(self):
         key = getkey()

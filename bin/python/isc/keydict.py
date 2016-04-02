@@ -16,7 +16,9 @@
 
 from collections import defaultdict
 from . import dnskey
-import os, glob
+import os
+import glob
+
 
 ########################################################################
 # Class keydict
@@ -24,7 +26,7 @@ import os, glob
 class keydict:
     """ A dictionary of keys, indexed by name, algorithm, and key id """
 
-    _keydict = defaultdict(lambda : defaultdict(dict))
+    _keydict = defaultdict(lambda: defaultdict(dict))
     _missing = []
     _defttl = 86400
 
@@ -33,15 +35,13 @@ class keydict:
             self._defttl = kwargs['keyttl']
 
         found = []
-        zones = None
-        if 'zones' in kwargs:
-            zones = kwargs['zones']
+        zones = kwargs.get('zones', None)
 
         files = glob.glob(os.path.join(path, '*.private'))
         for infile in files:
             key = dnskey(infile, path, self._defttl)
 
-            if zones and not key.name in zones:
+            if zones and key.name not in zones:
                 continue
 
             if not key.ttl:
@@ -53,7 +53,7 @@ class keydict:
         if not zones:
             return
         for z in zones:
-            if not z in found:
+            if z not in found:
                 self._missing.append(z)
 
     def __iter__(self):

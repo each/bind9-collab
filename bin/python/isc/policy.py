@@ -23,32 +23,33 @@ import ply.yacc as yacc
 from string import *
 from copy import copy
 
-############################################################################
-# policylex: a lexer for the policy file syntax.
-############################################################################
-class policylex:
-    reserved = ( 'POLICY',
-                 'ALGORITHM_POLICY',
-                 'ZONE',
-                 'ALGORITHM',
-                 'KEYTTL',
-                 'KEY_SIZE',
-                 'ROLL_PERIOD',
-                 'PRE_PUBLISH',
-                 'POST_PUBLISH',
-                 'COVERAGE',
-                 'STANDBY',
-                 'NONE' )
 
-    tokens = reserved + ( 'DATESUFFIX',
-                          'KEYTYPE',
-                          'ALGNAME',
-                          'STR',
-                          'NUMBER',
-                          'LBRACE',
-                          'RBRACE',
-                          'SEMI' )
-    reserved_map = { }
+############################################################################
+# PolicyLex: a lexer for the policy file syntax.
+############################################################################
+class PolicyLex:
+    reserved = ('POLICY',
+                'ALGORITHM_POLICY',
+                'ZONE',
+                'ALGORITHM',
+                'KEYTTL',
+                'KEY_SIZE',
+                'ROLL_PERIOD',
+                'PRE_PUBLISH',
+                'POST_PUBLISH',
+                'COVERAGE',
+                'STANDBY',
+                'NONE')
+
+    tokens = reserved + ('DATESUFFIX',
+                         'KEYTYPE',
+                         'ALGNAME',
+                         'STR',
+                         'NUMBER',
+                         'LBRACE',
+                         'RBRACE',
+                         'SEMI')
+    reserved_map = {}
 
     t_ignore           = ' \t'
     t_ignore_olcomment = r'(//|\#).*'
@@ -187,7 +188,7 @@ class dnssec_policy:
     initial = True
 
     def __init__(self, filename=None, **kwargs):
-        self.plex = policylex()
+        self.plex = PolicyLex()
         self.tokens = self.plex.tokens
         if not 'debug' in kwargs:
             kwargs['debug'] = False
@@ -547,7 +548,7 @@ if __name__ == "__main__":
         file = open(sys.argv[2])
         text = file.read()
         file.close()
-        plex = policylex(debug=1)
+        plex = PolicyLex(debug=1)
         plex.test(text)
     elif sys.argv[1] == "parse":
         try:

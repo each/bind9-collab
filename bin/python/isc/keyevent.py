@@ -16,6 +16,7 @@
 
 import time
 
+
 ########################################################################
 # Class keyevent
 ########################################################################
@@ -68,8 +69,7 @@ class keyevent:
                 published.remove(self.keyid)
             else:
                 output("WARNING: key %s is scheduled for deletion "
-                        "before it is published"
-                        % repr(self.key))
+                       "before it is published" % repr(self.key))
         elif self.what == "Revoke":
             # We don't need to worry about the logic of this one;
             # just stop counting this key as either active or published
@@ -78,4 +78,4 @@ class keyevent:
             if self.keyid in active:
                 active.remove(self.keyid)
 
-        return (active, published)
+        return active, published

@@ -13,10 +13,11 @@
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-__all__ = ['dnskey', 'eventlist', 'keydict', 'keyevent', 'keyseries', 'keyzone', 'policy', 'parsetab' ]
+__all__ = ['dnskey', 'eventlist', 'keydict', 'keyevent', 'keyseries',
+           'keyzone', 'policy', 'parsetab']
 from isc.dnskey import *
 from isc.eventlist import *
-from isc.keydict  import *
+from isc.keydict import *
 from isc.keyevent import *
 from isc.keyseries import *
 from isc.keyzone import *
