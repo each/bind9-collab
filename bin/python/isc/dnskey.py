@@ -105,7 +105,7 @@ class dnskey:
 
         for line in pfp:
             line = line.strip()
-            if len(line) == 0 or line[0] in ('!#'):
+            if not line or line[0] in ('!#'):
                 continue
             punctuation = [line.find(c) for c in ':= '] + [len(line)]
             found = min([pos for pos in punctuation if pos != -1])

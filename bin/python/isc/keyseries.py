@@ -64,7 +64,7 @@ class keyseries:
 
     def fixseries(self, keys, policy, now, **kwargs):
         force = kwargs.get('force', False)
-        if len(keys) == 0:
+        if not keys:
             return
 
         # handle the first key
@@ -156,7 +156,7 @@ class keyseries:
             alg = policy.algorithm
             algnum = dnskey.algnum(alg)
             if 'ksk' not in kwargs or not kwargs['ksk']:
-                if len(self._Z[zone][algnum]) == 0:
+                if not self._Z[zone][algnum]:
                     k = dnskey.generate(self._context['keygen_path'],
                                         keys_dir, zone, alg,
                                         policy.zsk_keysize, False,
@@ -166,7 +166,7 @@ class keyseries:
                 collections.append(self._Z[zone])
 
             if 'zsk' not in kwargs or not kwargs['zsk']:
-                if len(self._K[zone][algnum]) == 0:
+                if not self._K[zone][algnum]:
                     k = dnskey.generate(self._context['keygen_path'],
                                         keys_dir, zone, alg,
                                         policy.ksk_keysize, True,

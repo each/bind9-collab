@@ -155,14 +155,14 @@ class eventlist:
             eventlist.showset(group, output)
 
             # and then check for inconsistencies:
-            if len(active) == 0:
+            if not active:
                 output("ERROR: No %s's are active after this event" % keytype)
                 return False
-            elif len(published) == 0:
+            elif not published:
                 output("ERROR: No %s's are published after this event"
                         % keytype)
                 return False
-            elif len(published.intersection(active)) == 0:
+            elif not published.intersection(active):
                 output("ERROR: No %s's are both active and published "
                        "after this event" % keytype)
                 return False

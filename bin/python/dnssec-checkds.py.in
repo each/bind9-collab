@@ -135,7 +135,7 @@ class DLVRR:
         while len(dlv) != 0 and len(parent) != 0 and parent[0] == dlv[0]:
             parent = parent[1:]
             dlv = dlv[1:]
-        if len(dlv) != 0:
+        if dlv:
             raise Exception
         parent.reverse()
         self.parent = '.'.join(parent)

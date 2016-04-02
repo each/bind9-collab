@@ -75,7 +75,7 @@ def output(*args, **kwargs):
         _firstline = False
     elif skip:
         print('')
-    if len(args) != 0:
+    if args:
         print(*args, **kwargs)
 
 
