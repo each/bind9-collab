@@ -1,0 +1,17 @@
+Notes gathered during the IETF95 Hackathon, which can work as a TODO list
+
+* PEP8. Ensure the code follows the recommendation of PEP8
+* Add suport for CDS sync
+* Add lots of test cases for key lifetime and simulated rollovers
+* Generate new keys based on the policy used (of the right algorithm, with
+the right lifetime)
+* Documentation on how to use
+* Fix definition of requirements for Python modules (add a requirements.txt)
+
+BUGS
+* configure doesn't respect the proper python interpreter provided in the
+command line, it tries to use the PATH
+* Detection of the right python interpreter fails if the ply package is not
+installed
+* Test cases if they are multiple keys attempting to be activated at the same
+ time.

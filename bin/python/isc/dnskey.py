@@ -37,6 +37,7 @@ class dnskey:
                  'RSASHA512', None, 'ECCGOST', 'ECDSAP256SHA256',
                  'ECDSAP384SHA384')
 
+    # XXX: the constructor should not return a value, needs refactoring
     def __init__(self, key, directory=None, keyttl=None):
         # this makes it possible to use algname as a class or instance method
         if isinstance(key, tuple) and len(key) == 3:
@@ -126,7 +127,7 @@ class dnskey:
 
         pfp.close()
 
-    def commit(self):
+    def commit(self, settime_bin):
         cmd=''
         first=True
         for prop, opt in zip(dnskey._PROPS, dnskey._OPTS):
@@ -143,15 +144,15 @@ class dnskey:
 
         if cmd:
             # debug
-            print ("dnssec-settime -K %s -L %d %s %s" %
-                   (self._dir, self.ttl, cmd, self.keystr))
-            fp = os.popen('dnssec-settime -K %s -L %d %s %s' %
-                          (self._dir, self.ttl, cmd, self.keystr))
+            print ("%s -K %s -L %d %s %s" %
+                   (settime_bin, self._dir, self.ttl, cmd, self.keystr))
+            fp = os.popen('%s -K %s -L %d %s %s' %
+                          (settime_bin, self._dir, self.ttl, cmd, self.keystr))
             fp.close()
 
     @classmethod
-    def generate(cls, directory, name, alg, keysize, sep, ttl=604800,
-                 publish=None, activate=None):
+    def generate(cls, keygen_bin, keys_dir, name, alg, keysize, sep,
+                 ttl=604800, publish=None, activate=None):
         pub = act = a = b = ''
         if publish:
             t = dnskey.timefromepoch(publish)
@@ -166,27 +167,28 @@ class dnskey:
             a = "-a %s" % alg
 
         # debug
-        print("dnssec-keygen -q -K %s -L %d %s %s %s %s %s" %
-              (directory, ttl, a, b, pub, act, name))
-        fp = os.popen("dnssec-keygen -q -K %s -L %d %s %s %s %s %s" %
-                      (directory, ttl, a, b, pub, act, name))
+        print("%s -q -K %s -L %d %s %s %s %s %s" %
+              (keygen_bin, keys_dir, ttl, a, b, pub, act, name))
+        fp = os.popen("%s -q -K %s -L %d %s %s %s %s %s" %
+                      (keygen_bin, keys_dir, ttl, a, b, pub, act, name))
         for line in fp:
             break
         fp.close()
 
         try:
-            newkey = dnskey(line, directory, ttl)
+            newkey = dnskey(line, keys_dir, ttl)
             return newkey
         except Exception as e:
             raise Exception('unable to generate key: %s' % e.args[0])
 
-    def generate_successor(self):
+    def generate_successor(self, keygen_bin):
         if not self.inactive():
             raise Exception("predecessor key %s has no inactive date" % self)
 
         # debug
-        print("dnssec-keygen -q -K %s -S %s" % (self._dir, self.keystr))
-        fp = os.popen("dnssec-keygen -q -K %s -S %s" % (self._dir, self.keystr))
+        print("%s -q -K %s -S %s" % (keygen_bin, self._dir, self.keystr))
+        fp = os.popen("%s -q -K %s -S %s" % (keygen_bin, self._dir,
+                                             self.keystr))
         for line in fp:
             break
         fp.close()

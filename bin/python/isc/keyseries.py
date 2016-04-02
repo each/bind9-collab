@@ -27,9 +27,11 @@ class keyseries:
     _Z = defaultdict(lambda : defaultdict(list))
     _zones = set()
     _kdict = None
+    _context = None
 
-    def __init__(self, kdict, now=time.time()):
+    def __init__(self, kdict, now=time.time(), context=None):
         self._kdict = kdict
+        self._context = context
         for zone in kdict.zones():
             self._zones.add(zone)
             for alg, keys in kdict[zone].items():
@@ -48,7 +50,7 @@ class keyseries:
     def __iter__(self):
         for zone in self._zones:
             for collection in [ self._K, self._Z ]:
-                if not zone in collection:
+                if zone not in collection:
                     continue
                 for alg, keys in collection[zone].items():
                     for key in keys:
@@ -112,13 +114,13 @@ class keyseries:
 
         # commit any changes we've made so far
         for key in keys:
-            key.commit()
+            key.commit(self._context['settime_path'])
 
         # if we haven't got sufficient coverage, create
         # successor keys until we do
         while rp and prev.inactive() and \
                 prev.inactive() < now + policy.coverage:
-            key = prev.generate_successor()
+            key = prev.generate_successor(self._context['keygen_path'])
             key.setinactive(key.activate() + rp)
             prev.setdelete(key.activate() + postpub)
             keys.append(key)
@@ -146,7 +148,9 @@ class keyseries:
                 for alg in self._Z[zone]:
                     if len(self._Z[zone][alg]) == 0:
                         # XXX: need to pass through the directory
-                        k = dnskey.generate('.', zone, policy.algorithm,
+                        k = dnskey.generate(self._context['keygen_path'],
+                                            self._context['keys_path'], zone,
+                                            policy.algorithm,
                                             policy.zsk_keysize, False,
                                             policy.keyttl)
                         self._Z[zone][alg].append(k)
@@ -156,7 +160,9 @@ class keyseries:
                 for alg in self._K[zone]:
                     if len(self._K[zone][alg]) == 0:
                         # XXX: need to pass through the directory
-                        k = dnskey.generate('.', zone, policy.algorithm,
+                        k = dnskey.generate(self._context['keygen_path'],
+                                            self._context['keys_path'], zone,
+                                            policy.algorithm,
                                             policy.ksk_keysize, True,
                                             policy.keyttl)
                         self._K[zone][alg].append(k)
