@@ -144,8 +144,9 @@ def set_path(command, default=None):
     return fpath
 
 def parse_args():
-    """Read command line arguments, set global 'args' structure"""
-    global args
+    """ Read command line arguments, returns 'args' object
+    :return: args object properly prepared
+    """
 
     keygen = set_path('dnssec-keygen',
                       os.path.join(prefix('sbin'), 'dnssec-keygen'))
@@ -187,7 +188,7 @@ def parse_args():
     args = parser.parse_args()
 
     if args.no_zsk and args.no_ksk:
-        print("ERROR: -z and -k cannot be used together.");
+        print("ERROR: -z and -k cannot be used together.")
         exit(1)
 
     # convert from time arguments to seconds
@@ -205,13 +206,25 @@ def parse_args():
     except:
         pass
 
+    if args.keygen is None or args.settime is None:
+        print("ERROR: Can't find BIND binaries")
+        exit(1)
+
+    return args
+
 ############################################################################
 # main
 ############################################################################
 if __name__ == "__main__":
-    parse_args()
+    args = parse_args()
+
+    # As we may have specific locations for the binaries, we put that info
+    # into a context object that can be passed around
+    context = {'keygen_path': args.keygen,
+               'settime_path': args.settime,
+               'keys_path': args.path}
 
     dp = policy.dnssec_policy(args.policyfile)
     kd = keydict(args.path, zones=args.zone, keyttl=args.keyttl)
-    ks = keyseries(kd)
+    ks = keyseries(kd, context=context)
     ks.enforce_policy(dp, ksk=args.no_zsk, zsk=args.no_ksk)
