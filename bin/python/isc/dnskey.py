@@ -14,10 +14,8 @@
 # PERFORMANCE OF THIS SOFTWARE.
 ############################################################################
 
-import os
-import time
-import calendar
-
+import os, time, calendar, shlex
+from subprocess import *
 
 ########################################################################
 # Class dnskey
@@ -146,13 +144,18 @@ class dnskey:
             first = False
 
         if cmd:
+            fullcmd = ("%s -K %s -L %d %s %s" %
+                       (settime_bin, self._dir, self.ttl, cmd, self.keystr))
             if not quiet:
-                print("%s -K %s -L %d %s %s" %
-                      (settime_bin, self._dir, self.ttl, cmd, self.keystr))
-
-            fp = os.popen('%s -K %s -L %d %s %s' %
-                          (settime_bin, self._dir, self.ttl, cmd, self.keystr))
-            fp.close()
+                print(fullcmd)
+            try:
+                p = Popen(shlex.split(fullcmd), stdout=PIPE, stderr=PIPE)
+                stdout, stderr = p.communicate()
+            except Exception as e:
+                raise Exception('unable to run %s: %s' %
+                                (settime_bin, str(e)))
+            if stderr:
+                raise Exception(stderr)
 
     @classmethod
     def generate(cls, keygen_bin, keys_dir, name, alg, keysize, sep,
@@ -179,16 +182,18 @@ class dnskey:
         if not quiet:
             print(keygen_cmd)
 
-        fp = os.popen(keygen_cmd)
-        for line in fp:
-            break
-        fp.close()
+        p = Popen(shlex.split(keygen_cmd), stdout=PIPE, stderr=PIPE)
+        stdout, stderr = p.communicate()
+
+        if stderr:
+            raise Exception('unable to generate key: ' + str(e))
 
         try:
-            newkey = dnskey(line, keys_dir, ttl)
+            keystr = stdout.split('\n')[0]
+            newkey = dnskey(keystr, keys_dir, ttl)
             return newkey
         except Exception as e:
-            raise Exception('unable to generate key: %s' % e.args[0])
+            raise Exception('unable to generate key: %s' % str(e))
 
     def generate_successor(self, keygen_bin, **kwargs):
         quiet = kwargs.get('quiet', False)
@@ -201,13 +206,14 @@ class dnskey:
         if not quiet:
             print(keygen_cmd)
 
-        fp = os.popen(keygen_cmd)
-        for line in fp:
-            break
-        fp.close()
+        p = Popen(shlex.split(keygen_cmd), stdout=PIPE, stderr=PIPE)
+
+        if stderr:
+            raise Exception('unable to generate key: ' + str(e))
 
         try:
-            newkey = dnskey(line, self._dir, self.ttl)
+            keystr = stdout.split('\n')[0]
+            newkey = dnskey(keystr, self._dir, self.ttl)
             return newkey
         except:
             raise Exception('unable to generate successor for key %s' % self)
