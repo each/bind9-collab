@@ -16,7 +16,6 @@
 
 from collections import defaultdict
 from .dnskey import *
-from .keyzone import *
 from .keydict import *
 from .keyevent import *
 

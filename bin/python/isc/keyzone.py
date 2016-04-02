@@ -14,7 +14,7 @@
 # PERFORMANCE OF THIS SOFTWARE.
 ############################################################################
 
-import os, sys
+import os, sys, re
 
 ########################################################################
 # Exceptions
@@ -45,6 +45,8 @@ class keyzone:
         cmd = ("%s -o - %s %s 2> /dev/null" % (czpath, name, filename))
         with os.popen(cmd) as fp:
             for line in fp:
+                if re.search('^[:space:]*;', line):
+                    continue
                 fields = line.split()
                 if not maxttl or int(fields[1]) > maxttl:
                     maxttl = int(fields[1])

@@ -16,7 +16,6 @@
 
 from collections import defaultdict
 from .dnskey import *
-from .keyzone import *
 from .keydict import *
 from .keyevent import *
 from .policy import *
@@ -106,8 +105,8 @@ class keyseries:
             # the initial key
             a = prev.inactive()
             p = a - prepub
-            key.setactivate(a)
-            key.setpublish(p)
+            key.setactivate(a, force=True)
+            key.setpublish(p, force=True)
             key.setinactive(a + rp)
             prev.setdelete(a + postpub)
             prev = key
@@ -168,5 +167,7 @@ class keyseries:
                 collections.append(self._K[zone])
 
             for collection in collections:
-                for alg, keys in collection.items():
+                for algorithm, keys in collection.items():
+                    if algorithm != algnum:
+                        continue
                     self.fixseries(keys, policy, now)

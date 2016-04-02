@@ -366,7 +366,8 @@ class dnskey:
                    "\t could result in a coverage gap if the zone was\n"
                    "\t previously signed. Activation should be at least\n"
                    "\t %s after publication."
-                   % (repr(self), dnskey.duration(self.ttl)))
+                   % (repr(self),
+                       dnskey.duration(self.ttl) or 'one DNSKEY TTL'))
             return True
 
         if a < p:
@@ -374,12 +375,14 @@ class dnskey:
                     % repr(self))
             return False
 
-        if (a - p < self.ttl):
+        if (self.ttl and a - p < self.ttl):
             output("WARNING: Key %s is activated too soon\n"
                    "\t after publication; this could result in coverage \n"
                    "\t gaps due to resolver caches containing old data.\n"
-                   "\t Activation should be at least %s after publication."
-                   % (repr(self), dnskey.duration(self.ttl)))
+                   "\t Activation should be at least %s after\n"
+                   "\t publication."
+                   % (repr(self),
+                       dnskey.duration(self.ttl) or 'one DNSKEY TTL'))
             return False
 
         return True
@@ -443,6 +446,9 @@ class dnskey:
 
     @staticmethod
     def duration(secs):
+        if not secs:
+            return None
+
         # define units:
         minute = 60
         hour = minute * 60
