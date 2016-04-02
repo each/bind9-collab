@@ -167,16 +167,18 @@ class dnskey:
             a = "-a %s" % alg
 
         # debug
-        print("%s -q -K %s -L %d %s %s %s %s %s" %
-              (keygen_bin, keys_dir, ttl, a, b, pub, act, name))
-        fp = os.popen("%s -q -K %s -L %d %s %s %s %s %s" %
-                      (keygen_bin, keys_dir, ttl, a, b, pub, act, name))
+        flagopt="-fk" if sep else ""
+        keygen_cmd = "%s -q %s -K %s -L %d %s %s %s %s %s" %\
+                     (keygen_bin, flagopt, keys_dir, ttl, a, b, pub, act, name)
+        print(keygen_cmd)
+        fp = os.popen(keygen_cmd)
         for line in fp:
             break
         fp.close()
 
         try:
             newkey = dnskey(line, keys_dir, ttl)
+            print(newkey)
             return newkey
         except Exception as e:
             raise Exception('unable to generate key: %s' % e.args[0])
@@ -186,9 +188,9 @@ class dnskey:
             raise Exception("predecessor key %s has no inactive date" % self)
 
         # debug
-        print("%s -q -K %s -S %s" % (keygen_bin, self._dir, self.keystr))
-        fp = os.popen("%s -q -K %s -S %s" % (keygen_bin, self._dir,
-                                             self.keystr))
+        keygen_cmd = "%s -q -K %s -S %s" % (keygen_bin, self._dir, self.keystr)
+        print(keygen_cmd)
+        fp = os.popen(keygen_cmd)
         for line in fp:
             break
         fp.close()
@@ -205,7 +207,16 @@ class dnskey:
         name = None
         if alg in range(len(dnskey._ALGNAMES)):
             name = dnskey._ALGNAMES[alg]
-        return (name if name else ("%03d" % alg))
+        return name if name else ("%03d" % alg)
+
+    @staticmethod
+    def algnum(alg):
+        if not alg:
+            return None
+        alg = alg.upper()
+        if alg not in dnskey._ALGNAMES:
+            return None
+        return dnskey._ALGNAMES.index(alg)
 
     def algname(self, alg=None):
         return self.algstr(alg or self.alg)

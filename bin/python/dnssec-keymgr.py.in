@@ -156,8 +156,8 @@ def parse_args():
                                      'DNSSEC key rollovers according to a '
                                      'pre-defined policy')
 
-    parser.add_argument('zone', type=str, nargs='?', default=None,
-                        help='Zone to which the policy should to be applied ' +
+    parser.add_argument('zone', type=str, nargs='*', default=None,
+                        help='Zone(s) to which the policy should be applied ' +
                         '(default: all zones in the directory)')
     parser.add_argument('-K', dest='path', default='.', type=str,
                         help='Directory containing keys', metavar='dir')
@@ -221,6 +221,7 @@ def parse_args():
 if __name__ == "__main__":
     parse_args()
 
-    kd = keydict(args.path, zone=args.zone, keyttl=args.keyttl)
+    dp = policy.dnssec_policy(args.policyfile)
+    kd = keydict(args.path, zones=args.zone, keyttl=args.keyttl)
     ks = keyseries(kd, context=context)
-    ks.enforce_policy(ksk=args.no_zsk, zsk=args.no_ksk, context=context)
+    ks.enforce_policy(dp, ksk=args.no_zsk, zsk=args.no_ksk)

@@ -32,6 +32,8 @@ class keyseries:
     def __init__(self, kdict, now=time.time(), context=None):
         self._kdict = kdict
         self._context = context
+        self._zones = set(kdict.missing())
+
         for zone in kdict.zones():
             self._zones.add(zone)
             for alg, keys in kdict[zone].items():
@@ -88,6 +90,7 @@ class keyseries:
             key.setdelete(None)
         else:
             key.setinactive(a + rp)
+            key.setdelete(a + rp + postpub)
 
         # handle all the subsequent keys
         prev = key
@@ -120,9 +123,13 @@ class keyseries:
         # successor keys until we do
         while rp and prev.inactive() and \
                 prev.inactive() < now + policy.coverage:
-            key = prev.generate_successor(self._context['keygen_path'])
+            try:
+                key = prev.generate_successor(self._context['keygen_path'])
+            except:
+                break
+
             key.setinactive(key.activate() + rp)
-            prev.setdelete(key.activate() + postpub)
+            key.setdelete(key.inactive() + postpub)
             keys.append(key)
             prev = key
 
@@ -134,38 +141,36 @@ class keyseries:
         prev.setdelete(None)
         prev.commit()
 
-    def enforce_policy(self, zones=None, policy_file=None,
-                       now=time.time(), **kwargs):
-        dp = dnssec_policy(policy_file)
-        if not zones:
-            zones = self._zones
+    def enforce_policy(self, policies, now=time.time(), **kwargs):
+        # If zones is provided as a parameter, use that list. If not,
+        # use what we have in this object
+        zones = kwargs.get('zones', self._zones)
 
-        for zone in self._zones:
+        keys_dir = kwargs.get('dir', self._context.get('keys_path', '.'))
+
+        for zone in zones:
             collections = []
-            policy = dp.policy(zone)
-            coverage = policy.coverage or (365 * 86400) #default 1 year
-            if not 'ksk' in kwargs or not kwargs['ksk']:
-                for alg in self._Z[zone]:
-                    if len(self._Z[zone][alg]) == 0:
-                        # XXX: need to pass through the directory
-                        k = dnskey.generate(self._context['keygen_path'],
-                                            self._context['keys_path'], zone,
-                                            policy.algorithm,
-                                            policy.zsk_keysize, False,
-                                            policy.keyttl)
-                        self._Z[zone][alg].append(k)
+            policy = policies.policy(zone)
+            alg = policy.algorithm
+            algnum = dnskey.algnum(alg)
+            if 'ksk' not in kwargs or not kwargs['ksk']:
+                if len(self._Z[zone][algnum]) == 0:
+                    k = dnskey.generate(self._context['keygen_path'],
+                                        keys_dir, zone,
+                                        alg,
+                                        policy.zsk_keysize, False,
+                                        policy.keyttl)
+                    self._Z[zone][algnum].append(k)
                 collections.append(self._Z[zone])
 
-            if not 'zsk' in kwargs or not kwargs['zsk']:
-                for alg in self._K[zone]:
-                    if len(self._K[zone][alg]) == 0:
-                        # XXX: need to pass through the directory
-                        k = dnskey.generate(self._context['keygen_path'],
-                                            self._context['keys_path'], zone,
-                                            policy.algorithm,
-                                            policy.ksk_keysize, True,
-                                            policy.keyttl)
-                        self._K[zone][alg].append(k)
+            if 'zsk' not in kwargs or not kwargs['zsk']:
+                if len(self._K[zone][algnum]) == 0:
+                    k = dnskey.generate(self._context['keygen_path'],
+                                        keys_dir, zone,
+                                        alg,
+                                        policy.ksk_keysize, True,
+                                        policy.keyttl)
+                    self._K[zone][algnum].append(k)
                 collections.append(self._K[zone])
 
             for collection in collections:
