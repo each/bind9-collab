@@ -139,7 +139,7 @@ class keyseries:
         # in the series will at least remain usable.
         prev.setinactive(None)
         prev.setdelete(None)
-        prev.commit()
+        prev.commit(self._context['settime_path'])
 
     def enforce_policy(self, policies, now=time.time(), **kwargs):
         # If zones is provided as a parameter, use that list. If not,
