@@ -20,7 +20,7 @@ top_srcdir =	@top_srcdir@
 
 PYTHON	=	@PYTHON@
 
-PYTESTS =	dnskey_test.py
+PYTESTS =	dnskey_test.py policy_test.py
 
 @BIND9_MAKE_RULES@
 

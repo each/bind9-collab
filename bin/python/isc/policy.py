@@ -127,6 +127,16 @@ class Policy:
     zsk_standby = None
     keyttl = None
     coverage = None
+    valid_key_sz_per_algo = {'DSA': [512, 1024],
+                             'NSEC3DSA': [512, 1024],
+                             'RSAMD5': [512, 4096],
+                             'RSASHA1': [512, 4096],
+                             'NSEC3RSASHA1': [512, 4096],
+                             'RSASHA256': [512, 4096],
+                             'RSASHA512': [512, 4096],
+                             'ECCGOST': None,
+                             'ECDSAP256SHA245': None,
+                             'ECDSAP384SHA384': None}
 
     def __init__(self, name=None, algorithm=None, parent=None):
         self.name = name
@@ -170,6 +180,62 @@ class Policy:
                  self.zsk_standby and str(self.zsk_standby) or 'None',
                  self.keyttl and str(self.keyttl) or 'None'))
 
+    def __verify_size(self, key_size, size_range):
+        if size_range[0] <= key_size <= size_range[1]:
+            return True
+        else:
+            return False
+
+    def get_name(self):
+        return self.name
+
+    def constructed(self):
+        return self.is_constructed
+
+    def validate(self):
+        """ Check if the values in the policy make sense
+        :return: True/False if the policy passes validation
+        """
+        if self.ksk_rollperiod > self.coverage:
+            return False, "KSK rollover period exceeds coverage"
+
+        if self.zsk_rollperiod > self.coverage:
+            return False, "ZSK rollover period exceeds coverage"
+
+        if self.ksk_rollperiod > 0 and self.ksk_prepublish > self.ksk_rollperiod:
+            print(self.ksk_rollperiod)
+            return False, "KSK pre publish period exceeds rollover period"
+
+        if self.ksk_rollperiod > 0 and self.ksk_postpublish > self.ksk_rollperiod:
+            return False, "KSK post publish period exceeds rollover period"
+
+        if self.zsk_prepublish > self.zsk_rollperiod:
+            return False, "ZSK pre publish period exceeds rollover period"
+
+        if self.zsk_postpublish > self.zsk_rollperiod:
+            return False, "ZSK post publish period exceeds rollover period"
+
+        if self.algorithm is not None:
+            # Validate the key size
+            key_sz_range = self.valid_key_sz_per_algo.get(self.algorithm)
+            if key_sz_range is not None:
+                # Verify KSK
+                if not self.__verify_size(self.ksk_keysize, key_sz_range):
+                    return False, "KSK key size exceeds valid values %s" % key_sz_range
+
+                # Verify ZSK
+                if not self.__verify_size(self.zsk_keysize, key_sz_range):
+                    return False, "ZSK key size exceeds valid values %s" % key_sz_range
+
+            # Specific check for DSA keys
+            if self.algorithm in ['DSA', 'NSEC3DSA'] and self.ksk_keysize % 64 != 0:
+                return False, "Key size not a divisible by 64"
+
+            if self.algorithm in ['DSA', 'NSEC3DSA'] and self.zsk_keysize % 64 != 0:
+                return False, "Key size not a divisible by 64"
+
+        return True, ""
+
 ############################################################################
 # dnssec_policy:
 # This class reads a dnssec.policy file and creates a dictionary of
@@ -180,9 +246,9 @@ class PolicyException(Exception):
     pass
 
 class dnssec_policy:
-    alg_policy = { }
-    named_policy = { }
-    zone_policy = { }
+    alg_policy = {}
+    named_policy = {}
+    zone_policy = {}
     current = None
     filename = None
     initial = True
@@ -190,9 +256,9 @@ class dnssec_policy:
     def __init__(self, filename=None, **kwargs):
         self.plex = PolicyLex()
         self.tokens = self.plex.tokens
-        if not 'debug' in kwargs:
+        if 'debug' not in kwargs:
             kwargs['debug'] = False
-        if not 'write_tables' in kwargs:
+        if 'write_tables' not in kwargs:
             kwargs['write_tables'] = False
         self.parser = yacc.yacc(module=self, **kwargs)
 
@@ -268,11 +334,11 @@ class dnssec_policy:
     def load(self, filename):
         self.filename = filename
         self.initial = True
-        file = open(filename)
-        text = file.read()
-        file.close()
-        self.plex.lexer.lineno = 0
-        self.parser.parse(text)
+        with open(filename) as f:
+            text = f.read()
+            self.plex.lexer.lineno = 0
+            self.parser.parse(text)
+
         self.filename = None
 
     def setup(self, text):
@@ -287,12 +353,12 @@ class dnssec_policy:
         if z in self.zone_policy:
             p = self.zone_policy[z]
 
-        if not p:
+        if p is None:
             p = copy(self.named_policy['default'])
             p.name = zone
             p.is_constructed = True
 
-        if not p.algorithm:
+        if p.algorithm is None:
             parent = p.parent or self.named_policy['default']
             while parent and not parent.algorithm:
                 parent = parent.parent
@@ -303,60 +369,60 @@ class dnssec_policy:
         else:
             raise PolicyException('algorithm not found')
 
-        if not p.coverage:
+        if p.coverage is None:
             parent = p.parent or self.named_policy['default']
             while parent and not parent.coverage:
                 parent = parent.parent
             p.coverage = parent.coverage or ap.coverage
 
-        if not p.ksk_keysize:
+        if p.ksk_keysize is None:
             parent = p.parent or self.named_policy['default']
             while parent.parent and not parent.ksk_keysize:
                 parent = parent.parent
             p.ksk_keysize = parent and parent.ksk_keysize or ap.ksk_keysize
 
-        if not p.zsk_keysize:
+        if p.zsk_keysize is None:
             parent = p.parent or self.named_policy['default']
             while parent.parent and not parent.zsk_keysize:
                 parent = parent.parent
             p.zsk_keysize = parent and parent.zsk_keysize or ap.zsk_keysize
 
-        if not p.ksk_rollperiod:
+        if p.ksk_rollperiod is None:
             parent = p.parent or self.named_policy['default']
             while parent.parent and not parent.ksk_rollperiod:
                 parent = parent.parent
             p.ksk_rollperiod = parent and \
                 parent.ksk_rollperiod or ap.ksk_rollperiod
 
-        if not p.zsk_rollperiod:
+        if p.zsk_rollperiod is None:
             parent = p.parent or self.named_policy['default']
             while parent.parent and not parent.zsk_rollperiod:
                 parent = parent.parent
             p.zsk_rollperiod = parent and \
                 parent.zsk_rollperiod or ap.zsk_rollperiod
 
-        if not p.ksk_prepublish:
+        if p.ksk_prepublish is None:
             parent = p.parent or self.named_policy['default']
             while parent.parent and not parent.ksk_prepublish:
                 parent = parent.parent
             p.ksk_prepublish = parent and \
                 parent.ksk_prepublish or ap.ksk_prepublish
 
-        if not p.zsk_prepublish:
+        if p.zsk_prepublish is None:
             parent = p.parent or self.named_policy['default']
             while parent.parent and not parent.zsk_prepublish:
                 parent = parent.parent
             p.zsk_prepublish = parent and \
                 parent.zsk_prepublish or ap.zsk_prepublish
 
-        if not p.ksk_postpublish:
+        if p.ksk_postpublish is None:
             parent = p.parent or self.named_policy['default']
             while parent.parent and not parent.ksk_postpublish:
                 parent = parent.parent
             p.ksk_postpublish = parent and \
                 parent.ksk_postpublish or ap.ksk_postpublish
 
-        if not p.zsk_postpublish:
+        if p.zsk_postpublish is None:
             parent = p.parent or self.named_policy['default']
             while parent.parent and not parent.zsk_postpublish:
                 parent = parent.parent
@@ -364,6 +430,7 @@ class dnssec_policy:
                 parent.zsk_postpublish or ap.zsk_postpublish
 
         return p
+
 
     def p_policylist(self, p):
         '''policylist : init policy
