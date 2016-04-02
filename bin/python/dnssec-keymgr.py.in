@@ -61,6 +61,13 @@ def prefix(bindir = ''):
     return os.path.join(win32api.GetSystemDirectory(), bindir)
 
 ############################################################################
+# print a fatal error and exit
+############################################################################
+def fatal(*args, **kwargs):
+    print(*args, **kwargs)
+    exit(1)
+
+############################################################################
 # the output() function prints the specified content, but
 # prepends a line of vertical space first *unless* this is the
 # first time output() has been called since a call to vreset().
@@ -183,13 +190,18 @@ def parse_args():
     parser.add_argument('-z', dest='no_ksk',
                         action='store_true', default=False,
                         help='Only apply policy to zone-signing keys (ZSKs)')
-    parser.add_argument('-v', '--version', action='version', version='9.1.1')
+    parser.add_argument('-f', '--force', dest='force', action='store_true',
+                        default=False, help='Force updates to key events '+
+                        'even if they are in the past')
+    parser.add_argument('-q', '--quiet', dest='quiet', action='store_true',
+                        default=False, help='Update keys silently')
+    parser.add_argument('-v', '--version', action='version',
+                        version='@BIND9_VERSION@')
 
     args = parser.parse_args()
 
     if args.no_zsk and args.no_ksk:
-        print("ERROR: -z and -k cannot be used together.")
-        exit(1)
+        fatal("ERROR: -z and -k cannot be used together.")
 
     # convert from time arguments to seconds
     try:
@@ -207,14 +219,14 @@ def parse_args():
         pass
 
     if args.keygen is None or args.settime is None:
-        print("ERROR: dnssec-keygen/dnssec-settime not found")
-        exit(1)
+        fatal("ERROR: dnssec-keygen/dnssec-settime not found")
 
-    if args.policyfile is not None:
+    # if a policy file was specified, check that it exists.
+    # if not, use the default file, unless it doesn't exist
+    try:
         if not os.path.exists(args.policyfile):
-            print('ERROR: Policy file %s not found' % args.policyfile)
-            exit(1)
-    else:
+            fatal('ERROR: Policy file %s not found' % args.policyfile)
+    except:
         args.policyfile = os.path.join('@expanded_sysconfdir@', 'policy.conf')
         if not os.path.exists(args.policyfile):
             args.policyfile = None
@@ -233,7 +245,23 @@ if __name__ == "__main__":
                'settime_path': args.settime,
                'keys_path': args.path}
 
-    dp = policy.dnssec_policy(args.policyfile)
-    kd = keydict(args.path, zones=args.zone, keyttl=args.keyttl)
-    ks = keyseries(kd, context=context)
-    ks.enforce_policy(dp, ksk=args.no_zsk, zsk=args.no_ksk)
+    try:
+        dp = policy.dnssec_policy(args.policyfile)
+    except Exception as e:
+        fatal('Unable to load DNSSEC policy: ' + str(e))
+
+    try:
+        kd = keydict(args.path, zones=args.zone, keyttl=args.keyttl)
+    except Exception as e:
+        fatal('Unable to build key dictionary: ' + str(e))
+
+    try:
+        ks = keyseries(kd, context=context)
+    except Exception as e:
+        fatal('Unable to build key series: ' + str(e))
+
+    try:
+        ks.enforce_policy(dp, ksk=args.no_zsk, zsk=args.no_ksk,
+                          force=args.force, quiet=args.quiet)
+    except Exception as e:
+        fatal('Unable to apply policy: ' + str(e))

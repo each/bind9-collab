@@ -40,7 +40,6 @@ class dnskey:
                  'RSASHA512', None, 'ECCGOST', 'ECDSAP256SHA256',
                  'ECDSAP384SHA384')
 
-    # XXX: the constructor should not return a value, needs refactoring
     def __init__(self, key, directory=None, keyttl=None):
         # this makes it possible to use algname as a class or instance method
         if isinstance(key, tuple) and len(key) == 3:
@@ -58,9 +57,9 @@ class dnskey:
         self.fromtuple(name, alg, keyid, keyttl)
 
     def fromtuple(self, name, alg, keyid, keyttl):
-        if name[-1] == '.':
+        if name.endswith('.'):
             fullname = name
-            name = name[0:-1]
+            name = name.rstrip('.')
         else:
             fullname = name + '.'
 
@@ -130,7 +129,8 @@ class dnskey:
 
         pfp.close()
 
-    def commit(self, settime_bin):
+    def commit(self, settime_bin, **kwargs):
+        quiet = kwargs.get('quiet', False)
         cmd = ''
         first = True
         for prop, opt in zip(dnskey._PROPS, dnskey._OPTS):
@@ -146,16 +146,19 @@ class dnskey:
             first = False
 
         if cmd:
-            # debug
-            print ("%s -K %s -L %d %s %s" %
-                   (settime_bin, self._dir, self.ttl, cmd, self.keystr))
+            if not quiet:
+                print("%s -K %s -L %d %s %s" %
+                      (settime_bin, self._dir, self.ttl, cmd, self.keystr))
+
             fp = os.popen('%s -K %s -L %d %s %s' %
                           (settime_bin, self._dir, self.ttl, cmd, self.keystr))
             fp.close()
 
     @classmethod
     def generate(cls, keygen_bin, keys_dir, name, alg, keysize, sep,
-                 ttl=604800, publish=None, activate=None):
+                 ttl=604800, publish=None, activate=None, **kwargs):
+        quiet = kwargs.get('quiet', False)
+
         pub = act = a = b = ''
         if publish:
             t = dnskey.timefromepoch(publish)
@@ -169,11 +172,13 @@ class dnskey:
         if alg:
             a = "-a %s" % alg
 
-        # debug
         flagopt = "-fk" if sep else ""
         keygen_cmd = "%s -q %s -K %s -L %d %s %s %s %s %s" %\
                      (keygen_bin, flagopt, keys_dir, ttl, a, b, pub, act, name)
-        print(keygen_cmd)
+
+        if not quiet:
+            print(keygen_cmd)
+
         fp = os.popen(keygen_cmd)
         for line in fp:
             break
@@ -181,18 +186,21 @@ class dnskey:
 
         try:
             newkey = dnskey(line, keys_dir, ttl)
-            print(newkey)
             return newkey
         except Exception as e:
             raise Exception('unable to generate key: %s' % e.args[0])
 
-    def generate_successor(self, keygen_bin):
+    def generate_successor(self, keygen_bin, **kwargs):
+        quiet = kwargs.get('quiet', False)
+
         if not self.inactive():
             raise Exception("predecessor key %s has no inactive date" % self)
 
-        # debug
         keygen_cmd = "%s -q -K %s -S %s" % (keygen_bin, self._dir, self.keystr)
-        print(keygen_cmd)
+
+        if not quiet:
+            print(keygen_cmd)
+
         fp = os.popen(keygen_cmd)
         for line in fp:
             break
@@ -239,7 +247,8 @@ class dnskey:
     def formattime(t):
         return time.strftime("%Y%m%d%H%M%S", t)
 
-    def setmeta(self, prop, secs, now, force):
+    def setmeta(self, prop, secs, now, **kwargs):
+        force = kwargs.get('force', False)
         if not secs:
             if not self._timestamps[prop]:
                 return
@@ -277,44 +286,44 @@ class dnskey:
     def syncpublish(self):
         return self._timestamps["SyncPublish"]
 
-    def setsyncpublish(self, secs, now=time.time(), force=False):
-        self.setmeta("SyncPublish", secs, now, force)
+    def setsyncpublish(self, secs, now=time.time(), **kwargs):
+        self.setmeta("SyncPublish", secs, now, **kwargs)
 
     def publish(self):
         return self._timestamps["Publish"]
 
-    def setpublish(self, secs, now=time.time(), force=False):
-        self.setmeta("Publish", secs, now, force)
+    def setpublish(self, secs, now=time.time(), **kwargs):
+        self.setmeta("Publish", secs, now, **kwargs)
 
     def activate(self):
         return self._timestamps["Activate"]
 
-    def setactivate(self, secs, now=time.time(), force=False):
-        self.setmeta("Activate", secs, now, force)
+    def setactivate(self, secs, now=time.time(), **kwargs):
+        self.setmeta("Activate", secs, now, **kwargs)
 
     def revoke(self):
         return self._timestamps["Revoke"]
 
-    def setrevoke(self, secs, now=time.time(), force=False):
-        self.setmeta("Revoke", secs, now, force)
+    def setrevoke(self, secs, now=time.time(), **kwargs):
+        self.setmeta("Revoke", secs, now, **kwargs)
 
     def inactive(self):
         return self._timestamps["Inactive"]
 
-    def setinactive(self, secs, now=time.time(), force=False):
-        self.setmeta("Inactive", secs, now, force)
+    def setinactive(self, secs, now=time.time(), **kwargs):
+        self.setmeta("Inactive", secs, now, **kwargs)
 
     def delete(self):
         return self._timestamps["Delete"]
 
-    def setdelete(self, secs, now=time.time(), force=False):
-        self.setmeta("Delete", secs, now, force)
+    def setdelete(self, secs, now=time.time(), **kwargs):
+        self.setmeta("Delete", secs, now, **kwargs)
 
     def syncdelete(self):
         return self._timestamps["SyncDelete"]
 
-    def setsyncdelete(self, secs, now=time.time(), force=False):
-        self.setmeta("SyncDelete", secs, now, force)
+    def setsyncdelete(self, secs, now=time.time(), **kwargs):
+        self.setmeta("SyncDelete", secs, now, **kwargs)
 
     def keytype(self):
         return ("KSK" if self.sep else "ZSK")

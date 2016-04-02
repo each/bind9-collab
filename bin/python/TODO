@@ -7,17 +7,18 @@ Notes gathered during the IETF95 Hackathon, which can work as a TODO list
   the right lifetime) (DONE)
 * Documentation on how to use
 
-* "Verbose" flag (print dnssec-keygen and dnssec-settime commands as they
-  are executed)
+* "Quiet" flag (silence dnssec-keygen and dnssec-settime commands as they
+  are executed) (DONE)
 * Better error reporting when dnssec-keygen or dnssec-settime fail
 * "Force" flag to allow keys to be updated even if their scheduled
-  events are in the past
+  events are in the past (DONE)
 * Robustly handle the situation when events are in the past and the "force"
-  flag isn't in use
+  flag isn't in use (DONE)
 * Add the ability to specify a key directory in policies, and use that
   in preference to '.' if set
 * Use a default path to the policy.conf file, and only use the built-in
   default policy if it doesn't exist. (DONE)
+* Allow standby keys and revocation if policy specifies RFC 5011 
 
 BUGS
 * configure doesn't respect the proper python interpreter provided in the
