@@ -4,13 +4,25 @@ Notes gathered during the IETF95 Hackathon, which can work as a TODO list
 * Add suport for CDS sync
 * Add lots of test cases for key lifetime and simulated rollovers
 * Generate new keys based on the policy used (of the right algorithm, with
-the right lifetime)
+  the right lifetime) (DONE)
 * Documentation on how to use
+
+* "Verbose" flag (print dnssec-keygen and dnssec-settime commands as they
+  are executed)
+* Better error reporting when dnssec-keygen or dnssec-settime fail
+* "Force" flag to allow keys to be updated even if their scheduled
+  events are in the past
+* Robustly handle the situation when events are in the past and the "force"
+  flag isn't in use
+* Add the ability to specify a key directory in policies, and use that
+  in preference to '.' if set
+* Use a default path to the policy.conf file, and only use the built-in
+  default policy if it doesn't exist. (DONE)
 
 BUGS
 * configure doesn't respect the proper python interpreter provided in the
-command line, it tries to use the PATH
+  command line, it tries to use the PATH
 * Detection of the right python interpreter fails if the ply package is not
-installed
+  installed
 * Test cases if they are multiple keys attempting to be activated at the same
- time.
+  time.

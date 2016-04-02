@@ -350,6 +350,8 @@ case "$prefix" in
 		esac
 		;;
 esac
+expanded_sysconfdir=`eval echo $sysconfdir`
+AC_SUBST(expanded_sysconfdir)
 
 #
 # Make sure INSTALL uses an absolute path, else it will be wrong in all

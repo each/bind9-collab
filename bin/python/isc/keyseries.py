@@ -142,10 +142,9 @@ class keyseries:
         prev.commit(self._context['settime_path'])
 
     def enforce_policy(self, policies, now=time.time(), **kwargs):
-        # If zones is provided as a parameter, use that list. If not,
-        # use what we have in this object
+        # If zones is provided as a parameter, use that list.
+        # If not, use what we have in this object
         zones = kwargs.get('zones', self._zones)
-
         keys_dir = kwargs.get('dir', self._context.get('keys_path', '.'))
 
         for zone in zones:

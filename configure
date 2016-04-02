@@ -875,6 +875,7 @@ ISC_PLATFORM_NORETURN_POST
 ISC_PLATFORM_NORETURN_PRE
 ISC_PLATFORM_HAVELONGLONG
 ISC_SOCKADDR_LEN_T
+expanded_sysconfdir
 PYTHON_TOOLS
 COVERAGE
 CHECKDS
@@ -12034,6 +12035,8 @@ case "$prefix" in
 		esac
 		;;
 esac
+expanded_sysconfdir=`eval echo $sysconfdir`
+
 
 #
 # Make sure INSTALL uses an absolute path, else it will be wrong in all

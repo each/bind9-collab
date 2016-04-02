@@ -193,22 +193,31 @@ def parse_args():
 
     # convert from time arguments to seconds
     try:
-        if args.keyttl:
+        if args.keyttl is not None:
             k = parse_time(args.keyttl)
             args.keyttl = k
     except:
         pass
 
     try:
-        if args.resign:
+        if args.resign is not None:
             r = parse_time(args.resign)
             args.resign = r
     except:
         pass
 
     if args.keygen is None or args.settime is None:
-        print("ERROR: Can't find BIND binaries")
+        print("ERROR: dnssec-keygen/dnssec-settime not found")
         exit(1)
+
+    if args.policyfile is not None:
+        if not os.path.exists(args.policyfile):
+            print('ERROR: Policy file %s not found' % args.policyfile)
+            exit(1)
+    else:
+        args.policyfile = os.path.join('@expanded_sysconfdir@', 'policy.conf')
+        if not os.path.exists(args.policyfile):
+            args.policyfile = None
 
     return args
 
