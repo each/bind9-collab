@@ -205,7 +205,7 @@ class dnssec_policy:
                                        roll-period ksk 0;
                                        pre-publish ksk 1mo;
                                        post-publish ksk 1mo;
-                                       roll-period zsk 1y;
+                                       roll-period zsk 9mo;
                                        pre-publish zsk 1mo;
                                        post-publish zsk 1mo;
                                        coverage 1y; };''')

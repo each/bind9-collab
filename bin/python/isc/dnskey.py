@@ -207,6 +207,15 @@ class dnskey:
             name = dnskey._ALGNAMES[alg]
         return (name if name else ("%03d" % alg))
 
+    @staticmethod
+    def algnum(alg):
+        if not alg:
+            return None
+        alg = alg.upper()
+        if not alg in dnskey._ALGNAMES:
+            return None
+        return dnskey._ALGNAMES.index(alg)
+
     def algname(self, alg=None):
         return self.algstr(alg or self.alg)
 

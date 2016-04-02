@@ -25,26 +25,36 @@ class keydict:
     """ A dictionary of keys, indexed by name, algorithm, and key id """
 
     _keydict = defaultdict(lambda : defaultdict(dict))
+    _missing = []
     _defttl = 86400
 
     def __init__(self, path=".", **kwargs):
         if 'keyttl' in kwargs:
             self._defttl = kwargs['keyttl']
-        zone = None
-        if 'zone' in kwargs:
-            zone = kwargs['zone']
+
+        found = []
+        zones = None
+        if 'zones' in kwargs:
+            zones = kwargs['zones']
 
         files = glob.glob(os.path.join(path, '*.private'))
         for infile in files:
             key = dnskey(infile, path, self._defttl)
 
-            if zone and key.name != zone:
+            if zones and not key.name in zones:
                 continue
 
             if not key.ttl:
                 key.ttl = self._defttl
 
+            found.append(key.name)
             self._keydict[key.name][key.alg][key.keyid] = key
+
+        if not zones:
+            return
+        for z in zones:
+            if not z in found:
+                self._missing.append(z)
 
     def __iter__(self):
         for zone, algorithms in self._keydict.items():
@@ -63,3 +73,6 @@ class keydict:
 
     def keys(self, zone, alg):
         return (self._keydict[zone][alg].keys())
+
+    def missing(self):
+        return (self._missing)
