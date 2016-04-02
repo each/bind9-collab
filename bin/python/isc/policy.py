@@ -202,18 +202,26 @@ class Policy:
         if self.zsk_rollperiod > self.coverage:
             return False, "ZSK rollover period exceeds coverage"
 
-        if self.ksk_rollperiod > 0 and self.ksk_prepublish > self.ksk_rollperiod:
+        if self.ksk_rollperiod > 0 and self.ksk_prepublish >= self.ksk_rollperiod:
             print(self.ksk_rollperiod)
             return False, "KSK pre publish period exceeds rollover period"
 
-        if self.ksk_rollperiod > 0 and self.ksk_postpublish > self.ksk_rollperiod:
+        if self.ksk_rollperiod > 0 and self.ksk_postpublish >= self.ksk_rollperiod:
             return False, "KSK post publish period exceeds rollover period"
 
-        if self.zsk_prepublish > self.zsk_rollperiod:
+        if self.zsk_rollperiod > 0 and self.zsk_prepublish >= self.zsk_rollperiod:
             return False, "ZSK pre publish period exceeds rollover period"
 
-        if self.zsk_postpublish > self.zsk_rollperiod:
+        if self.zsk_rollperiod > 0 and self.zsk_postpublish >= self.zsk_rollperiod:
             return False, "ZSK post publish period exceeds rollover period"
+
+        if self.ksk_prepublish is not None and self.ksk_postpublish is not \
+                None and self.ksk_prepublish + self.ksk_postpublish >= self.ksk_rollperiod:
+            return False, "KSK pre+post publish periods exceed rollover period"
+
+        if self.zsk_prepublish is not None and self.zsk_postpublish is not \
+                None and self.zsk_prepublish + self.zsk_postpublish >= self.zsk_rollperiod:
+            return False, "ZSK pre+post publish periods exceed rollover period"
 
         if self.algorithm is not None:
             # Validate the key size
