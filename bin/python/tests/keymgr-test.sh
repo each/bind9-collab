@@ -25,7 +25,7 @@ $COVERAGE -z example.com
 
 echo "--------------------------------------------"
 echo "applying policy for 1-year rollover cycle"
-$KEYMGR -z example.com
+$KEYMGR -z example.com -s $SETTIME -g $KEYGEN
 
 echo "--------------------------------------------"
 echo "coverage with new policy:"
@@ -44,7 +44,7 @@ $COVERAGE -z -l1y example.com
 
 echo "--------------------------------------------"
 echo "applying policy for 1-year coverage"
-$KEYMGR -z example.com
+$KEYMGR -z example.com -s $SETTIME -g $KEYGEN
 
 echo "--------------------------------------------"
 echo "coverage with new policy:"

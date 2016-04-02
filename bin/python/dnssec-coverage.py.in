@@ -78,16 +78,21 @@ def output(*args, **kwargs):
     if len(args) != 0:
         print(*args, **kwargs)
 
+
 def vreset():
     """reset vertical spacing"""
     global _firstline
     _firstline = True
 
+
 ############################################################################
 # parse_time
 ############################################################################
 def parse_time(s):
-    """convert a formatted time (e.g., 1y, 6mo, 15mi, etc) into seconds"""
+    """ convert a formatted time (e.g., 1y, 6mo, 15mi, etc) into seconds
+    :param s: String with some text representing a time interval
+    :return: Integer with the number of seconds in the time interval
+    """
     s = s.strip()
 
     # if s is an integer, we're done already
@@ -122,32 +127,37 @@ def parse_time(s):
     else:
         raise Exception("Invalid suffix %s" % unit)
 
+
 ############################################################################
 # set_path:
 ############################################################################
 def set_path(command, default=None):
-    """find the location of a specified command.  if a default is supplied
-    and it works, we use it; otherwise we search PATH for a match.  If
-    not found, error and exit"""
+    """ find the location of a specified command.  if a default is supplied
+    and it works, we use it; otherwise we search PATH for a match.
+    :param command: string with a command to look for in the path
+    :param default: default location to use
+    :return: detected location for the desired command
+    """
+
     fpath = default
     if not fpath or not os.path.isfile(fpath) or not os.access(fpath, os.X_OK):
         path = os.environ["PATH"]
         if not path:
             path = os.path.defpath
         for directory in path.split(os.pathsep):
-            fpath = directory + os.sep + command
+            fpath = os.path.join(directory, command)
             if os.path.isfile(fpath) and os.access(fpath, os.X_OK):
                 break
             fpath = None
 
     return fpath
 
+
 ############################################################################
 # parse_args:
 ############################################################################
 def parse_args():
     """Read command line arguments, set global 'args' structure"""
-    global args
     compilezone = set_path('named-compilezone',
                            os.path.join(prefix('bin'), 'named-compilezone'))
 
@@ -236,7 +246,7 @@ def parse_args():
 
     # if we've got the values we need from the command line, stop now
     if args.maxttl and args.keyttl:
-        return
+        return args
 
     # load keyttl and maxttl data from zonefile
     if args.zone and args.filename:
@@ -255,11 +265,13 @@ def parse_args():
                "\t accurate results.")
         args.maxttl = 604800
 
+    return args
+
 ############################################################################
 # Main
 ############################################################################
 if __name__ == "__main__":
-    parse_args()
+    args = parse_args()
 
     print("PHASE 1--Loading keys to check for internal timing problems")
 

@@ -20,9 +20,10 @@ from .keyzone import *
 from .keydict import *
 from .keyevent import *
 
+
 class eventlist:
-    _K = defaultdict(lambda : defaultdict(list))
-    _Z = defaultdict(lambda : defaultdict(list))
+    _K = defaultdict(lambda: defaultdict(list))
+    _Z = defaultdict(lambda: defaultdict(list))
     _zones = set()
     _kdict = None
 
@@ -95,14 +96,14 @@ class eventlist:
 
         for alg in kz.keys():
             output("Checking scheduled %s events for zone %s, "
-                    "algorithm %s..."
-                    % (keytype, zone, dnskey.algstr(alg)))
+                   "algorithm %s..." %
+                   (keytype, zone, dnskey.algstr(alg)))
             ok = eventlist.checkset(kz[alg], keytype, until, output)
             if ok:
                 output("No errors found")
             allok = allok and ok
 
-        return (allok)
+        return allok
 
     @staticmethod
     def showset(eventset, output):

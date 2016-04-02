@@ -22,15 +22,19 @@ from .keyevent import *
 from .policy import *
 import time
 
+
 class keyseries:
-    _K = defaultdict(lambda : defaultdict(list))
-    _Z = defaultdict(lambda : defaultdict(list))
+    _K = defaultdict(lambda: defaultdict(list))
+    _Z = defaultdict(lambda: defaultdict(list))
     _zones = set()
     _kdict = None
+    _context = None
 
-    def __init__(self, kdict, now=time.time()):
+    def __init__(self, kdict, now=time.time(), context=None):
         self._kdict = kdict
+        self._context = context
         self._zones = set(kdict.missing())
+
         for zone in kdict.zones():
             self._zones.add(zone)
             for alg, keys in kdict[zone].items():
@@ -40,7 +44,7 @@ class keyseries:
                     else:
                         self._Z[zone][alg].append(k)
 
-                for group in [ self._K[zone][alg], self._Z[zone][alg] ]:
+                for group in [self._K[zone][alg], self._Z[zone][alg]]:
                     group.sort()
                     for k in group:
                         if k.delete() and k.delete() < now:
@@ -48,8 +52,8 @@ class keyseries:
 
     def __iter__(self):
         for zone in self._zones:
-            for collection in [ self._K, self._Z ]:
-                if not zone in collection:
+            for collection in [self._K, self._Z]:
+                if zone not in collection:
                     continue
                 for alg, keys in collection[zone].items():
                     for key in keys:
@@ -114,16 +118,17 @@ class keyseries:
 
         # commit any changes we've made so far
         for key in keys:
-            key.commit()
+            key.commit(self._context['settime_path'])
 
         # if we haven't got sufficient coverage, create
         # successor keys until we do
         while rp and prev.inactive() and \
                 prev.inactive() < now + policy.coverage:
             try:
-                key = prev.generate_successor()
+                key = prev.generate_successor(self._context['keygen_path'])
             except:
                 break
+
             key.setinactive(key.activate() + rp)
             key.setdelete(key.inactive() + postpub)
             keys.append(key)
@@ -135,33 +140,35 @@ class keyseries:
         # in the series will at least remain usable.
         prev.setinactive(None)
         prev.setdelete(None)
-        prev.commit()
+        prev.commit(self._context['settime_path'])
 
     def enforce_policy(self, policies, now=time.time(), **kwargs):
-        zones = self._zones
-        if 'zones' in kwargs:
-            zones = kwargs['zones']
+        # If zones is provided as a parameter, use that list. If not,
+        # use what we have in this object
+        zones = kwargs.get('zones', self._zones)
 
-        directory='.'
-        if 'dir' in kwargs:
-            directory=kwargs['dir']
+        keys_dir = kwargs.get('dir', self._context.get('keys_path', '.'))
 
         for zone in zones:
             collections = []
             policy = policies.policy(zone)
             alg = policy.algorithm
             algnum = dnskey.algnum(alg)
-            if not 'ksk' in kwargs or not kwargs['ksk']:
+            if 'ksk' not in kwargs or not kwargs['ksk']:
                 if len(self._Z[zone][algnum]) == 0:
-                    k = dnskey.generate(directory, zone, alg,
+                    k = dnskey.generate(self._context['keygen_path'],
+                                        keys_dir, zone,
+                                        alg,
                                         policy.zsk_keysize, False,
                                         policy.keyttl)
                     self._Z[zone][algnum].append(k)
                 collections.append(self._Z[zone])
 
-            if not 'zsk' in kwargs or not kwargs['zsk']:
+            if 'zsk' not in kwargs or not kwargs['zsk']:
                 if len(self._K[zone][algnum]) == 0:
-                    k = dnskey.generate(directory, zone, alg,
+                    k = dnskey.generate(self._context['keygen_path'],
+                                        keys_dir, zone,
+                                        alg,
                                         policy.ksk_keysize, True,
                                         policy.keyttl)
                     self._K[zone][algnum].append(k)
