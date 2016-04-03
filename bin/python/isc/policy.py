@@ -292,20 +292,21 @@ class dnssec_policy:
         self.parser = yacc.yacc(module=self, **kwargs)
 
         # set defaults
-        self.setup('''policy default { algorithm rsasha256;
-                                       directory ".";
-                                       keyttl 1h;
-                                       key-size ksk 2048;
-                                       key-size zsk 1024;
-                                       standby ksk 0;
-                                       standby zsk 0;
-                                       roll-period ksk 0;
-                                       pre-publish ksk 1mo;
-                                       post-publish ksk 1mo;
-                                       roll-period zsk 9mo;
-                                       pre-publish zsk 1mo;
-                                       post-publish zsk 1mo;
-                                       coverage 1y; };''')
+        self.setup('''policy global { algorithm rsasha256;
+                                      directory ".";
+                                      keyttl 1h;
+                                      key-size ksk 2048;
+                                      key-size zsk 1024;
+                                      standby ksk 0;
+                                      standby zsk 0;
+                                      roll-period ksk 0;
+                                      pre-publish ksk 1mo;
+                                      post-publish ksk 1mo;
+                                      roll-period zsk 9mo;
+                                      pre-publish zsk 1mo;
+                                      post-publish zsk 1mo;
+                                      coverage 1y; };
+                      policy default { policy global; };''')
 
         p = Policy()
         p.algorithm = None
