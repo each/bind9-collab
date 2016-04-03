@@ -92,7 +92,7 @@ named[5838]: zone test.nz/IN (signed): reconfiguring zone keys
 named[5838]: zone test.nz/IN (signed): next key event: 04-Apr-2016 04:01:14.014
 ```
 
-And `dnssec-coverage` tell us the state of the keys for the zone
+And `dnssec-coverage` tells us the state of the keys for the zone
 
 ```
 dnssec-coverage -K /var/cache/bind/keys/ test.nz

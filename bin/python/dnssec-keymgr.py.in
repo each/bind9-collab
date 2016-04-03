@@ -33,6 +33,7 @@ if d: sys.path.insert(0, d)
 d = sys.path.append(os.path.join('@prefix@', 'lib'))
 sys.path.insert(0, d)
 from isc import *
+from isc.utils import prefix
 
 
 ############################################################################
