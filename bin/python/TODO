@@ -1,14 +1,14 @@
 Notes gathered during the IETF95 Hackathon, which can work as a TODO list
 
 * PEP8. Ensure the code follows the recommendation of PEP8
-* Add suport for CDS sync
+* Add support for CDS sync
 * Add lots of test cases for key lifetime and simulated rollovers
     * Sanity check on policies: Coverage > Rollover period (DONE)
     * Prepublish < rollover period (DONE)
     * Postpublish < rollover period (DONE)
 * Generate new keys based on the policy used (of the right algorithm, with
   the right lifetime) (DONE)
-* Documentation on how to use
+* Documentation on how to use (DONE)
 
 * "Quiet" flag (silence dnssec-keygen and dnssec-settime commands as they
   are executed) (DONE)
@@ -24,9 +24,9 @@ Notes gathered during the IETF95 Hackathon, which can work as a TODO list
 * Allow standby keys and revocation if policy specifies RFC 5011 
 
 BUGS
-* configure doesn't respect the proper python interpreter provided in the
-  command line, it tries to use the PATH
+* configure doesn't respect the python interpreter provided as option,
+  it tries to use whatever finds in the PATH
 * Detection of the right python interpreter fails if the ply package is not
-  installed
+  installed, leading to
 * Test cases if they are multiple keys attempting to be activated at the same
   time.
