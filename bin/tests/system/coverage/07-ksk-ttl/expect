@@ -5,4 +5,5 @@ ok=2
 retcode=0
 match="WARNING: Key .* (KSK) is activated too soon
 after publication
-Activation should be at least 7 days after publication."
+Activation should be at least 7 days after
+publication."
