@@ -313,17 +313,17 @@ class dnssec_policy:
         # set defaults
         self.setup('''policy global { algorithm rsasha256;
                                       directory ".";
-                                      keyttl 1h;
                                       key-size ksk 2048;
                                       key-size zsk 1024;
+                                      roll-period ksk 0;
+                                      roll-period zsk 1y;
+                                      pre-publish ksk 1mo;
+                                      pre-publish zsk 1mo;
+                                      post-publish ksk 1mo;
+                                      post-publish zsk 1mo;
                                       standby ksk 0;
                                       standby zsk 0;
-                                      roll-period ksk 0;
-                                      pre-publish ksk 1mo;
-                                      post-publish ksk 1mo;
-                                      roll-period zsk 9mo;
-                                      pre-publish zsk 1mo;
-                                      post-publish zsk 1mo;
+                                      keyttl 1h;
                                       coverage 1y; };
                       policy default { policy global; };''')
 

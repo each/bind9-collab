@@ -230,9 +230,10 @@ class dnskey:
         if not alg:
             return None
         alg = alg.upper()
-        if alg not in dnskey._ALGNAMES:
+        try:
+            return dnskey._ALGNAMES.index(alg)
+        except ValueError:
             return None
-        return dnskey._ALGNAMES.index(alg)
 
     def algname(self, alg=None):
         return self.algstr(alg or self.alg)
