@@ -161,7 +161,7 @@ def checkds(zone, args, masterfile=None):
     dslist = sorted(dslist, key=lambda _ds: (ds.keyid, ds.keyalg, ds.hashalg))
     fp.close()
 
-    dsklist=[]
+    dsklist = []
 
     if masterfile:
         fp = os.popen("%s -f %s %s " %
@@ -213,7 +213,7 @@ def checkdlv(zone, lookaside, args, masterfile=None):
     for line in fp:
         dlvlist.append(DLVRR(line, lookaside))
     dlvlist = sorted(dlvlist,
-                     key=lambda dlv: (dlv.keyid, dlv.keyalg, dlv.hashalg))
+                     key=lambda _dlv: (dlv.keyid, dlv.keyalg, dlv.hashalg))
     fp.close()
 
     #
