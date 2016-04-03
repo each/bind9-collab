@@ -43,7 +43,7 @@ for dir in [0-9][0-9]-*; do
         # check that return code matches expectations
         found=$?
         if [ $found -ne $kret ]; then
-            echo "retcode was $found expected $retcode"
+            echo "keymgr retcode was $found expected $retcode"
             ret=1
         fi
 
@@ -58,7 +58,7 @@ for dir in [0-9][0-9]-*; do
         # check that return code matches expectations
         found=$?
         if [ $found -ne $cret ]; then
-            echo "retcode was $found expected $retcode"
+            echo "coverage retcode was $found expected $retcode"
             ret=1
         fi
 
