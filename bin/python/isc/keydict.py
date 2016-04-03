@@ -27,34 +27,43 @@ class keydict:
     """ A dictionary of keys, indexed by name, algorithm, and key id """
 
     _keydict = defaultdict(lambda: defaultdict(dict))
+    _defttl = None
     _missing = []
-    _defttl = 86400
 
-    def __init__(self, path=".", **kwargs):
-        if 'keyttl' in kwargs:
-            self._defttl = kwargs['keyttl']
-
-        found = []
+    def __init__(self, dp=None, **kwargs):
+        self._defttl = kwargs.get('keyttl', 86400)
         zones = kwargs.get('zones', None)
-
-        files = glob.glob(os.path.join(path, '*.private'))
-        for infile in files:
-            key = dnskey(infile, path, self._defttl)
-
-            if zones and key.name not in zones:
-                continue
-
-            if not key.ttl:
-                key.ttl = self._defttl
-
-            found.append(key.name)
-            self._keydict[key.name][key.alg][key.keyid] = key
+        path = kwargs.get('path', None) or '.'
 
         if not zones:
-            return
-        for z in zones:
-            if z not in found:
-                self._missing.append(z)
+            self.readall(path)
+        else:
+            for zone in zones:
+                path = dp and dp.policy(zone).directory or path
+                if not self.readone(path, zone):
+                    self._missing.append(zone)
+
+    def readall(self, path):
+        files = glob.glob(os.path.join(path, '*.private'))
+
+        for infile in files:
+            key = dnskey(infile, path, self._defttl)
+            key.ttl = self._defttl if key.ttl is None else key.ttl
+            self._keydict[key.name][key.alg][key.keyid] = key
+
+    def readone(self, path, zone):
+        files = glob.glob(os.path.join(path, 'K' + zone + '.+*.private'))
+
+        found = False
+        for infile in files:
+            key = dnskey(infile, path, self._defttl)
+            if key.name != zone: # shouldn't ever happen
+                continue
+            key.ttl = self._defttl if key.ttl is None else key.ttl
+            self._keydict[key.name][key.alg][key.keyid] = key
+            found = True
+
+        return found
 
     def __iter__(self):
         for zone, algorithms in self._keydict.items():

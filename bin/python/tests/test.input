@@ -8,6 +8,7 @@ algorithm-policy rsasha1 {
 // and this
 
 policy default {
+        directory "keydir";
         algorithm rsasha1;
         coverage 1y;            # another comment
         roll-period zsk 6mo;    // and yet another

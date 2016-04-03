@@ -56,7 +56,7 @@
       <arg choice="opt" rep="norepeat"><option>-c <replaceable class="parameter">compilezone path</replaceable></option></arg>
       <arg choice="opt" rep="norepeat"><option>-k</option></arg>
       <arg choice="opt" rep="norepeat"><option>-z</option></arg>
-      <arg choice="opt" rep="norepeat">zone</arg>
+      <arg choice="opt" rep="repeat">zone</arg>
     </cmdsynopsis>
   </refsynopsisdiv>
 

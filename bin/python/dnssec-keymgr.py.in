@@ -167,7 +167,7 @@ def parse_args():
     parser.add_argument('zone', type=str, nargs='*', default=None,
                         help='Zone(s) to which the policy should be applied ' +
                         '(default: all zones in the directory)')
-    parser.add_argument('-K', dest='path', default='.', type=str,
+    parser.add_argument('-K', dest='path', type=str,
                         help='Directory containing keys', metavar='dir')
     parser.add_argument('-c', dest='policyfile', type=str,
                         help='Policy definition file', metavar='file')
@@ -251,7 +251,7 @@ if __name__ == "__main__":
         fatal('Unable to load DNSSEC policy: ' + str(e))
 
     try:
-        kd = keydict(args.path, zones=args.zone, keyttl=args.keyttl)
+        kd = keydict(dp, path=args.path, zones=args.zone, keyttl=args.keyttl)
     except Exception as e:
         fatal('Unable to build key dictionary: ' + str(e))
 

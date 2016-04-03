@@ -1,11 +1,12 @@
 policy default:
 	inherits None
+	directory "."
 	algorithm RSASHA256
 	coverage 31536000
 	ksk_keysize 2048
 	zsk_keysize 1024
 	ksk_rollperiod None
-	zsk_rollperiod 31536000
+	zsk_rollperiod 23328000
 	ksk_prepublish 2592000
 	ksk_postpublish 2592000
 	zsk_prepublish 2592000
@@ -14,14 +15,16 @@ policy default:
 	zsk_standby None
 	keyttl 3600
 
+(True, '')
 constructed policy example.com:
 	inherits None
+	directory "."
 	algorithm RSASHA256
 	coverage 31536000
 	ksk_keysize 2048
 	zsk_keysize 1024
 	ksk_rollperiod None
-	zsk_rollperiod 31536000
+	zsk_rollperiod 23328000
 	ksk_prepublish 2592000
 	ksk_postpublish 2592000
 	zsk_prepublish 2592000
@@ -32,6 +35,7 @@ constructed policy example.com:
 
 policy default:
 	inherits None
+	directory "keydir"
 	algorithm RSASHA1
 	coverage 31536000
 	ksk_keysize None
@@ -48,6 +52,7 @@ policy default:
 
 zone policy example.com:
 	inherits extra
+	directory "keydir"
 	algorithm NSEC3RSASHA1
 	coverage 12960000
 	ksk_keysize 2048
@@ -64,6 +69,7 @@ zone policy example.com:
 
 constructed policy example.org:
 	inherits None
+	directory "keydir"
 	algorithm RSASHA1
 	coverage 31536000
 	ksk_keysize 2048
@@ -80,6 +86,7 @@ constructed policy example.org:
 
 constructed policy example.net:
 	inherits None
+	directory "keydir"
 	algorithm RSASHA1
 	coverage 31536000
 	ksk_keysize 2048
@@ -96,6 +103,7 @@ constructed policy example.net:
 
 algorithm policy RSASHA1:
 	inherits None
+	directory None
 	algorithm None
 	coverage None
 	ksk_keysize 2048
@@ -112,6 +120,7 @@ algorithm policy RSASHA1:
 
 algorithm policy DSA:
 	inherits None
+	directory None
 	algorithm DSA
 	coverage None
 	ksk_keysize 1024
@@ -128,6 +137,7 @@ algorithm policy DSA:
 
 policy extra:
 	inherits default
+	directory None
 	algorithm None
 	coverage 157680000
 	ksk_keysize None

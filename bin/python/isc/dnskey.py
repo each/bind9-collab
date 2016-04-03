@@ -159,7 +159,7 @@ class dnskey:
 
     @classmethod
     def generate(cls, keygen_bin, keys_dir, name, alg, keysize, sep,
-                 ttl=604800, publish=None, activate=None, **kwargs):
+                 ttl, publish=None, activate=None, **kwargs):
         quiet = kwargs.get('quiet', False)
 
         pub = act = a = b = ''

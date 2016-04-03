@@ -147,12 +147,13 @@ class keyseries:
         # If zones is provided as a parameter, use that list.
         # If not, use what we have in this object
         zones = kwargs.get('zones', self._zones)
-        keys_dir = kwargs.get('dir', self._context.get('keys_path', '.'))
+        keys_dir = kwargs.get('dir', self._context.get('keys_path', None))
         force = kwargs.get('force', False)
 
         for zone in zones:
             collections = []
             policy = policies.policy(zone)
+            keys_dir = keys_dir or policy.directory or '.'
             alg = policy.algorithm
             algnum = dnskey.algnum(alg)
             if 'ksk' not in kwargs or not kwargs['ksk']:
@@ -160,7 +161,7 @@ class keyseries:
                     k = dnskey.generate(self._context['keygen_path'],
                                         keys_dir, zone, alg,
                                         policy.zsk_keysize, False,
-                                        policy.keyttl,
+                                        policy.keyttl or 86400,
                                         **kwargs)
                     self._Z[zone][algnum].append(k)
                 collections.append(self._Z[zone])
@@ -170,7 +171,7 @@ class keyseries:
                     k = dnskey.generate(self._context['keygen_path'],
                                         keys_dir, zone, alg,
                                         policy.ksk_keysize, True,
-                                        policy.keyttl,
+                                        policy.keyttl or 86400,
                                         **kwargs)
                     self._K[zone][algnum].append(k)
                 collections.append(self._K[zone])

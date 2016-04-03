@@ -32,6 +32,7 @@ class PolicyLex:
                 'ALGORITHM_POLICY',
                 'ZONE',
                 'ALGORITHM',
+                'DIRECTORY',
                 'KEYTTL',
                 'KEY_SIZE',
                 'ROLL_PERIOD',
@@ -45,6 +46,7 @@ class PolicyLex:
                          'KEYTYPE',
                          'ALGNAME',
                          'STR',
+                         'QSTRING',
                          'NUMBER',
                          'LBRACE',
                          'RBRACE',
@@ -56,7 +58,7 @@ class PolicyLex:
 
     t_LBRACE           = r'\{'
     t_RBRACE           = r'\}'
-    t_SEMI             = r';'
+    t_SEMI             = r';';
 
     def t_newline(self, t):
         r'\n+'
@@ -84,6 +86,12 @@ class PolicyLex:
     def t_STR(self, t):
         r'[A-Za-z._-][\w._-]*'
         t.type = self.reserved_map.get(t.value, "STR")
+        return t
+
+    def t_QSTRING(self, t):
+        r'"([^"\n]|(\\"))*"'
+        t.type = self.reserved_map.get(t.value, "QSTRING")
+        t.value = t.value[1:-1]
         return t
 
     def t_NUMBER(self, t):
@@ -127,6 +135,7 @@ class Policy:
     zsk_standby = None
     keyttl = None
     coverage = None
+    directory = None
     valid_key_sz_per_algo = {'DSA': [512, 1024],
                              'NSEC3DSA': [512, 1024],
                              'RSAMD5': [512, 4096],
@@ -147,6 +156,7 @@ class Policy:
     def __repr__(self):
         return ("%spolicy %s:\n"
                 "\tinherits %s\n"
+                "\tdirectory %s\n"
                 "\talgorithm %s\n"
                 "\tcoverage %s\n"
                 "\tksk_keysize %s\n"
@@ -166,6 +176,7 @@ class Policy:
                   self.is_alg and 'algorithm ' or ''),
                  self.name or 'UNKNOWN',
                  self.parent and self.parent.name or 'None',
+                 self.directory and ('"' + str(self.directory) + '"') or 'None',
                  self.algorithm or 'None',
                  self.coverage and str(self.coverage) or 'None',
                  self.ksk_keysize and str(self.ksk_keysize) or 'None',
@@ -202,26 +213,32 @@ class Policy:
         if self.zsk_rollperiod > self.coverage:
             return False, "ZSK rollover period exceeds coverage"
 
-        if self.ksk_rollperiod > 0 and self.ksk_prepublish >= self.ksk_rollperiod:
+        if self.ksk_rollperiod > 0 and \
+           self.ksk_prepublish > self.ksk_rollperiod:
             print(self.ksk_rollperiod)
-            return False, "KSK pre publish period exceeds rollover period"
+            return False, "KSK pre-publish period exceeds rollover period"
 
-        if self.ksk_rollperiod > 0 and self.ksk_postpublish >= self.ksk_rollperiod:
-            return False, "KSK post publish period exceeds rollover period"
+        if self.ksk_rollperiod > 0 and \
+           self.ksk_postpublish > self.ksk_rollperiod:
+            return False, "KSK post-publish period exceeds rollover period"
 
-        if self.zsk_rollperiod > 0 and self.zsk_prepublish >= self.zsk_rollperiod:
-            return False, "ZSK pre publish period exceeds rollover period"
+        if self.zsk_rollperiod > 0 and \
+           self.zsk_prepublish >= self.zsk_rollperiod:
+            return False, "ZSK pre-publish period exceeds rollover period"
 
-        if self.zsk_rollperiod > 0 and self.zsk_postpublish >= self.zsk_rollperiod:
-            return False, "ZSK post publish period exceeds rollover period"
+        if self.zsk_rollperiod > 0 and \
+           self.zsk_postpublish >= self.zsk_rollperiod:
+            return False, "ZSK post-publish period exceeds rollover period"
 
-        if self.ksk_prepublish is not None and self.ksk_postpublish is not \
-                None and self.ksk_prepublish + self.ksk_postpublish >= self.ksk_rollperiod:
-            return False, "KSK pre+post publish periods exceed rollover period"
+        if self.ksk_prepublish is not None and \
+           self.ksk_postpublish is not None and \
+           self.ksk_prepublish + self.ksk_postpublish >= self.ksk_rollperiod:
+            return False, "KSK pre+post-publish periods exceed rollover period"
 
-        if self.zsk_prepublish is not None and self.zsk_postpublish is not \
-                None and self.zsk_prepublish + self.zsk_postpublish >= self.zsk_rollperiod:
-            return False, "ZSK pre+post publish periods exceed rollover period"
+        if self.zsk_prepublish is not None and \
+           self.zsk_postpublish is not None and \
+           self.zsk_prepublish + self.zsk_postpublish >= self.zsk_rollperiod:
+            return False, "ZSK pre+post-publish periods exceed rollover period"
 
         if self.algorithm is not None:
             # Validate the key size
@@ -229,17 +246,21 @@ class Policy:
             if key_sz_range is not None:
                 # Verify KSK
                 if not self.__verify_size(self.ksk_keysize, key_sz_range):
-                    return False, "KSK key size exceeds valid values %s" % key_sz_range
+                    return False, "KSK key size exceeds valid values %s" \
+                            % key_sz_range
 
                 # Verify ZSK
                 if not self.__verify_size(self.zsk_keysize, key_sz_range):
-                    return False, "ZSK key size exceeds valid values %s" % key_sz_range
+                    return False, "ZSK key size exceeds valid values %s" \
+                            % key_sz_range
 
             # Specific check for DSA keys
-            if self.algorithm in ['DSA', 'NSEC3DSA'] and self.ksk_keysize % 64 != 0:
+            if self.algorithm in ['DSA', 'NSEC3DSA'] and \
+               self.ksk_keysize % 64 != 0:
                 return False, "Key size not a divisible by 64"
 
-            if self.algorithm in ['DSA', 'NSEC3DSA'] and self.zsk_keysize % 64 != 0:
+            if self.algorithm in ['DSA', 'NSEC3DSA'] and \
+               self.zsk_keysize % 64 != 0:
                 return False, "Key size not a divisible by 64"
 
         return True, ""
@@ -272,6 +293,7 @@ class dnssec_policy:
 
         # set defaults
         self.setup('''policy default { algorithm rsasha256;
+                                       directory ".";
                                        keyttl 1h;
                                        key-size ksk 2048;
                                        key-size zsk 1024;
@@ -377,11 +399,17 @@ class dnssec_policy:
         else:
             raise PolicyException('algorithm not found')
 
+        if p.directory is None:
+            parent = p.parent or self.named_policy['default']
+            while parent is not None and not parent.directory:
+                parent = parent.parent
+            p.directory = parent and parent.directory
+
         if p.coverage is None:
             parent = p.parent or self.named_policy['default']
             while parent and not parent.coverage:
                 parent = parent.parent
-            p.coverage = parent.coverage or ap.coverage
+            p.coverage = parent and parent.coverage or ap.coverage
 
         if p.ksk_keysize is None:
             parent = p.parent or self.named_policy['default']
@@ -526,6 +554,7 @@ class dnssec_policy:
 
     def p_policy_option(self, p):
         '''policy_option : parent_option
+                         | directory_option
                          | coverage_option
                          | rollperiod_option
                          | prepublish_option
@@ -558,6 +587,10 @@ class dnssec_policy:
     def p_parent_option(self, p):
         "parent_option : POLICY name"
         self.current.parent = self.named_policy[p[2].lower()]
+
+    def p_directory_option(self, p):
+        "directory_option : DIRECTORY QSTRING"
+        self.current.directory = p[2]
 
     def p_coverage_option(self, p):
         "coverage_option : COVERAGE duration"

@@ -59,6 +59,13 @@ def prefix(bindir = ''):
     return os.path.join(win32api.GetSystemDirectory(), bindir)
 
 ############################################################################
+# print a fatal error and exit
+############################################################################
+def fatal(*args, **kwargs):
+    print(*args, **kwargs)
+    exit(1)
+
+############################################################################
 # output:
 ############################################################################
 _firstline = True
@@ -164,8 +171,9 @@ def parse_args():
     parser = argparse.ArgumentParser(description=prog + ': checks future ' +
                                      'DNSKEY coverage for a zone')
 
-    parser.add_argument('zone', type=str, nargs='?', default=None,
-                        help='zone to check')
+    parser.add_argument('zone', type=str, nargs='*', default=None,
+                        help='zone(s) to check' +
+                        '(default: all zones in the directory)')
     parser.add_argument('-K', dest='path', default='.', type=str,
                         help='a directory containing keys to process',
                         metavar='dir')
@@ -204,8 +212,7 @@ def parse_args():
     args = parser.parse_args()
 
     if args.no_zsk and args.no_ksk:
-        print("ERROR: -z and -k cannot be used together.");
-        exit(1)
+        fatal("ERROR: -z and -k cannot be used together.");
     elif args.no_zsk or args.no_ksk:
         args.keytype = "KSK" if args.no_zsk else "ZSK"
     else:
@@ -273,10 +280,10 @@ if __name__ == "__main__":
 
     print("PHASE 1--Loading keys to check for internal timing problems")
 
-    kd = keydict(args.path, zone=args.zone, keyttl=args.keyttl)
-    if not kd:
-        print("ERROR: No key events found in '%s'" % args.path)
-        exit(1)
+    try:
+        kd = keydict(path=args.path, zone=args.zone, keyttl=args.keyttl)
+    except Exception as e:
+        fatal('ERROR: Unable to build key dictionary: ' + str(e))
 
     for key in kd:
         key.check_prepub(output)
@@ -288,8 +295,17 @@ if __name__ == "__main__":
     output("PHASE 2--Scanning future key events for coverage failures")
     vreset()
 
-    elist = eventlist(kd)
-    if elist.coverage(args.zone, args.keytype, args.checklimit, output):
-        exit(0)
-    else:
-        exit(1)
+    try:
+        elist = eventlist(kd)
+    except Exception as e:
+        fatal('ERROR: Unable to build event list: ' + str(e))
+
+    errors = False
+    for zone in args.zone:
+        try:
+            if not elist.coverage(zone, args.keytype, args.checklimit, output):
+                errors = True
+        except:
+            output('Coverage check failed for zone ' + zone)
+
+    exit(1 if errors else 0)
