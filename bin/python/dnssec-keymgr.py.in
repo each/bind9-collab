@@ -34,33 +34,6 @@ d = sys.path.append(os.path.join('@prefix@', 'lib'))
 sys.path.insert(0, d)
 from isc import *
 
-# These routines permit platform-independent location of BIND 9 tools
-if os.name == 'nt':
-    import win32con
-    import win32api
-
-
-def prefix(bindir=''):
-    if os.name != 'nt':
-        return os.path.join('@prefix@', bindir)
-
-    bind_subkey = "Software\\ISC\\BIND"
-    h_key = None
-    key_found = True
-    try:
-        h_key = win32api.RegOpenKeyEx(win32con.HKEY_LOCAL_MACHINE, bind_subkey)
-    except:
-        key_found = False
-    if key_found:
-        try:
-            (namedBase, _) = win32api.RegQueryValueEx(h_key, "InstallDir")
-        except:
-            key_found = False
-        win32api.RegCloseKey(h_key)
-    if key_found:
-        return os.path.join(namedBase, bindir)
-    return os.path.join(win32api.GetSystemDirectory(), bindir)
-
 
 ############################################################################
 # print a fatal error and exit
