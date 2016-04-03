@@ -8,7 +8,7 @@ Notes gathered during the IETF95 Hackathon, which can work as a TODO list
     * Postpublish < rollover period
 * Generate new keys based on the policy used (of the right algorithm, with
   the right lifetime) (DONE)
-* Documentation on how to use
+* Documentation on how to use (DONE)
 
 * "Quiet" flag (silence dnssec-keygen and dnssec-settime commands as they
   are executed) (DONE)
