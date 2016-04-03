@@ -3,9 +3,9 @@ Notes gathered during the IETF95 Hackathon, which can work as a TODO list
 * PEP8. Ensure the code follows the recommendation of PEP8
 * Add suport for CDS sync
 * Add lots of test cases for key lifetime and simulated rollovers
-    * Sanity check on policies: Coverage > Rollover period
-    * Prepublish < rollover period
-    * Postpublish < rollover period
+    * Sanity check on policies: Coverage > Rollover period (DONE)
+    * Prepublish < rollover period (DONE)
+    * Postpublish < rollover period (DONE)
 * Generate new keys based on the policy used (of the right algorithm, with
   the right lifetime) (DONE)
 * Documentation on how to use
