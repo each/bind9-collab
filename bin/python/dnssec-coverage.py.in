@@ -31,32 +31,8 @@ if d: sys.path.insert(0, d)
 d = sys.path.append(os.path.join('@prefix@', 'lib'))
 sys.path.insert(0, d)
 from isc import *
+from isc.utils import prefix
 
-# These routines permit platform-independent location of BIND 9 tools
-if os.name == 'nt':
-    import win32con
-    import win32api
-
-def prefix(bindir = ''):
-    if os.name != 'nt':
-        return os.path.join('@prefix@', bindir)
-
-    bind_subkey = "Software\\ISC\\BIND"
-    hKey = None
-    keyFound = True
-    try:
-        hKey = win32api.RegOpenKeyEx(win32con.HKEY_LOCAL_MACHINE, bind_subkey)
-    except:
-        keyFound = False
-    if keyFound:
-        try:
-            (namedBase, _) = win32api.RegQueryValueEx(hKey, "InstallDir")
-        except:
-            keyFound = False
-        win32api.RegCloseKey(hKey)
-    if keyFound:
-        return os.path.join(namedBase, bindir)
-    return os.path.join(win32api.GetSystemDirectory(), bindir)
 
 ############################################################################
 # print a fatal error and exit
@@ -64,6 +40,7 @@ def prefix(bindir = ''):
 def fatal(*args, **kwargs):
     print(*args, **kwargs)
     exit(1)
+
 
 ############################################################################
 # output:
@@ -212,7 +189,7 @@ def parse_args():
     args = parser.parse_args()
 
     if args.no_zsk and args.no_ksk:
-        fatal("ERROR: -z and -k cannot be used together.");
+        fatal("ERROR: -z and -k cannot be used together.")
     elif args.no_zsk or args.no_ksk:
         args.keytype = "KSK" if args.no_zsk else "ZSK"
     else:
@@ -311,6 +288,6 @@ if __name__ == "__main__":
                                       args.checklimit, output):
                     errors = True
             except:
-                output('Coverage check failed for zone ' + zone)
+                output('ERROR: Coverage check failed for zone ' + zone)
 
     exit(1 if errors else 0)

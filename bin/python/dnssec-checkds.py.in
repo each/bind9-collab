@@ -16,56 +16,32 @@
 ############################################################################
 
 import argparse
-import pprint
 import os
+import sys
 
-prog='dnssec-checkds'
+d = os.path.dirname(sys.argv[0])
+if d: sys.path.insert(0, d)
+d = sys.path.append(os.path.join('@prefix@', 'lib'))
+sys.path.insert(0, d)
+from isc.utils import shellquote, prefix
 
-# These routines permit platform-independent location of BIND 9 tools
-if os.name == 'nt':
-    import win32con
-    import win32api
+prog = 'dnssec-checkds'
 
-def prefix(bindir = ''):
-    if os.name != 'nt':
-        return os.path.join('@prefix@', bindir)
-
-    bind_subkey = "Software\\ISC\\BIND"
-    hKey = None
-    keyFound = True
-    try:
-        hKey = win32api.RegOpenKeyEx(win32con.HKEY_LOCAL_MACHINE, bind_subkey)
-    except:
-        keyFound = False
-    if keyFound:
-        try:
-            (namedBase, _) = win32api.RegQueryValueEx(hKey, "InstallDir")
-        except:
-            keyFound = False
-        win32api.RegCloseKey(hKey)
-    if keyFound:
-        return os.path.join(namedBase, bindir)
-    return os.path.join(win32api.GetSystemDirectory(), bindir)
-
-def shellquote(s):
-    if os.name == 'nt':
-        return '"' + s.replace('"', '"\\"') + '"'
-    return "'" + s.replace("'", "'\\''") + "'"
 
 ############################################################################
 # DSRR class:
 # Delegation Signer (DS) resource record
 ############################################################################
 class DSRR:
-    hashalgs = {1: 'SHA-1', 2: 'SHA-256', 3: 'GOST', 4: 'SHA-384' }
-    rrname=''
-    rrclass='IN'
-    rrtype='DS'
-    keyid=None
-    keyalg=None
-    hashalg=None
-    digest=''
-    ttl=0
+    hashalgs = {1: 'SHA-1', 2: 'SHA-256', 3: 'GOST', 4: 'SHA-384'}
+    rrname = ''
+    rrclass = 'IN'
+    rrtype = 'DS'
+    keyid = None
+    keyalg = None
+    hashalg = None
+    digest = ''
+    ttl = 0
 
     def __init__(self, rrtext):
         if not rrtext:
@@ -77,7 +53,7 @@ class DSRR:
 
         self.rrname = fields[0].lower()
         fields = fields[1:]
-        if fields[0].upper() in ['IN','CH','HS']:
+        if fields[0].upper() in ['IN', 'CH', 'HS']:
             self.rrclass = fields[0].upper()
             fields = fields[1:]
         else:
@@ -96,28 +72,29 @@ class DSRR:
 
     def __repr__(self):
         return('%s %s %s %d %d %d %s' %
-                (self.rrname, self.rrclass, self.rrtype, self.keyid,
+               (self.rrname, self.rrclass, self.rrtype, self.keyid,
                 self.keyalg, self.hashalg, self.digest))
 
     def __eq__(self, other):
         return self.__repr__() == other.__repr__()
+
 
 ############################################################################
 # DLVRR class:
 # DNSSEC Lookaside Validation (DLV) resource record
 ############################################################################
 class DLVRR:
-    hashalgs = {1: 'SHA-1', 2: 'SHA-256', 3: 'GOST', 4: 'SHA-384' }
-    parent=''
-    dlvname=''
-    rrname='IN'
-    rrclass='IN'
-    rrtype='DLV'
-    keyid=None
-    keyalg=None
-    hashalg=None
-    digest=''
-    ttl=0
+    hashalgs = {1: 'SHA-1', 2: 'SHA-256', 3: 'GOST', 4: 'SHA-384'}
+    parent = ''
+    dlvname = ''
+    rrname = 'IN'
+    rrclass = 'IN'
+    rrtype = 'DLV'
+    keyid = None
+    keyalg = None
+    hashalg = None
+    digest = ''
+    ttl = 0
 
     def __init__(self, rrtext, dlvname):
         if not rrtext:
@@ -142,7 +119,7 @@ class DLVRR:
         self.rrname = self.parent + '.' + self.dlvname + '.'
         
         fields = fields[1:]
-        if fields[0].upper() in ['IN','CH','HS']:
+        if fields[0].upper() in ['IN', 'CH', 'HS']:
             self.rrclass = fields[0].upper()
             fields = fields[1:]
         else:
@@ -161,11 +138,12 @@ class DLVRR:
 
     def __repr__(self):
         return('%s %s %s %d %d %d %s' %
-                (self.rrname, self.rrclass, self.rrtype,
+               (self.rrname, self.rrclass, self.rrtype,
                 self.keyid, self.keyalg, self.hashalg, self.digest))
 
     def __eq__(self, other):
         return self.__repr__() == other.__repr__()
+
 
 ############################################################################
 # checkds:
@@ -174,16 +152,16 @@ class DLVRR:
 # Generate a set of expected DS records from the DNSKEY RRset,
 # and report on congruency.
 ############################################################################
-def checkds(zone, masterfile = None):
-    dslist=[]
-    fp=os.popen("%s +noall +answer -t ds -q %s" %
-                (shellquote(args.dig), shellquote(zone)))
+def checkds(zone, args, masterfile=None):
+    dslist = []
+    fp = os.popen("%s +noall +answer -t ds -q %s" %
+                  (shellquote(args.dig), shellquote(zone)))
     for line in fp:
         dslist.append(DSRR(line))
-    dslist = sorted(dslist, key=lambda ds: (ds.keyid, ds.keyalg, ds.hashalg))
+    dslist = sorted(dslist, key=lambda _ds: (ds.keyid, ds.keyalg, ds.hashalg))
     fp.close()
 
-    dsklist=[]
+    dsklist = []
 
     if masterfile:
         fp = os.popen("%s -f %s %s " %
@@ -199,7 +177,7 @@ def checkds(zone, masterfile = None):
 
     fp.close()
 
-    if (len(dsklist) < 1):
+    if len(dsklist) < 1:
         print ("No DNSKEY records found in zone apex")
         return False
 
@@ -220,6 +198,7 @@ def checkds(zone, masterfile = None):
 
     return found
 
+
 ############################################################################
 # checkdlv:
 # Fetch DLV RRset for the given zone from the DNS; fetch DNSKEY
@@ -227,20 +206,20 @@ def checkds(zone, masterfile = None):
 # Generate a set of expected DLV records from the DNSKEY RRset,
 # and report on congruency.
 ############################################################################
-def checkdlv(zone, lookaside, masterfile = None):
-    dlvlist=[]
-    fp=os.popen("%s +noall +answer -t dlv -q %s" %
-                (shellquote(args.dig), shellquote(zone + '.' + lookaside)))
+def checkdlv(zone, lookaside, args, masterfile=None):
+    dlvlist = []
+    fp = os.popen("%s +noall +answer -t dlv -q %s" %
+                  (shellquote(args.dig), shellquote(zone + '.' + lookaside)))
     for line in fp:
         dlvlist.append(DLVRR(line, lookaside))
     dlvlist = sorted(dlvlist,
-                     key=lambda dlv: (dlv.keyid, dlv.keyalg, dlv.hashalg))
+                     key=lambda _dlv: (dlv.keyid, dlv.keyalg, dlv.hashalg))
     fp.close()
 
     #
     # Fetch DNSKEY records from DNS and generate DLV records from them
     #
-    dlvklist=[]
+    dlvklist = []
     if masterfile:
         fp = os.popen("%s -f %s -l %s %s " %
                       (args.dsfromkey, masterfile, lookaside, zone))
@@ -255,7 +234,7 @@ def checkdlv(zone, lookaside, masterfile = None):
 
     fp.close()
 
-    if (len(dlvklist) < 1):
+    if len(dlvklist) < 1:
         print ("No DNSKEY records found in zone apex")
         return False
 
@@ -282,14 +261,10 @@ def checkdlv(zone, lookaside, masterfile = None):
 # Read command line arguments, set global 'args' structure
 ############################################################################
 def parse_args():
-    global args
     parser = argparse.ArgumentParser(description=prog + ': checks DS coverage')
 
     bindir = 'bin'
-    if os.name == 'nt':
-        sbindir = 'bin'
-    else:
-        sbindir = 'sbin'
+    sbindir = 'bin' if os.name == 'nt' else 'sbin'
 
     parser.add_argument('zone', type=str, help='zone to check')
     parser.add_argument('-f', '--file', dest='masterfile', type=str,
@@ -309,18 +284,21 @@ def parse_args():
 
     args.zone = args.zone.strip('.')
     if args.lookaside:
-        lookaside = args.lookaside.strip('.')
+        args.lookaside = args.lookaside.strip('.')
+
+    return args
+
 
 ############################################################################
 # Main
 ############################################################################
 def main():
-    parse_args()
+    args = parse_args()
 
     if args.lookaside:
-        found = checkdlv(args.zone, args.lookaside, args.masterfile)
+        found = checkdlv(args.zone, args.lookaside, args, args.masterfile)
     else:
-        found = checkds(args.zone, args.masterfile)
+        found = checkds(args.zone, args, args.masterfile)
 
     exit(0 if found else 1)
 

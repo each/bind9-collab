@@ -34,31 +34,6 @@ d = sys.path.append(os.path.join('@prefix@', 'lib'))
 sys.path.insert(0, d)
 from isc import *
 
-# These routines permit platform-independent location of BIND 9 tools
-if os.name == 'nt':
-    import win32con
-    import win32api
-
-def prefix(bindir = ''):
-    if os.name != 'nt':
-        return os.path.join('@prefix@', bindir)
-
-    bind_subkey = "Software\\ISC\\BIND"
-    hKey = None
-    keyFound = True
-    try:
-        hKey = win32api.RegOpenKeyEx(win32con.HKEY_LOCAL_MACHINE, bind_subkey)
-    except:
-        keyFound = False
-    if keyFound:
-        try:
-            (namedBase, _) = win32api.RegQueryValueEx(hKey, "InstallDir")
-        except:
-            keyFound = False
-        win32api.RegCloseKey(hKey)
-    if keyFound:
-        return os.path.join(namedBase, bindir)
-    return os.path.join(win32api.GetSystemDirectory(), bindir)
 
 ############################################################################
 # print a fatal error and exit
@@ -66,6 +41,7 @@ def prefix(bindir = ''):
 def fatal(*args, **kwargs):
     print(*args, **kwargs)
     exit(1)
+
 
 ############################################################################
 # the output() function prints the specified content, but
@@ -89,10 +65,12 @@ def output(*args, **kwargs):
     if args:
         print(*args, **kwargs)
 
+
 def vreset():
     """reset vertical spacing"""
     global _firstline
     _firstline = True
+
 
 ############################################################################
 # argument parsing functions
@@ -133,10 +111,15 @@ def parse_time(s):
     else:
         raise Exception("Invalid suffix %s" % unit)
 
+
 def set_path(command, default=None):
-    """find the location of a specified command.  if a default is supplied
-    and it works, we use it; otherwise we search PATH for a match.  If
-    not found, error and exit"""
+    """ find the location of a specified command. If a default is supplied,
+    exists and it's an executable, we use it; otherwise we search PATH
+    for an alternative.
+    :param command: command to look for
+    :param default: default value to use
+    :return: PATH with the location of a suitable binary
+    """
     fpath = default
     if not fpath or not os.path.isfile(fpath) or not os.access(fpath, os.X_OK):
         path = os.environ["PATH"]
@@ -149,6 +132,7 @@ def set_path(command, default=None):
             fpath = None
 
     return fpath
+
 
 def parse_args():
     """ Read command line arguments, returns 'args' object
