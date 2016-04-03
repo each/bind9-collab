@@ -301,11 +301,16 @@ if __name__ == "__main__":
         fatal('ERROR: Unable to build event list: ' + str(e))
 
     errors = False
-    for zone in args.zone:
-        try:
-            if not elist.coverage(zone, args.keytype, args.checklimit, output):
-                errors = True
-        except:
-            output('Coverage check failed for zone ' + zone)
+    if not args.zone:
+        if not elist.coverage(None, args.keytype, args.checklimit, output):
+            errors = True
+    else:
+        for zone in args.zone:
+            try:
+                if not elist.coverage(zone, args.keytype,
+                                      args.checklimit, output):
+                    errors = True
+            except:
+                output('Coverage check failed for zone ' + zone)
 
     exit(1 if errors else 0)
