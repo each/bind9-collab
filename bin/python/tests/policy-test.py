@@ -6,7 +6,6 @@ from isc import *
 pp = policy.dnssec_policy()
 # print the unmodified default and a generated zone policy
 print pp.named_policy['default']
-print pp.named_policy['default'].validate()
 print pp.named_policy['global']
 print pp.policy('example.com')
 

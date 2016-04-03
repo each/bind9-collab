@@ -208,10 +208,10 @@ def parse_args():
 
     # if a policy file was specified, check that it exists.
     # if not, use the default file, unless it doesn't exist
-    try:
+    if args.policyfile is not None:
         if not os.path.exists(args.policyfile):
-            fatal('ERROR: Policy file %s not found' % args.policyfile)
-    except:
+            fatal('ERROR: Policy file "%s" not found' % args.policyfile)
+    else:
         args.policyfile = os.path.join('@expanded_sysconfdir@', 'policy.conf')
         if not os.path.exists(args.policyfile):
             args.policyfile = None

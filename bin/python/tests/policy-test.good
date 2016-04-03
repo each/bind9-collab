@@ -1,4 +1,21 @@
 policy default:
+	inherits global
+	directory None
+	algorithm None
+	coverage None
+	ksk_keysize None
+	zsk_keysize None
+	ksk_rollperiod None
+	zsk_rollperiod None
+	ksk_prepublish None
+	ksk_postpublish None
+	zsk_prepublish None
+	zsk_postpublish None
+	ksk_standby None
+	zsk_standby None
+	keyttl None
+
+policy global:
 	inherits None
 	directory "."
 	algorithm RSASHA256
@@ -15,9 +32,8 @@ policy default:
 	zsk_standby None
 	keyttl 3600
 
-(True, '')
 constructed policy example.com:
-	inherits None
+	inherits global
 	directory "."
 	algorithm RSASHA256
 	coverage 31536000
@@ -31,7 +47,7 @@ constructed policy example.com:
 	zsk_postpublish 2592000
 	ksk_standby None
 	zsk_standby None
-	keyttl 3600
+	keyttl None
 
 policy default:
 	inherits None

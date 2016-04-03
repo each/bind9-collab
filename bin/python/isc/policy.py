@@ -192,10 +192,7 @@ class Policy:
                  self.keyttl and str(self.keyttl) or 'None'))
 
     def __verify_size(self, key_size, size_range):
-        if size_range[0] <= key_size <= size_range[1]:
-            return True
-        else:
-            return False
+        return (size_range[0] <= key_size <= size_range[1])
 
     def get_name(self):
         return self.name
@@ -207,38 +204,56 @@ class Policy:
         """ Check if the values in the policy make sense
         :return: True/False if the policy passes validation
         """
-        if self.ksk_rollperiod > self.coverage:
-            return False, "KSK rollover period exceeds coverage"
-
-        if self.zsk_rollperiod > self.coverage:
-            return False, "ZSK rollover period exceeds coverage"
-
-        if self.ksk_rollperiod > 0 and \
+        if self.ksk_rollperiod and \
+           self.ksk_prepublish is not None and \
            self.ksk_prepublish > self.ksk_rollperiod:
             print(self.ksk_rollperiod)
-            return False, "KSK pre-publish period exceeds rollover period"
+            return (False,
+                    ('KSK pre-publish period (%d) exceeds rollover period %d'
+                     % (self.ksk_prepublish, self.ksk_rollperiod)))
 
-        if self.ksk_rollperiod > 0 and \
+        if self.ksk_rollperiod and \
+           self.ksk_postpublish is not None and \
            self.ksk_postpublish > self.ksk_rollperiod:
-            return False, "KSK post-publish period exceeds rollover period"
+            return (False,
+                    ('KSK post-publish period (%d) exceeds rollover period %d'
+                     % (self.ksk_postpublish, self.ksk_rollperiod)))
 
-        if self.zsk_rollperiod > 0 and \
+        if self.zsk_rollperiod and \
+           self.zsk_prepublish is not None and \
            self.zsk_prepublish >= self.zsk_rollperiod:
-            return False, "ZSK pre-publish period exceeds rollover period"
+            return (False,
+                    ('ZSK pre-publish period (%d) exceeds rollover period %d'
+                     % (self.zsk_prepublish, self.zsk_rollperiod)))
 
-        if self.zsk_rollperiod > 0 and \
+        if self.zsk_rollperiod and \
+           self.zsk_postpublish is not None and \
            self.zsk_postpublish >= self.zsk_rollperiod:
-            return False, "ZSK post-publish period exceeds rollover period"
+            return (False,
+                    ('ZSK post-publish period (%d) exceeds rollover period %d'
+                     % (self.zsk_postpublish, self.zsk_rollperiod)))
 
-        if self.ksk_prepublish is not None and \
+        if self.ksk_rollperiod and \
+           self.ksk_prepublish is not None and \
            self.ksk_postpublish is not None and \
            self.ksk_prepublish + self.ksk_postpublish >= self.ksk_rollperiod:
-            return False, "KSK pre+post-publish periods exceed rollover period"
+            return (False,
+                    ('KSK pre/post-publish periods (%d/%d) combined exceed ' +
+                     'rollover period %d'
+                     % (self.ksk_prepublish,
+                        self.ksk_postpublish,
+                        self.ksk_rollperiod)))
 
-        if self.zsk_prepublish is not None and \
+        if self.zsk_rollperiod and \
+           self.zsk_prepublish is not None and \
            self.zsk_postpublish is not None and \
            self.zsk_prepublish + self.zsk_postpublish >= self.zsk_rollperiod:
-            return False, "ZSK pre+post-publish periods exceed rollover period"
+            return (False,
+                    ('ZSK pre/post-publish periods (%d/%d) combined exceed ' +
+                     'rollover period %d'
+                     % (self.zsk_prepublish,
+                        self.zsk_postpublish,
+                        self.zsk_rollperiod)))
 
         if self.algorithm is not None:
             # Validate the key size
@@ -246,24 +261,28 @@ class Policy:
             if key_sz_range is not None:
                 # Verify KSK
                 if not self.__verify_size(self.ksk_keysize, key_sz_range):
-                    return False, "KSK key size exceeds valid values %s" \
-                            % key_sz_range
+                    return False, 'KSK key size %d outside valid range %s' \
+                            % (self.ksk_keysize, key_sz_range)
 
                 # Verify ZSK
                 if not self.__verify_size(self.zsk_keysize, key_sz_range):
-                    return False, "ZSK key size exceeds valid values %s" \
-                            % key_sz_range
+                    return False, 'ZSK key size %d outside valid range %s' \
+                            % (self.zsk_keysize, key_sz_range)
 
             # Specific check for DSA keys
             if self.algorithm in ['DSA', 'NSEC3DSA'] and \
                self.ksk_keysize % 64 != 0:
-                return False, "Key size not a divisible by 64"
+                return (False,
+                        ('KSK key size %d not divisible by 64 ' +
+                         'as required for DSA' % self.ksk_keysize))
 
             if self.algorithm in ['DSA', 'NSEC3DSA'] and \
                self.zsk_keysize % 64 != 0:
-                return False, "Key size not a divisible by 64"
+                return (False,
+                        ('ZSK key size %d not divisible by 64 ' +
+                         'as required for DSA' % self.zsk_keysize))
 
-        return True, ""
+        return True, ''
 
 ############################################################################
 # dnssec_policy:
@@ -465,6 +484,11 @@ class dnssec_policy:
                 parent = parent.parent
             p.zsk_postpublish = parent and \
                 parent.zsk_postpublish or ap.zsk_postpublish
+
+        (valid, msg) = p.validate()
+        if not valid:
+            raise PolicyException(msg)
+            return None
 
         return p
 
