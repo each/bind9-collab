@@ -31,6 +31,7 @@ if d: sys.path.insert(0, d)
 d = sys.path.append(os.path.join('@prefix@', 'lib'))
 sys.path.insert(0, d)
 from isc import *
+from isc.utils import prefix
 
 
 ############################################################################
@@ -39,6 +40,7 @@ from isc import *
 def fatal(*args, **kwargs):
     print(*args, **kwargs)
     exit(1)
+
 
 ############################################################################
 # output:
@@ -187,7 +189,7 @@ def parse_args():
     args = parser.parse_args()
 
     if args.no_zsk and args.no_ksk:
-        fatal("ERROR: -z and -k cannot be used together.");
+        fatal("ERROR: -z and -k cannot be used together.")
     elif args.no_zsk or args.no_ksk:
         args.keytype = "KSK" if args.no_zsk else "ZSK"
     else:
@@ -281,6 +283,6 @@ if __name__ == "__main__":
             if not elist.coverage(zone, args.keytype, args.checklimit, output):
                 errors = True
         except:
-            output('Coverage check failed for zone ' + zone)
+            output('ERROR: Coverage check failed for zone ' + zone)
 
     exit(1 if errors else 0)
