@@ -17,3 +17,4 @@
 rm -f */K*.key
 rm -f */K*.private
 rm -f coverage.* keymgr.*
+rm -f policy.out

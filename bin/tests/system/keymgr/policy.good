@@ -23,7 +23,7 @@ policy global:
 	ksk_keysize 2048
 	zsk_keysize 1024
 	ksk_rollperiod None
-	zsk_rollperiod 23328000
+	zsk_rollperiod 31536000
 	ksk_prepublish 2592000
 	ksk_postpublish 2592000
 	zsk_prepublish 2592000
@@ -40,7 +40,7 @@ constructed policy example.com:
 	ksk_keysize 2048
 	zsk_keysize 1024
 	ksk_rollperiod None
-	zsk_rollperiod 23328000
+	zsk_rollperiod 31536000
 	ksk_prepublish 2592000
 	ksk_postpublish 2592000
 	zsk_prepublish 2592000

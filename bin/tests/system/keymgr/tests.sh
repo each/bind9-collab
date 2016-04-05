@@ -30,11 +30,19 @@ matchall () {
     done
 }
 
+echo "I:checking policy.conf parser ($n)"
+ret=0
+${PYTHON} testpolicy.py policy.sample > policy.out
+cmp -s policy.good policy.out || ret=1
+if [ $ret != 0 ]; then echo "I:failed"; fi
+status=`expr $status + $ret`
+n=`expr $n + 1`
+
 echo "I:checking for DNSSEC key coverage issues"
 ret=0
 for dir in [0-9][0-9]-*; do
         ret=0
-        echo "I:$dir"
+        echo "I:$dir ($n)"
         kargs= cargs= kmatch= cmatch= kret= cret=0 warn= error= ok=
         . $dir/expect
 
