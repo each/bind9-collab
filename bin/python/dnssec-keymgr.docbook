@@ -110,102 +110,102 @@
   <refsection><info><title>OPTIONS</title></info>
     <variablelist>
       <varlistentry>
-        <term>-K <replaceable class="parameter">directory</replaceable></term>
-        <listitem>
-          <para>
-            Sets the directory in which keys can be found.  Defaults to the
-            current working directory.
-          </para>
-        </listitem>
+	<term>-K <replaceable class="parameter">directory</replaceable></term>
+	<listitem>
+	  <para>
+	    Sets the directory in which keys can be found.  Defaults to the
+	    current working directory.
+	  </para>
+	</listitem>
       </varlistentry>
 
       <varlistentry>
-        <term>-c <replaceable class="parameter">file</replaceable></term>
-        <listitem>
-          <para>
-            If <option>-c</option> is specified, then the DNSSEC
-            policy is read from <option>file</option>.  (If not
-            specified, then the policy is read from
-            <filename>/etc/policy.conf</filename>; if that file
-            doesn't exist, a built-in global default policy is used.)
-          </para>
-        </listitem>
+	<term>-c <replaceable class="parameter">file</replaceable></term>
+	<listitem>
+	  <para>
+	    If <option>-c</option> is specified, then the DNSSEC
+	    policy is read from <option>file</option>.  (If not
+	    specified, then the policy is read from
+	    <filename>/etc/policy.conf</filename>; if that file
+	    doesn't exist, a built-in global default policy is used.)
+	  </para>
+	</listitem>
       </varlistentry>
 
       <varlistentry>
-        <term>-d <replaceable class="parameter">file</replaceable></term>
-        <listitem>
-          <para>
-            The TTL value to use for newly generated DNSKEYs, if there
-            are no existing DNSKEYs. This overrides the
-            <command>keyttl</command> option defined in the DNSSEC
-            policy.
-          </para>
-        </listitem>
+	<term>-d <replaceable class="parameter">file</replaceable></term>
+	<listitem>
+	  <para>
+	    The TTL value to use for newly generated DNSKEYs, if there
+	    are no existing DNSKEYs. This overrides the
+	    <command>keyttl</command> option defined in the DNSSEC
+	    policy.
+	  </para>
+	</listitem>
       </varlistentry>
 
       <varlistentry>
-        <term>-f</term>
-        <listitem>
-          <para>
-            Force: allow updating of key events even if they are
-            already in the past. This is not recommended for use with
-            zones in which keys have already been published. However,
-            if a set of keys has been generated all of which have
-            publication and activation dates in the past, but the
-            keys have not been published in a zone as yet, then this
-            option can be used to clean them up and turn them into a
-            proper series of keys with appropriate rollover intervals.
-          </para>
-        </listitem>
+	<term>-f</term>
+	<listitem>
+	  <para>
+	    Force: allow updating of key events even if they are
+	    already in the past. This is not recommended for use with
+	    zones in which keys have already been published. However,
+	    if a set of keys has been generated all of which have
+	    publication and activation dates in the past, but the
+	    keys have not been published in a zone as yet, then this
+	    option can be used to clean them up and turn them into a
+	    proper series of keys with appropriate rollover intervals.
+	  </para>
+	</listitem>
       </varlistentry>
 
       <varlistentry>
-        <term>-q</term>
-        <listitem>
-          <para>
-            Quiet: suppress printing of <command>dnssec-keygen</command>
-            and <command>dnssec-settime</command>.
-          </para>
-        </listitem>
+	<term>-q</term>
+	<listitem>
+	  <para>
+	    Quiet: suppress printing of <command>dnssec-keygen</command>
+	    and <command>dnssec-settime</command>.
+	  </para>
+	</listitem>
       </varlistentry>
 
       <varlistentry>
-        <term>-k</term>
-        <listitem>
-          <para>
-            Only apply policies to KSK keys.
-          </para>
-        </listitem>
+	<term>-k</term>
+	<listitem>
+	  <para>
+	    Only apply policies to KSK keys.
+	  </para>
+	</listitem>
       </varlistentry>
 
       <varlistentry>
-        <term>-z</term>
-        <listitem>
-          <para>
-            Only apply policies to ZSK keys.
-          </para>
-        </listitem>
+	<term>-z</term>
+	<listitem>
+	  <para>
+	    Only apply policies to ZSK keys.
+	  </para>
+	</listitem>
       </varlistentry>
 
       <varlistentry>
-        <term>-g <replaceable class="parameter">keygen path</replaceable></term>
-        <listitem>
-          <para>
-            Specifies a path to a <command>dnssec-keygen</command> binary.
-            Used for testing.
-          </para>
-        </listitem>
+	<term>-g <replaceable class="parameter">keygen path</replaceable></term>
+	<listitem>
+	  <para>
+	    Specifies a path to a <command>dnssec-keygen</command> binary.
+	    Used for testing.
+	  </para>
+	</listitem>
       </varlistentry>
 
       <varlistentry>
-        <term>-s <replaceable class="parameter">settime path</replaceable></term>
-        <listitem>
-          <para>
-            Specifies a path to a <command>dnssec-settime</command> binary.
-            Used for testing.
-          </para>
-        </listitem>
+	<term>-s <replaceable class="parameter">settime path</replaceable></term>
+	<listitem>
+	  <para>
+	    Specifies a path to a <command>dnssec-settime</command> binary.
+	    Used for testing.
+	  </para>
+	</listitem>
       </varlistentry>
     </variablelist>
   </refsection>
@@ -218,28 +218,28 @@
     </para>
     <itemizedlist>
       <listitem>
-        <emphasis>Policy classes</emphasis>
-        (<option>policy <replaceable>name</replaceable> { ... };</option>)
-        can be inherited by zone policies or other policy classes; these
-        can be used to create sets of different security profiles. For
-        example, a policy class <userinput>normal</userinput> might specify
-        1024-bit key sizes, but a class <userinput>extra</userinput> might
-        specify 2048 bits instead; <userinput>extra</userinput> would be
-        used for zones that had unusually high security needs.
+	<emphasis>Policy classes</emphasis>
+	(<option>policy <replaceable>name</replaceable> { ... };</option>)
+	can be inherited by zone policies or other policy classes; these
+	can be used to create sets of different security profiles. For
+	example, a policy class <userinput>normal</userinput> might specify
+	1024-bit key sizes, but a class <userinput>extra</userinput> might
+	specify 2048 bits instead; <userinput>extra</userinput> would be
+	used for zones that had unusually high security needs.
       </listitem>
       <listitem>
-        Algorithm policies:
-        (<option>algorithm-policy <replaceable>algorithm</replaceable> { ... };</option> )
-        override default per-algorithm settings.  For example, by default,
-        RSASHA256 keys use 2048-bit key sizes for both KSK and ZSK. This
-        can be modified using <command>algorithm-policy</command>, and the
-        new key sizes would then be used for any key of type RSASHA256.
+	Algorithm policies:
+	(<option>algorithm-policy <replaceable>algorithm</replaceable> { ... };</option> )
+	override default per-algorithm settings.  For example, by default,
+	RSASHA256 keys use 2048-bit key sizes for both KSK and ZSK. This
+	can be modified using <command>algorithm-policy</command>, and the
+	new key sizes would then be used for any key of type RSASHA256.
       </listitem>
       <listitem>
-        Zone policies:
-        (<option>zone <replaceable>name</replaceable> { ... };</option> )
-        set policy for a single zone by name. A zone policy can inherit
-        a policy class by including a <option>policy</option> option.
+	Zone policies:
+	(<option>zone <replaceable>name</replaceable> { ... };</option> )
+	set policy for a single zone by name. A zone policy can inherit
+	a policy class by including a <option>policy</option> option.
       </listitem>
     </itemizedlist>
     <para>
@@ -247,74 +247,74 @@
     </para>
     <variablelist>
       <varlistentry>
-        <term><command>directory</command></term>
-        <listitem>
-          Specifies the directory in which keys should be stored.
-        </listitem>
+	<term><command>directory</command></term>
+	<listitem>
+	  Specifies the directory in which keys should be stored.
+	</listitem>
       </varlistentry>
       <varlistentry>
-        <term><command>algorithm</command></term>
-        <listitem>
-          The key algorithm.
-        </listitem>
+	<term><command>algorithm</command></term>
+	<listitem>
+	  The key algorithm.
+	</listitem>
       </varlistentry>
       <varlistentry>
-        <term><command>keyttl</command></term>
-        <listitem>
-          The key TTL.
-        </listitem>
+	<term><command>keyttl</command></term>
+	<listitem>
+	  The key TTL.
+	</listitem>
       </varlistentry>
       <varlistentry>
-        <term><command>coverage</command></term>
-        <listitem>
-          The length of time to ensure the keys will be correct. This
-          can be represented as a number of seconds, or as a duration using
-          human-readable units (examples: "1y" or "6 months").
-          A default value for this option can be set in algorithm policies
-          as well as in policy classes or zone policies.
-        </listitem>
+	<term><command>coverage</command></term>
+	<listitem>
+	  The length of time to ensure the keys will be correct. This
+	  can be represented as a number of seconds, or as a duration using
+	  human-readable units (examples: "1y" or "6 months").
+	  A default value for this option can be set in algorithm policies
+	  as well as in policy classes or zone policies.
+	</listitem>
       </varlistentry>
       <varlistentry>
-        <term><command>key-size</command></term>
-        <listitem>
-          Specifies the number of bits to use in creating keys.
-          Takes two arguments: keytype (eihter "zsk" or "ksk") and size. 
-          A default value for this option can be set in algorithm policies
-          as well as in policy classes or zone policies.
-        </listitem>
+	<term><command>key-size</command></term>
+	<listitem>
+	  Specifies the number of bits to use in creating keys.
+	  Takes two arguments: keytype (eihter "zsk" or "ksk") and size. 
+	  A default value for this option can be set in algorithm policies
+	  as well as in policy classes or zone policies.
+	</listitem>
       </varlistentry>
       <varlistentry>
-        <term><command>roll-period</command></term>
-        <listitem>
-          How frequently keys should be rolled over.
-          Takes two arguments: keytype (eihter "zsk" or "ksk") and a duration. 
-          A default value for this option can be set in algorithm policies
-          as well as in policy classes or zone policies.
-        </listitem>
+	<term><command>roll-period</command></term>
+	<listitem>
+	  How frequently keys should be rolled over.
+	  Takes two arguments: keytype (eihter "zsk" or "ksk") and a duration. 
+	  A default value for this option can be set in algorithm policies
+	  as well as in policy classes or zone policies.
+	</listitem>
       </varlistentry>
       <varlistentry>
-        <term><command>pre-publish</command></term>
-        <listitem>
-          How long before activation a key should be published.
-          Takes two arguments: keytype (eihter "zsk" or "ksk") and a duration. 
-          A default value for this option can be set in algorithm policies
-          as well as in policy classes or zone policies.
-        </listitem>
+	<term><command>pre-publish</command></term>
+	<listitem>
+	  How long before activation a key should be published.
+	  Takes two arguments: keytype (eihter "zsk" or "ksk") and a duration. 
+	  A default value for this option can be set in algorithm policies
+	  as well as in policy classes or zone policies.
+	</listitem>
       </varlistentry>
       <varlistentry>
-        <term><command>post-publish</command></term>
-        <listitem>
-          How long after inactivation a key should be deleted from the zone.
-          Takes two arguments: keytype (eihter "zsk" or "ksk") and a duration. 
-          A default value for this option can be set in algorithm policies
-          as well as in policy classes or zone policies.
-        </listitem>
+	<term><command>post-publish</command></term>
+	<listitem>
+	  How long after inactivation a key should be deleted from the zone.
+	  Takes two arguments: keytype (eihter "zsk" or "ksk") and a duration. 
+	  A default value for this option can be set in algorithm policies
+	  as well as in policy classes or zone policies.
+	</listitem>
       </varlistentry>
       <varlistentry>
-        <term><command>standby</command></term>
-        <listitem>
-          Not yet implemented.
-        </listitem>
+	<term><command>standby</command></term>
+	<listitem>
+	  Not yet implemented.
+	</listitem>
       </varlistentry>
     </variablelist>
   </refsection>
@@ -337,19 +337,18 @@
   </refsection>
 
   <refsection><info><title>SEE ALSO</title></info>
-    
     <para>
       <citerefentry>
-        <refentrytitle>dnssec-coverage</refentrytitle><manvolnum>8</manvolnum>
+	<refentrytitle>dnssec-coverage</refentrytitle><manvolnum>8</manvolnum>
       </citerefentry>,
       <citerefentry>
-        <refentrytitle>dnssec-keygen</refentrytitle><manvolnum>8</manvolnum>
+	<refentrytitle>dnssec-keygen</refentrytitle><manvolnum>8</manvolnum>
       </citerefentry>,
       <citerefentry>
-        <refentrytitle>dnssec-settime</refentrytitle><manvolnum>8</manvolnum>
+	<refentrytitle>dnssec-settime</refentrytitle><manvolnum>8</manvolnum>
       </citerefentry>,
       <citerefentry>
-        <refentrytitle>dnssec-checkds</refentrytitle><manvolnum>8</manvolnum>
+	<refentrytitle>dnssec-checkds</refentrytitle><manvolnum>8</manvolnum>
       </citerefentry>
     </para>
   </refsection>
