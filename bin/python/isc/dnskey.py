@@ -102,6 +102,7 @@ class dnskey:
         self._times = dict()
         self._fmttime = dict()
         self._timestamps = dict()
+        self._original = dict()
 
         for line in pfp:
             line = line.strip()
@@ -120,10 +121,12 @@ class dnskey:
                 self._times[prop] = t
                 self._fmttime[prop] = self.formattime(t)
                 self._timestamps[prop] = self.epochfromtime(t)
+                self._original[prop] = self._timestamps[prop]
             else:
                 self._times[prop] = None
                 self._fmttime[prop] = None
                 self._timestamps[prop] = None
+                self._original[prop] = None
 
         pfp.close()
 
@@ -147,15 +150,18 @@ class dnskey:
             fullcmd = ("%s -K %s -L %d %s %s" %
                        (settime_bin, self._dir, self.ttl, cmd, self.keystr))
             if not quiet:
-                print(fullcmd)
+                print('# ' + fullcmd)
             try:
                 p = Popen(shlex.split(fullcmd), stdout=PIPE, stderr=PIPE)
                 stdout, stderr = p.communicate()
+                if stderr:
+                    raise Exception(str(stderr))
             except Exception as e:
                 raise Exception('unable to run %s: %s' %
                                 (settime_bin, str(e)))
-            if stderr:
-                raise Exception(stderr)
+            for prop in dnskey._PROPS:
+                self._original[prop] = self._timestamps[prop]
+                self._changed[prop] = False
 
     @classmethod
     def generate(cls, keygen_bin, keys_dir, name, alg, keysize, sep,
@@ -180,13 +186,12 @@ class dnskey:
                      (keygen_bin, flagopt, keys_dir, ttl, a, b, pub, act, name)
 
         if not quiet:
-            print(keygen_cmd)
+            print('# ' + keygen_cmd)
 
         p = Popen(shlex.split(keygen_cmd), stdout=PIPE, stderr=PIPE)
         stdout, stderr = p.communicate()
-
         if stderr:
-            raise Exception('unable to generate key: ' + str(e))
+            raise Exception('unable to generate key: ' + str(stderr))
 
         try:
             keystr = stdout.split('\n')[0]
@@ -204,10 +209,10 @@ class dnskey:
         keygen_cmd = "%s -q -K %s -S %s" % (keygen_bin, self._dir, self.keystr)
 
         if not quiet:
-            print(keygen_cmd)
+            print('# ' + keygen_cmd)
 
         p = Popen(shlex.split(keygen_cmd), stdout=PIPE, stderr=PIPE)
-
+        stdout, stderr = p.communicate()
         if stderr:
             raise Exception('unable to generate key: ' + str(e))
 
@@ -256,20 +261,24 @@ class dnskey:
 
     def setmeta(self, prop, secs, now, **kwargs):
         force = kwargs.get('force', False)
-        if not secs:
-            if not self._timestamps[prop]:
+        if secs is None:
+            if self._timestamps[prop] is not None and \
+               self._timestamps[prop] < now and not force:
+                raise TimePast(self, prop, self._timestamps[prop])
+
+            if self._timestamps[prop] == secs:
                 return
+
+            if self._changed[prop] and self._original[prop] is None:
+                self._changed[prop] = False
+            elif self._timestamps[prop] is not None:
+                self._changed[prop] = True
+                self._original[prop] = self._timestamps[prop]
+
             self._delete[prop] = True
             self._timestamps[prop] = None
             self._times[prop] = None
             self._fmttime[prop] = None
-            self._changed[prop] = True
-            return
-
-        if self._timestamps[prop] and \
-           self._timestamps[prop] < now and not force:
-            raise TimePast(self, prop, self._timestamps[prop])
-        elif self._timestamps[prop] == secs:
             return
 
         t = self.timefromepoch(secs)
@@ -277,6 +286,9 @@ class dnskey:
         self._times[prop] = t
         self._fmttime[prop] = self.formattime(t)
         self._changed[prop] = True
+
+        if self._original[prop] == secs:
+            self._changed[prop] = False
 
     def gettime(self, prop):
         return self._times[prop]

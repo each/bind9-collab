@@ -234,26 +234,24 @@ class Policy:
                      % (self.zsk_postpublish, self.zsk_rollperiod)))
 
         if self.ksk_rollperiod and \
-           self.ksk_prepublish is not None and \
-           self.ksk_postpublish is not None and \
+           self.ksk_prepublish and self.ksk_postpublish and \
            self.ksk_prepublish + self.ksk_postpublish >= self.ksk_rollperiod:
             return (False,
-                    ('KSK pre/post-publish periods (%d/%d) combined exceed ' +
-                     'rollover period %d'
-                     % (self.ksk_prepublish,
-                        self.ksk_postpublish,
-                        self.ksk_rollperiod)))
+                    (('KSK pre/post-publish periods (%d/%d) ' +
+                      'combined exceed rollover period %d') %
+                     (self.ksk_prepublish,
+                      self.ksk_postpublish,
+                      self.ksk_rollperiod)))
 
         if self.zsk_rollperiod and \
-           self.zsk_prepublish is not None and \
-           self.zsk_postpublish is not None and \
+           self.zsk_prepublish and self.zsk_postpublish and \
            self.zsk_prepublish + self.zsk_postpublish >= self.zsk_rollperiod:
             return (False,
-                    ('ZSK pre/post-publish periods (%d/%d) combined exceed ' +
-                     'rollover period %d'
-                     % (self.zsk_prepublish,
-                        self.zsk_postpublish,
-                        self.zsk_rollperiod)))
+                    (('ZSK pre/post-publish periods (%d/%d) ' +
+                      'combined exceed rollover period %d') %
+                     (self.zsk_prepublish,
+                      self.zsk_postpublish,
+                      self.zsk_rollperiod)))
 
         if self.algorithm is not None:
             # Validate the key size

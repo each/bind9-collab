@@ -116,19 +116,15 @@ class keyseries:
             prev.setdelete(a + postpub, **kwargs)
             prev = key
 
-        # commit any changes we've made so far
-        for key in keys:
-            key.commit(self._context['settime_path'], **kwargs)
-
-        # if we haven't got sufficient coverage, create
-        # successor keys until we do
+        # if we haven't got sufficient coverage, create successor key(s)
         while rp and prev.inactive() and \
-                prev.inactive() < now + policy.coverage:
-            try:
-                key = prev.generate_successor(self._context['keygen_path'],
-                                              **kwargs)
-            except:
-                break
+              prev.inactive() < now + policy.coverage:
+            # commit changes to predecessor: a successor can only be
+            # generated if Inactive has been set in the predecessor key
+            prev.commit(self._context['settime_path'], **kwargs)
+
+            key = prev.generate_successor(self._context['keygen_path'],
+                                          **kwargs)
 
             key.setinactive(key.activate() + rp, **kwargs)
             key.setdelete(key.inactive() + postpub, **kwargs)
@@ -141,7 +137,11 @@ class keyseries:
         # in the series will at least remain usable.
         prev.setinactive(None, **kwargs)
         prev.setdelete(None, **kwargs)
-        prev.commit(self._context['settime_path'], **kwargs)
+
+        # commit changes
+        for key in keys:
+            key.commit(self._context['settime_path'], **kwargs)
+
 
     def enforce_policy(self, policies, now=time.time(), **kwargs):
         # If zones is provided as a parameter, use that list.
@@ -180,8 +180,8 @@ class keyseries:
                 for algorithm, keys in collection.items():
                     if algorithm != algnum:
                         continue
-                    try:
-                        self.fixseries(keys, policy, now, **kwargs)
-                    except Exception as e:
-                        raise Exception('%s/%s: %s' %
-                                        (zone, dnskey.algstr(algnum), e))
+#                    try:
+                    self.fixseries(keys, policy, now, **kwargs)
+#                    except Exception as e:
+#                        raise Exception('%s/%s: %s' %
+#                                        (zone, dnskey.algstr(algnum), e))
