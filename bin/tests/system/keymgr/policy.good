@@ -17,7 +17,7 @@ policy default:
 
 policy global:
 	inherits None
-	directory "."
+	directory None
 	algorithm RSASHA256
 	coverage 31536000
 	ksk_keysize 2048
@@ -34,7 +34,7 @@ policy global:
 
 constructed policy example.com:
 	inherits global
-	directory "."
+	directory None
 	algorithm RSASHA256
 	coverage 31536000
 	ksk_keysize 2048

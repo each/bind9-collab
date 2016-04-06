@@ -31,15 +31,16 @@ class keydict:
     _missing = []
 
     def __init__(self, dp=None, **kwargs):
-        self._defttl = kwargs.get('keyttl', 86400)
+        self._defttl = kwargs.get('keyttl', None)
         zones = kwargs.get('zones', None)
-        path = kwargs.get('path', None) or '.'
 
         if not zones:
+            path = kwargs.get('path', '.')
             self.readall(path)
         else:
             for zone in zones:
-                path = dp and dp.policy(zone).directory or path
+                path = dp and dp.policy(zone).directory
+                path = path or kwargs.get('path','.')
                 if not self.readone(path, zone):
                     self._missing.append(zone)
 
@@ -48,18 +49,17 @@ class keydict:
 
         for infile in files:
             key = dnskey(infile, path, self._defttl)
-            key.ttl = self._defttl if key.ttl is None else key.ttl
             self._keydict[key.name][key.alg][key.keyid] = key
 
     def readone(self, path, zone):
-        files = glob.glob(os.path.join(path, 'K' + zone + '.+*.private'))
+        match='K' + zone + '.+*.private'
+        files = glob.glob(os.path.join(path, match))
 
         found = False
         for infile in files:
             key = dnskey(infile, path, self._defttl)
             if key.name != zone: # shouldn't ever happen
                 continue
-            key.ttl = self._defttl if key.ttl is None else key.ttl
             self._keydict[key.name][key.alg][key.keyid] = key
             found = True
 

@@ -30,14 +30,6 @@ matchall () {
     done
 }
 
-echo "I:checking policy.conf parser ($n)"
-ret=0
-${PYTHON} testpolicy.py policy.sample > policy.out
-cmp -s policy.good policy.out || ret=1
-if [ $ret != 0 ]; then echo "I:failed"; fi
-status=`expr $status + $ret`
-n=`expr $n + 1`
-
 echo "I:checking for DNSSEC key coverage issues"
 ret=0
 for dir in [0-9][0-9]-*; do
@@ -51,7 +43,7 @@ for dir in [0-9][0-9]-*; do
         # check that return code matches expectations
         found=$?
         if [ $found -ne $kret ]; then
-            echo "keymgr retcode was $found expected $retcode"
+            echo "keymgr retcode was $found expected $kret"
             ret=1
         fi
 
@@ -66,7 +58,7 @@ for dir in [0-9][0-9]-*; do
         # check that return code matches expectations
         found=$?
         if [ $found -ne $cret ]; then
-            echo "coverage retcode was $found expected $retcode"
+            echo "coverage retcode was $found expected $cret"
             ret=1
         fi
 
@@ -101,6 +93,14 @@ for dir in [0-9][0-9]-*; do
         if [ $ret != 0 ]; then echo "I:failed"; fi
         status=`expr $status + $ret`
 done
+
+echo "I:checking policy.conf parser ($n)"
+ret=0
+${PYTHON} testpolicy.py policy.sample > policy.out
+cmp -s policy.good policy.out || ret=1
+if [ $ret != 0 ]; then echo "I:failed"; fi
+status=`expr $status + $ret`
+n=`expr $n + 1`
 
 echo "I:exit status: $status"
 exit $status

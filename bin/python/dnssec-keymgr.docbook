@@ -110,108 +110,95 @@
   <refsection><info><title>OPTIONS</title></info>
     <variablelist>
       <varlistentry>
-	<term>-K <replaceable class="parameter">directory</replaceable></term>
-	<listitem>
-	  <para>
-	    Sets the directory in which keys can be found.  Defaults to the
-	    current working directory.
-	  </para>
-	</listitem>
+        <term>-K <replaceable class="parameter">directory</replaceable></term>
+        <listitem>
+          <para>
+            Sets the directory in which keys can be found.  Defaults to the
+            current working directory.
+          </para>
+        </listitem>
       </varlistentry>
 
       <varlistentry>
-	<term>-c <replaceable class="parameter">file</replaceable></term>
-	<listitem>
-	  <para>
-	    If <option>-c</option> is specified, then the DNSSEC
-	    policy is read from <option>file</option>.  (If not
-	    specified, then the policy is read from
-	    <filename>/etc/policy.conf</filename>; if that file
-	    doesn't exist, a built-in global default policy is used.)
-	  </para>
-	</listitem>
+        <term>-c <replaceable class="parameter">file</replaceable></term>
+        <listitem>
+          <para>
+            If <option>-c</option> is specified, then the DNSSEC
+            policy is read from <option>file</option>.  (If not
+            specified, then the policy is read from
+            <filename>/etc/policy.conf</filename>; if that file
+            doesn't exist, a built-in global default policy is used.)
+          </para>
+        </listitem>
       </varlistentry>
 
       <varlistentry>
-	<term>-d <replaceable class="parameter">file</replaceable></term>
-	<listitem>
-	  <para>
-	    The TTL value to use for newly generated DNSKEYs, if there
-	    are no existing DNSKEYs. This overrides the
-	    <command>keyttl</command> option defined in the DNSSEC
-	    policy.
-	  </para>
-	</listitem>
+        <term>-f</term>
+        <listitem>
+          <para>
+            Force: allow updating of key events even if they are
+            already in the past. This is not recommended for use with
+            zones in which keys have already been published. However,
+            if a set of keys has been generated all of which have
+            publication and activation dates in the past, but the
+            keys have not been published in a zone as yet, then this
+            option can be used to clean them up and turn them into a
+            proper series of keys with appropriate rollover intervals.
+          </para>
+        </listitem>
       </varlistentry>
 
       <varlistentry>
-	<term>-f</term>
-	<listitem>
-	  <para>
-	    Force: allow updating of key events even if they are
-	    already in the past. This is not recommended for use with
-	    zones in which keys have already been published. However,
-	    if a set of keys has been generated all of which have
-	    publication and activation dates in the past, but the
-	    keys have not been published in a zone as yet, then this
-	    option can be used to clean them up and turn them into a
-	    proper series of keys with appropriate rollover intervals.
-	  </para>
-	</listitem>
+        <term>-q</term>
+        <listitem>
+          <para>
+            Quiet: suppress printing of <command>dnssec-keygen</command>
+            and <command>dnssec-settime</command>.
+          </para>
+        </listitem>
       </varlistentry>
 
       <varlistentry>
-	<term>-q</term>
-	<listitem>
-	  <para>
-	    Quiet: suppress printing of <command>dnssec-keygen</command>
-	    and <command>dnssec-settime</command>.
-	  </para>
-	</listitem>
+        <term>-k</term>
+        <listitem>
+          <para>
+            Only apply policies to KSK keys.
+          </para>
+        </listitem>
       </varlistentry>
 
       <varlistentry>
-	<term>-k</term>
-	<listitem>
-	  <para>
-	    Only apply policies to KSK keys.
-	  </para>
-	</listitem>
+        <term>-z</term>
+        <listitem>
+          <para>
+            Only apply policies to ZSK keys.
+          </para>
+        </listitem>
       </varlistentry>
 
       <varlistentry>
-	<term>-z</term>
-	<listitem>
-	  <para>
-	    Only apply policies to ZSK keys.
-	  </para>
-	</listitem>
+        <term>-g <replaceable class="parameter">keygen path</replaceable></term>
+        <listitem>
+          <para>
+            Specifies a path to a <command>dnssec-keygen</command> binary.
+            Used for testing.
+          </para>
+        </listitem>
       </varlistentry>
 
       <varlistentry>
-	<term>-g <replaceable class="parameter">keygen path</replaceable></term>
-	<listitem>
-	  <para>
-	    Specifies a path to a <command>dnssec-keygen</command> binary.
-	    Used for testing.
-	  </para>
-	</listitem>
-      </varlistentry>
-
-      <varlistentry>
-	<term>-s <replaceable class="parameter">settime path</replaceable></term>
-	<listitem>
-	  <para>
-	    Specifies a path to a <command>dnssec-settime</command> binary.
-	    Used for testing.
-	  </para>
-	</listitem>
+        <term>-s <replaceable class="parameter">settime path</replaceable></term>
+        <listitem>
+          <para>
+            Specifies a path to a <command>dnssec-settime</command> binary.
+            Used for testing.
+          </para>
+        </listitem>
       </varlistentry>
     </variablelist>
   </refsection>
 
   <refsection><info><title>POLICY CONFIGURATION</title></info>
-  <!-- TODO -->
     <para>
       The <filename>policy.conf</filename> file can specify three kinds
       of policies:

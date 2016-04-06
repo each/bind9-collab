@@ -310,7 +310,6 @@ class dnssec_policy:
 
         # set defaults
         self.setup('''policy global { algorithm rsasha256;
-                                      directory ".";
                                       key-size ksk 2048;
                                       key-size zsk 1024;
                                       roll-period ksk 0;

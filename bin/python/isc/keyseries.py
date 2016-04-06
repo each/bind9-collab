@@ -93,6 +93,9 @@ class keyseries:
             key.setinactive(a + rp, **kwargs)
             key.setdelete(a + rp + postpub, **kwargs)
 
+        if policy.keyttl != key.ttl:
+            key.setttl(policy.keyttl)
+
         # handle all the subsequent keys
         prev = key
         for key in keys[1:]:
@@ -104,6 +107,8 @@ class keyseries:
                 key.setactivate(None, **kwargs)
                 key.setinactive(None, **kwargs)
                 key.setdelete(None, **kwargs)
+                if policy.keyttl != key.ttl:
+                    key.setttl(policy.keyttl)
                 continue
 
             # otherwise, ensure all dates are set correctly based on
@@ -113,7 +118,10 @@ class keyseries:
             key.setactivate(a, **kwargs)
             key.setpublish(p, **kwargs)
             key.setinactive(a + rp, **kwargs)
+            key.setdelete(a + rp + postpub, **kwargs)
             prev.setdelete(a + postpub, **kwargs)
+            if policy.keyttl != key.ttl:
+                key.setttl(policy.keyttl)
             prev = key
 
         # if we haven't got sufficient coverage, create successor key(s)
@@ -122,7 +130,6 @@ class keyseries:
             # commit changes to predecessor: a successor can only be
             # generated if Inactive has been set in the predecessor key
             prev.commit(self._context['settime_path'], **kwargs)
-
             key = prev.generate_successor(self._context['keygen_path'],
                                           **kwargs)
 
@@ -157,21 +164,21 @@ class keyseries:
             alg = policy.algorithm
             algnum = dnskey.algnum(alg)
             if 'ksk' not in kwargs or not kwargs['ksk']:
-                if not self._Z[zone][algnum]:
+                if len(self._Z[zone][algnum]) == 0:
                     k = dnskey.generate(self._context['keygen_path'],
                                         keys_dir, zone, alg,
                                         policy.zsk_keysize, False,
-                                        policy.keyttl or 86400,
+                                        policy.keyttl or 3600,
                                         **kwargs)
                     self._Z[zone][algnum].append(k)
                 collections.append(self._Z[zone])
 
             if 'zsk' not in kwargs or not kwargs['zsk']:
-                if not self._K[zone][algnum]:
+                if len(self._K[zone][algnum]) == 0:
                     k = dnskey.generate(self._context['keygen_path'],
                                         keys_dir, zone, alg,
                                         policy.ksk_keysize, True,
-                                        policy.keyttl or 86400,
+                                        policy.keyttl or 3600,
                                         **kwargs)
                     self._K[zone][algnum].append(k)
                 collections.append(self._K[zone])
@@ -180,8 +187,8 @@ class keyseries:
                 for algorithm, keys in collection.items():
                     if algorithm != algnum:
                         continue
-#                    try:
-                    self.fixseries(keys, policy, now, **kwargs)
-#                    except Exception as e:
-#                        raise Exception('%s/%s: %s' %
-#                                        (zone, dnskey.algstr(algnum), e))
+                    try:
+                        self.fixseries(keys, policy, now, **kwargs)
+                    except Exception as e:
+                        raise Exception('%s/%s: %s' %
+                                        (zone, dnskey.algstr(algnum), str(e)))

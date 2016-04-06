@@ -156,13 +156,6 @@ def parse_args():
                         help='Directory containing keys', metavar='dir')
     parser.add_argument('-c', dest='policyfile', type=str,
                         help='Policy definition file', metavar='file')
-    parser.add_argument('-d', dest='keyttl', default='604800', type=str,
-                        help='DNSKEY TTL [default: 1 week]',
-                        metavar='time')
-    parser.add_argument('-r', dest='resign', default='1944000', 
-                        type=str, help='The RRSIG refresh interval '
-                                       'in seconds [default: 22.5 days]',
-                        metavar='time')
     parser.add_argument('-g', dest='keygen', default=keygen, type=str,
                         help='Path to \'dnssec-keygen\'',
                         metavar='path')
@@ -187,21 +180,6 @@ def parse_args():
 
     if args.no_zsk and args.no_ksk:
         fatal("ERROR: -z and -k cannot be used together.")
-
-    # convert from time arguments to seconds
-    try:
-        if args.keyttl is not None:
-            k = parse_time(args.keyttl)
-            args.keyttl = k
-    except:
-        pass
-
-    try:
-        if args.resign is not None:
-            r = parse_time(args.resign)
-            args.resign = r
-    except:
-        pass
 
     if args.keygen is None or args.settime is None:
         fatal("ERROR: dnssec-keygen/dnssec-settime not found")
@@ -236,7 +214,7 @@ if __name__ == "__main__":
         fatal('Unable to load DNSSEC policy: ' + str(e))
 
     try:
-        kd = keydict(dp, path=args.path, zones=args.zone, keyttl=args.keyttl)
+        kd = keydict(dp, path=args.path, zones=args.zone)
     except Exception as e:
         fatal('Unable to build key dictionary: ' + str(e))
 

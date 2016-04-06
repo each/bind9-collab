@@ -103,6 +103,7 @@ class dnskey:
         self._fmttime = dict()
         self._timestamps = dict()
         self._original = dict()
+        self._origttl = None
 
         for line in pfp:
             line = line.strip()
@@ -134,6 +135,10 @@ class dnskey:
         quiet = kwargs.get('quiet', False)
         cmd = ''
         first = True
+
+        if self._origttl is not None:
+            cmd += "-L %d " % self.ttl
+
         for prop, opt in zip(dnskey._PROPS, dnskey._OPTS):
             if not opt or not self._changed[prop]:
                 continue
@@ -147,10 +152,10 @@ class dnskey:
             first = False
 
         if cmd:
-            fullcmd = ("%s -K %s -L %d %s %s" %
-                       (settime_bin, self._dir, self.ttl, cmd, self.keystr))
+            fullcmd = ("%s -K %s %s %s" %
+                       (settime_bin, self._dir, cmd, self.keystr))
             if not quiet:
-                print('# ' + fullcmd)
+                print('# ' + ' '.join(fullcmd.split()))
             try:
                 p = Popen(shlex.split(fullcmd), stdout=PIPE, stderr=PIPE)
                 stdout, stderr = p.communicate()
@@ -159,6 +164,7 @@ class dnskey:
             except Exception as e:
                 raise Exception('unable to run %s: %s' %
                                 (settime_bin, str(e)))
+            self._origttl = None
             for prop in dnskey._PROPS:
                 self._original[prop] = self._timestamps[prop]
                 self._changed[prop] = False
@@ -186,7 +192,7 @@ class dnskey:
                      (keygen_bin, flagopt, keys_dir, ttl, a, b, pub, act, name)
 
         if not quiet:
-            print('# ' + keygen_cmd)
+            print('# ' + ' '.join(keygen_cmd.split()))
 
         p = Popen(shlex.split(keygen_cmd), stdout=PIPE, stderr=PIPE)
         stdout, stderr = p.communicate()
@@ -206,15 +212,16 @@ class dnskey:
         if not self.inactive():
             raise Exception("predecessor key %s has no inactive date" % self)
 
-        keygen_cmd = "%s -q -K %s -S %s" % (keygen_bin, self._dir, self.keystr)
+        keygen_cmd = ("%s -q -K %s -L %d -S %s" %
+                      (keygen_bin, self._dir, self.ttl, self.keystr))
 
         if not quiet:
-            print('# ' + keygen_cmd)
+            print('# ' + ' '.join(keygen_cmd.split()))
 
         p = Popen(shlex.split(keygen_cmd), stdout=PIPE, stderr=PIPE)
         stdout, stderr = p.communicate()
         if stderr:
-            raise Exception('unable to generate key: ' + str(e))
+            raise Exception('unable to generate key: ' + stderr)
 
         try:
             keystr = stdout.split('\n')[0]
@@ -261,19 +268,17 @@ class dnskey:
 
     def setmeta(self, prop, secs, now, **kwargs):
         force = kwargs.get('force', False)
+
+        if self._timestamps[prop] == secs:
+            return
+
+        if self._original[prop] is not None and \
+           self._original[prop] < now and not force:
+            raise TimePast(self, prop, self._original[prop])
+
         if secs is None:
-            if self._timestamps[prop] is not None and \
-               self._timestamps[prop] < now and not force:
-                raise TimePast(self, prop, self._timestamps[prop])
-
-            if self._timestamps[prop] == secs:
-                return
-
-            if self._changed[prop] and self._original[prop] is None:
-                self._changed[prop] = False
-            elif self._timestamps[prop] is not None:
-                self._changed[prop] = True
-                self._original[prop] = self._timestamps[prop]
+            self._changed[prop] = False \
+                if self._original[prop] is None else True
 
             self._delete[prop] = True
             self._timestamps[prop] = None
@@ -285,10 +290,8 @@ class dnskey:
         self._timestamps[prop] = secs
         self._times[prop] = t
         self._fmttime[prop] = self.formattime(t)
-        self._changed[prop] = True
-
-        if self._original[prop] == secs:
-            self._changed[prop] = False
+        self._changed[prop] = False if \
+            self._original[prop] == self._timestamps[prop] else True
 
     def gettime(self, prop):
         return self._times[prop]
@@ -343,6 +346,18 @@ class dnskey:
 
     def setsyncdelete(self, secs, now=time.time(), **kwargs):
         self.setmeta("SyncDelete", secs, now, **kwargs)
+
+    def setttl(self, ttl):
+        if ttl is None or self.ttl == ttl:
+            return
+        elif self._origttl is None:
+            self._origttl = self.ttl
+            self.ttl = ttl
+        elif self._origttl == ttl:
+            self._origttl = None
+            self.ttl = ttl
+        else:
+            self.ttl = ttl
 
     def keytype(self):
         return ("KSK" if self.sep else "ZSK")
