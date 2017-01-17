@@ -12,7 +12,7 @@ VERSION=@BIND9_VERSION@
 
 @BIND9_MAKE_INCLUDES@
 
-SUBDIRS =	dlzexternal dyndb lwresd pipelined rndc rsabigexponent tkey
+SUBDIRS =	dlzexternal dyndb lwresd pipelined rndc rpz rsabigexponent tkey
 
 CINCLUDES =	${ISC_INCLUDES} ${DNS_INCLUDES}
 

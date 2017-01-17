@@ -6,6 +6,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+# touch fastrpz-off to not test with fastrpz
+
 set -e
 
 SYSTEMTESTTOP=..
@@ -13,7 +15,27 @@ SYSTEMTESTTOP=..
 
 QPERF=`$SHELL qperf.sh`
 
-$SHELL clean.sh
+USAGE="$0: [-x]"
+DEBUG=
+while getopts "x" c; do
+    case $c in
+	x) set -x; DEBUG=-x;;
+	*) echo "$USAGE" 1>&2; exit 1;;
+    esac
+done
+shift `expr $OPTIND - 1 || true`
+if test "$#" -ne 0; then
+    echo "$USAGE" 1>&2
+    exit 1
+fi
+
+$SHELL clean.sh $DEBUG
+
+# decide whether to use fastrpz
+sh ../rpz/ckfastrpz.sh >fastrpz.conf || true
+
+# fastrpz configuration for named processes that do not start dnsrpzd
+sed -e "s/stdout'/& dnsrpzd ''/" fastrpz.conf >fastrpz-slave.conf
 
 # set up test policy zones.
 #   bl is the main test zone
@@ -48,9 +70,11 @@ response-policy {
 	zone "bl10"; zone "bl11"; zone "bl12"; zone "bl13"; zone "bl14";
 	zone "bl15"; zone "bl16"; zone "bl17"; zone "bl18"; zone "bl19";
     } recursive-only no
+    qname-wait-recurse no
+    nsip-enable yes
+    nsdname-enable yes
     max-policy-ttl 90
     break-dnssec yes
-    qname-wait-recurse no
     ;
 EOF
 

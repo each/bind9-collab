@@ -167,6 +167,18 @@ int sigwait(const unsigned int *set, int *sig);
 /* Define to enable rpz-nsip rules. */
 #undef ENABLE_RPZ_NSIP
 
+/* have __attribute__s used in librpz.h */
+#undef LIBRPZ_HAVE_ATTR
+
+/* fastrpz librpz.so */
+#undef FASTRPZ_LIBRPZ_PATH
+
+/* 0=no fastrpz  1=static link  2=dlopen() */
+#undef FASTRPZ_LIB_OPEN
+
+/* Enable fastrpz */
+#undef USE_FASTRPZ
+
 /* Solaris hack to get select_large_fdset. */
 #undef FD_SETSIZE
 

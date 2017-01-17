@@ -66,6 +66,8 @@ expect_recurse() {
     }
 }
 
+sed -n 's/^## /I:/p' fastrpz.conf
+
 t=`expr $t + 1`
 echo "I:testing that l1.l0 exists without RPZ (${t})"
 $DIG $DIGOPTS l1.l0 ns @10.53.0.2 -p 5300 > dig.out.${t}
@@ -176,6 +178,7 @@ echo "I:adding an NSDNAME policy"
 cp ns2/db.6a.00.policy.local ns2/saved.policy.local
 cp ns2/db.6b.00.policy.local ns2/db.6a.00.policy.local
 $RNDC -c ../common/rndc.conf -s 10.53.0.2 -p 9953 reload 6a.00.policy.local 2>&1 | sed 's/^/I:ns2 /'
+test -f dnsrpzd.pid && kill -USR1 `cat dnsrpzd.pid`
 sleep 1
 t=`expr $t + 1`
 echo "I:running dig to follow CNAME (blocks, so runs in the background) (${t})"
@@ -184,6 +187,7 @@ sleep 1
 echo "I:removing the NSDNAME policy"
 cp ns2/db.6c.00.policy.local ns2/db.6a.00.policy.local
 $RNDC -c ../common/rndc.conf -s 10.53.0.2 -p 9953 reload 6a.00.policy.local 2>&1 | sed 's/^/I:ns2 /'
+test -f dnsrpzd.pid && kill -USR1 `cat dnsrpzd.pid`
 sleep 1
 echo "I:resuming authority server"
 if [ "$CYGWIN" ]; then
@@ -221,6 +225,7 @@ kill -TSTP $PID
 echo "I:adding an NSDNAME policy"
 cp ns2/db.6b.00.policy.local ns2/db.6a.00.policy.local
 $RNDC -c ../common/rndc.conf -s 10.53.0.2 -p 9953 reload 6a.00.policy.local 2>&1 | sed 's/^/I:ns2 /'
+test -f dnsrpzd.pid && kill -USR1 `cat dnsrpzd.pid`
 sleep 1
 t=`expr $t + 1`
 echo "I:running dig to follow CNAME (blocks, so runs in the background) (${t})"
@@ -229,6 +234,7 @@ sleep 1
 echo "I:removing the policy zone"
 cp ns2/named.default.conf ns2/named.conf
 $RNDC -c ../common/rndc.conf -s 10.53.0.2 -p 9953 reconfig 2>&1 | sed 's/^/I:ns2 /'
+test -f dnsrpzd.pid && kill -USR1 `cat dnsrpzd.pid`
 sleep 1
 echo "I:resuming authority server"
 if [ "$CYGWIN" ]; then

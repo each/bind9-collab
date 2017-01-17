@@ -4285,6 +4285,59 @@ case "$enable_nsdname" in
 esac
 
 #
+# Response policy rewriting using Fastrpz
+# Fastrpz can be compiled into BIND everywhere with a reasonably
+# modern C compiler.  It is enabled on systems with dlopen() and librpz.so.
+#
+fastrpz_avail=yes
+AC_MSG_CHECKING([for librpz __attribute__s])
+    AC_TRY_COMPILE(,[
+	extern void f(char *p __attribute__((unused)), ...)
+	__attribute__((format(printf,1,2))) __attribute__((__noreturn__));],
+    librpz_have_attr=yes
+    AC_DEFINE([LIBRPZ_HAVE_ATTR], 1, [have __attribute__s used in librpz.h])
+    AC_MSG_RESULT([yes]),
+    librpz_have_attr=no
+    AC_MSG_RESULT([no]))
+
+AC_SEARCH_LIBS(dlopen, dl)
+librpz_dl=yes
+AC_CHECK_FUNCS(dlopen dlclose dlsym,,librpz_dl=no)
+AC_ARG_ENABLE([fastrpz-dl],
+	[  --enable-fastrpz-dl	  Fastrpz delayed link [[default=$librpz_dl]]],
+	[enable_librpz_dl="$enableval"],
+	[enable_librpz_dl="$librpz_dl"])
+AC_ARG_WITH([fastrpz-dir],
+	[  --with-fastrpz-dir	  directory containing librpz.so],
+	[librpz_path="$withval/librpz.so"], [librpz_path="librpz.so"])
+AC_DEFINE_UNQUOTED([FASTRPZ_LIBRPZ_PATH], ["$librpz_path"],
+	[fastrpz librpz.so])
+if test "x$enable_librpz_dl" = "xyes"; then
+	fastrpz_lib_open=2
+else
+	fastrpz_lib_open=1
+	# Add librpz.so to linked libraries if we are not using dlopen()
+	AC_SEARCH_LIBS([librpz_client_create], [rpz], [],
+		[fastrpz_lib_open=0
+		  fastrpz_avail=no])
+fi
+AC_DEFINE_UNQUOTED([FASTRPZ_LIB_OPEN], [$fastrpz_lib_open],
+	[0=no fastrpz  1=static link  2=dlopen()])
+
+AC_ARG_ENABLE([fastrpz],
+	AS_HELP_STRING([--enable-fastrpz],
+		[enable Fastrpz response policy zones]),
+	[enable_fastrpz=$enableval],[enable_fastrpz=$fastrpz_avail])
+if test "x$enable_fastrpz" = xyes; then
+	AC_DEFINE([USE_FASTRPZ], [1], [Enable fastrpz])
+	if test "x$fastrpz_lib_open" = "x0"; then
+		AC_MSG_ERROR([[dlopen and librpz.so needed for fastrpz]])
+	fi
+elif test "x$fastrpz_avail" = "x0"; then
+	AC_MSG_WARN([[dlopen and librpz.so needed for fastrpz]])
+fi
+
+#
 # Activate "filter-aaaa-on-v4/v6" or not?
 #
 AC_ARG_ENABLE(filter-aaaa,
@@ -5172,6 +5225,7 @@ AC_CONFIG_FILES([
 	bin/tests/system/lwresd/Makefile
 	bin/tests/system/pipelined/Makefile
 	bin/tests/system/rndc/Makefile
+	bin/tests/system/rpz/Makefile
 	bin/tests/system/rsabigexponent/Makefile
 	bin/tests/system/tkey/Makefile
 	bin/tests/tasks/Makefile
@@ -5326,6 +5380,7 @@ if test "yes" = "$OPENSSL_GOST" -o "yes" = "$PKCS11_GOST"; then
 fi
 test "yes" = "$OPENSSL_ECDSA" -o "$PKCS11_ECDSA" && \
     echo "    ECDSA algorithm support (--with-ecdsa)"
+test "$enable_fastrpz" = "yes" && echo "    Use Fastrpz (--enable-fastrpz)"
 test "yes" = "$enable_fixed" && \
     echo "    Allow 'fixed' rrset-order (--enable-fixed-rrset)"
 test "yes" = "$enable_filter" && \
@@ -5374,6 +5429,8 @@ test "no" = "$use_gssapi" && echo "    GSS-API (--with-gssapi)"
 
 test "yes" = "$enable_fixed" || \
     echo "    Allow 'fixed' rrset-order (--enable-fixed-rrset)"
+
+test "$enable_fastrpz" = "no" && echo "    Use Fastrpz (--enable-fastrpz)"
 
 if test "X$CRYPTO" = "X" -o "yes" = "$want_native_pkcs11"
 then

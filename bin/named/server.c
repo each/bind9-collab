@@ -63,6 +63,7 @@
 #include <dns/dns64.h>
 #include <dns/dyndb.h>
 #include <dns/events.h>
+#include <dns/fastrpz.h>
 #include <dns/forward.h>
 #include <dns/fixedname.h>
 #include <dns/journal.h>
@@ -1765,6 +1766,230 @@ cleanup:
 	return (result);
 }
 
+typedef struct conf_fastrpz_ctx conf_fastrpz_ctx_t;
+struct conf_fastrpz_ctx {
+	isc_result_t	result;
+	char		*cstr;
+	size_t		cstr_size;
+	isc_mem_t	*mctx;
+};
+
+/*
+ * Add to the fastrpz configuration string.
+ */
+static isc_boolean_t
+conf_fastrpz_sadd(conf_fastrpz_ctx_t *ctx, const char *p, ...)
+{
+	size_t new_len, cur_len, new_cstr_size;
+	char *new_cstr;
+	va_list args;
+
+	if (ctx->cstr == NULL) {
+		ctx->cstr = isc_mem_get(ctx->mctx, 256);
+		if (ctx->cstr == NULL) {
+			ctx->result = ISC_R_NOMEMORY;
+			return (ISC_FALSE);
+		}
+		ctx->cstr[0] = '\0';
+		ctx->cstr_size = 256;
+	}
+
+	cur_len = strlen(ctx->cstr);
+	va_start(args, p);
+	new_len = vsnprintf(ctx->cstr + cur_len, ctx->cstr_size - cur_len,
+			    p, args) + 1;
+	va_end(args);
+
+	if (cur_len + new_len <= ctx->cstr_size)
+		return (ISC_TRUE);
+
+	new_cstr_size = ((cur_len + new_len)/256 + 1) * 256;
+	new_cstr = isc_mem_get(ctx->mctx, new_cstr_size);
+	if (new_cstr == NULL) {
+		ctx->result = ISC_R_NOMEMORY;
+		return (ISC_FALSE);
+	}
+
+	memmove(new_cstr, ctx->cstr, cur_len);
+	isc_mem_put(ctx->mctx, ctx->cstr, ctx->cstr_size);
+	ctx->cstr_size = new_cstr_size;
+	ctx->cstr = new_cstr;
+
+	/* cannot use args twice after a single va_start()on some systems */
+	va_start(args, p);
+	vsnprintf(ctx->cstr + cur_len, ctx->cstr_size - cur_len, p, args);
+	va_end(args);
+	return (ISC_TRUE);
+}
+
+/*
+ * Get a fastrpz configuration value using the global and view options
+ * for the default.  Return ISC_FALSE upon failure.
+ */
+static isc_boolean_t
+conf_fastrpz_get(const cfg_obj_t **sub_obj,
+		 const cfg_obj_t **maps ,const cfg_obj_t *obj,
+		 const char *name, conf_fastrpz_ctx_t *ctx)
+{
+	if (ctx != NULL && ctx->result != ISC_R_SUCCESS) {
+		*sub_obj = NULL;
+		return (ISC_FALSE);
+	}
+
+	*sub_obj = cfg_tuple_get(obj, name);
+	if (cfg_obj_isvoid(*sub_obj)) {
+		*sub_obj = NULL;
+		if (maps != NULL &&
+		    ISC_R_SUCCESS != ns_config_get(maps, name, sub_obj))
+			*sub_obj = NULL;
+	}
+	return (ISC_TRUE);
+}
+
+/*
+ * Handle a fastrpz boolean configuration value with the global and view
+ * options providing the default.
+ */
+static void
+conf_fastrpz_yes_no(const cfg_obj_t *obj, const char* name,
+		    conf_fastrpz_ctx_t *ctx)
+{
+	const cfg_obj_t *sub_obj;
+
+	if (!conf_fastrpz_get(&sub_obj, NULL, obj, name, ctx))
+		return;
+	if (sub_obj == NULL)
+		return;
+	if (ctx == NULL) {
+		cfg_obj_log(obj, ns_g_lctx, ISC_LOG_ERROR,
+			    "\"%s\" without \"fastrpz-enable yes\"",
+			    name);
+		return;
+	}
+
+	conf_fastrpz_sadd(ctx, " %s %s", name,
+			  cfg_obj_asboolean(sub_obj) ? "yes" : "no");
+}
+
+static void
+conf_fastrpz_num(const cfg_obj_t *obj, const char *name,
+		 conf_fastrpz_ctx_t *ctx)
+{
+	const cfg_obj_t *sub_obj;
+
+	if (!conf_fastrpz_get(&sub_obj, NULL, obj, name, ctx))
+		return;
+	if (sub_obj == NULL)
+		return;
+	if (ctx == NULL) {
+		cfg_obj_log(obj, ns_g_lctx, ISC_LOG_ERROR,
+			    "\"%s\" without \"fastrpz-enable yes\"",
+			    name);
+		return;
+	}
+
+	conf_fastrpz_sadd(ctx, " %s %d", name, cfg_obj_asuint32(sub_obj));
+}
+
+/*
+ * Convert the parsed RPZ configuration statement to a string for
+ * dns_rpz_new_zones().
+ */
+static isc_result_t
+conf_fastrpz(dns_view_t *view, const cfg_obj_t **maps,
+	     isc_boolean_t nsip_enabled, isc_boolean_t nsdname_enabled,
+	     dns_rpz_zbits_t *nsip_on, dns_rpz_zbits_t *nsdname_on,
+	     char **fast_cstr, size_t *fast_cstr_size,
+	     const cfg_obj_t *rpz_obj, const cfg_listelt_t *zone_element)
+{
+	conf_fastrpz_ctx_t ctx;
+	const cfg_obj_t *zone_obj, *obj;
+	dns_rpz_num_t rpz_num;
+	isc_boolean_t on;
+	const char *s;
+
+	memset(&ctx, 0, sizeof(ctx));
+	ctx.result = ISC_R_SUCCESS;
+	ctx.mctx = view->mctx;
+
+	for (rpz_num = 0;
+	     zone_element != NULL && ctx.result == ISC_R_SUCCESS;
+	     ++rpz_num) {
+		zone_obj = cfg_listelt_value(zone_element);
+
+		s = cfg_obj_asstring(cfg_tuple_get(zone_obj, "zone name"));
+		conf_fastrpz_sadd(&ctx, "zone \"%s\"", s);
+
+		obj = cfg_tuple_get(zone_obj, "policy");
+		if (!cfg_obj_isvoid(obj)) {
+			s = cfg_obj_asstring(cfg_tuple_get(obj, "policy name"));
+			conf_fastrpz_sadd(&ctx, " policy %s", s);
+			if (strcasecmp(s, "cname") == 0) {
+				s = cfg_obj_asstring(cfg_tuple_get(obj,
+							"cname"));
+				conf_fastrpz_sadd(&ctx, " %s", s);
+			}
+		}
+
+		conf_fastrpz_yes_no(zone_obj, "recursive-only", &ctx);
+		conf_fastrpz_yes_no(zone_obj, "log", &ctx);
+		conf_fastrpz_num(zone_obj, "max-policy-ttl", &ctx);
+		obj = cfg_tuple_get(rpz_obj, "nsip-enable");
+		if (!cfg_obj_isvoid(obj)) {
+			if (cfg_obj_asboolean(obj))
+				*nsip_on |= DNS_RPZ_ZBIT(rpz_num);
+			else
+				*nsip_on &= ~DNS_RPZ_ZBIT(rpz_num);
+		}
+		on = ((*nsip_on & DNS_RPZ_ZBIT(rpz_num)) != 0);
+		if (nsip_enabled != on)
+			conf_fastrpz_sadd(&ctx, on ? " nsip-enable yes " :
+					  " nsip-enable no ");
+		obj = cfg_tuple_get(rpz_obj, "nsdname-enable");
+		if (!cfg_obj_isvoid(obj)) {
+			if (cfg_obj_asboolean(obj))
+				*nsdname_on |= DNS_RPZ_ZBIT(rpz_num);
+			else
+				*nsdname_on &= ~DNS_RPZ_ZBIT(rpz_num);
+		}
+		on = ((*nsdname_on & DNS_RPZ_ZBIT(rpz_num)) != 0);
+		if (nsdname_enabled != on)
+			conf_fastrpz_sadd(&ctx, on ? " nsdname-enable yes " :
+					  " nsdname-enable no ");
+		conf_fastrpz_sadd(&ctx, ";\n");
+		zone_element = cfg_list_next(zone_element);
+	}
+
+	conf_fastrpz_yes_no(rpz_obj, "recursive-only",  &ctx);
+	conf_fastrpz_num(rpz_obj, "max-policy-ttl",  &ctx);
+	conf_fastrpz_num(rpz_obj, "min-ns-dots",  &ctx);
+	conf_fastrpz_yes_no(rpz_obj, "qname-wait-recurse",  &ctx);
+	conf_fastrpz_yes_no(rpz_obj, "break-dnssec",  &ctx);
+	if (!nsip_enabled)
+		conf_fastrpz_sadd(&ctx, " nsip-enable no ");
+	if (!nsdname_enabled)
+		conf_fastrpz_sadd(&ctx,  " nsdname-enable no ");
+
+	/*
+	 * Get the general dnsrpzd parameters from the response-policy
+	 * statement in the view and the general options.
+	 */
+	if (conf_fastrpz_get(&obj, maps, rpz_obj, "fastrpz-options", &ctx) &&
+	    obj != NULL)
+		conf_fastrpz_sadd(&ctx, " %s\n", cfg_obj_asstring(obj));
+
+	if (ctx.result == ISC_R_SUCCESS) {
+		*fast_cstr = ctx.cstr;
+		*fast_cstr_size = ctx.cstr_size;
+	} else {
+		if (ctx.cstr != NULL)
+			isc_mem_put(ctx.mctx, ctx.cstr, ctx.cstr_size);
+		*fast_cstr = NULL;
+		*fast_cstr_size = 0;
+	}
+	return (ctx.result);
+}
+
 static isc_result_t
 configure_rpz_name(dns_view_t *view, const cfg_obj_t *obj, dns_name_t *name,
 		   const char *str, const char *msg)
@@ -1872,6 +2097,8 @@ configure_rpz_zone(dns_view_t *view, const cfg_listelt_t *element,
 		return (DNS_R_EMPTYLABEL);
 	}
 	for (rpz_num = 0; rpz_num < view->rpzs->p.num_zones-1; ++rpz_num) {
+		if (view->rpzs->p.fastrpz_enabled)
+			break;
 		if (dns_name_equal(&view->rpzs->zones[rpz_num]->origin,
 				   &new->origin)) {
 			cfg_obj_log(rpz_obj, ns_g_lctx, DNS_RPZ_ERROR_LEVEL,
@@ -1919,7 +2146,7 @@ configure_rpz_zone(dns_view_t *view, const cfg_listelt_t *element,
 		return (result);
 
 	obj = cfg_tuple_get(rpz_obj, "policy");
-	if (cfg_obj_isvoid(obj)) {
+	if (cfg_obj_isvoid(obj) || view->rpzs->p.fastrpz_enabled) {
 		new->policy = DNS_RPZ_POLICY_GIVEN;
 	} else {
 		str = cfg_obj_asstring(cfg_tuple_get(obj, "policy name"));
@@ -1941,12 +2168,17 @@ configure_rpz_zone(dns_view_t *view, const cfg_listelt_t *element,
 }
 
 static isc_result_t
-configure_rpz(dns_view_t *view, const cfg_obj_t *rpz_obj,
-	      isc_boolean_t *old_rpz_okp)
+configure_rpz(dns_view_t *view, const cfg_obj_t **maps,
+	      const cfg_obj_t *rpz_obj, isc_boolean_t *old_rpz_okp)
 {
+	isc_boolean_t fastrpz_enabled;
 	const cfg_listelt_t *zone_element;
+	char *fast_cstr;
+	size_t fast_cstr_size;
 	const cfg_obj_t *sub_obj;
 	isc_boolean_t recursive_only_def;
+	isc_boolean_t nsip_enabled, nsdname_enabled;
+	dns_rpz_zbits_t nsip_on, nsdname_on;
 	dns_ttl_t ttl_def;
 	dns_rpz_zones_t *new;
 	const dns_rpz_zones_t *old;
@@ -1961,10 +2193,74 @@ configure_rpz(dns_view_t *view, const cfg_obj_t *rpz_obj,
 	if (zone_element == NULL)
 		return (ISC_R_SUCCESS);
 
-	result = dns_rpz_new_zones(&view->rpzs, view->mctx);
+#ifdef ENABLE_RPZ_NIP
+	nsip_enabled = ISC_TRUE;
+	nsdname_enabled = ISC_TRUE;
+#else
+	nsip_enabled = ISC_FALSE;
+	nsdname_enabled = ISC_FALSE;
+#endif
+	sub_obj = cfg_tuple_get(rpz_obj, "nsip-enable");
+	if (!cfg_obj_isvoid(sub_obj))
+		nsip_enabled = cfg_obj_asboolean(sub_obj);
+	nsip_on = nsip_enabled ? DNS_RPZ_ALL_ZBITS : 0;
+
+	sub_obj = cfg_tuple_get(rpz_obj, "nsdname-enable");
+	if (!cfg_obj_isvoid(sub_obj))
+		nsdname_enabled = cfg_obj_asboolean(sub_obj);
+	nsdname_on = nsdname_enabled ? DNS_RPZ_ALL_ZBITS : 0;
+
+	/*
+	 * "fastrpz-enable yes|no" can be either a global and response-policy
+	 * clause.
+	 */
+	fastrpz_enabled = ISC_FALSE;
+	fast_cstr = NULL;
+	fast_cstr_size = 0;
+	sub_obj = NULL;
+	(void)ns_config_get(maps, "fastrpz-enable", &sub_obj);
+	if (sub_obj != NULL)
+		fastrpz_enabled = cfg_obj_asboolean(sub_obj);
+	sub_obj = cfg_tuple_get(rpz_obj, "fastrpz-enable");
+	if (!cfg_obj_isvoid(sub_obj))
+		fastrpz_enabled = cfg_obj_asboolean(sub_obj);
+#ifdef USE_FASTRPZ
+	if (fastrpz_enabled && librpz == NULL) {
+		cfg_obj_log(rpz_obj, ns_g_lctx, DNS_RPZ_ERROR_LEVEL,
+			    "\"fastrpz-enable yes\" but %s",
+			    librpz_lib_open_emsg.c);
+		return (ISC_R_FAILURE);
+	}
+#else
+	if (fastrpz_enabled) {
+		cfg_obj_log(rpz_obj, ns_g_lctx, DNS_RPZ_ERROR_LEVEL,
+			    "\"fastrpz-enable yes\" but"
+			    " with `./configure --enable-fastrpz`");
+		return (ISC_R_FAILURE);
+	}
+#endif
+
+	if (fastrpz_enabled) {
+		/*
+		 * Generate the Fastrpz configuration string.
+		 */
+		result = conf_fastrpz(view, maps,
+				      nsip_enabled, nsdname_enabled,
+				      &nsip_on, &nsdname_on,
+				      &fast_cstr, &fast_cstr_size,
+				      rpz_obj, zone_element);
+		if (result != ISC_R_SUCCESS)
+			return (result);
+	}
+
+	result = dns_rpz_new_zones(&view->rpzs, fast_cstr, fast_cstr_size,
+				   view->mctx);
 	if (result != ISC_R_SUCCESS)
 		return (result);
 	new = view->rpzs;
+
+	new->p.nsip_on = nsip_on;
+	new->p.nsdname_on = nsdname_on;
 
 	sub_obj = cfg_tuple_get(rpz_obj, "recursive-only");
 	if (!cfg_obj_isvoid(sub_obj) &&
@@ -1993,10 +2289,10 @@ configure_rpz(dns_view_t *view, const cfg_obj_t *rpz_obj,
 		new->p.min_ns_labels = 2;
 
 	sub_obj = cfg_tuple_get(rpz_obj, "qname-wait-recurse");
-	if (cfg_obj_isvoid(sub_obj) || cfg_obj_asboolean(sub_obj))
-		new->p.qname_wait_recurse = ISC_TRUE;
-	else
+	if (cfg_obj_isvoid(sub_obj) || !cfg_obj_asboolean(sub_obj))
 		new->p.qname_wait_recurse = ISC_FALSE;
+	else
+		new->p.qname_wait_recurse = ISC_TRUE;
 
 	sub_obj = cfg_tuple_get(rpz_obj, "nsip-wait-recurse");
 	if (cfg_obj_isvoid(sub_obj) || cfg_obj_asboolean(sub_obj))
@@ -2042,15 +2338,24 @@ configure_rpz(dns_view_t *view, const cfg_obj_t *rpz_obj,
 	 * zones are unchanged, then use the same policy data.
 	 * Data for individual zones that must be reloaded will be merged.
 	 */
-	if (old != NULL && memcmp(&old->p, &new->p, sizeof(new->p)) != 0)
+	if (*old_rpz_okp &&
+	    old != NULL && memcmp(&old->p, &new->p, sizeof(new->p)) != 0)
+		*old_rpz_okp = ISC_FALSE;
+	if (*old_rpz_okp &&
+	    (old == NULL ||
+	     old->fast_cstr == NULL) != (new->fast_cstr == NULL))
+		*old_rpz_okp = ISC_FALSE;
+	if (*old_rpz_okp &&
+	    (new->fast_cstr != NULL &&
+	     strcmp(old->fast_cstr, new->fast_cstr) != 0))
 		*old_rpz_okp = ISC_FALSE;
 	if (*old_rpz_okp) {
 		dns_rpz_detach_rpzs(&view->rpzs);
 		dns_rpz_attach_rpzs(pview->rpzs, &view->rpzs);
 	} else if (old != NULL && pview != NULL) {
-		pview->rpzs->rpz_ver += 1;
+		++pview->rpzs->rpz_ver;
 		view->rpzs->rpz_ver = pview->rpzs->rpz_ver;
-		cfg_obj_log(rpz_obj, ns_g_lctx, ISC_LOG_DEBUG(1),
+		cfg_obj_log(rpz_obj, ns_g_lctx, DNS_RPZ_DEBUG_LEVEL1,
 			    "updated RPZ policy: version %d",
 			    view->rpzs->rpz_ver);
 	}
@@ -3323,7 +3628,7 @@ configure_view(dns_view_t *view, dns_viewlist_t *viewlist,
 	obj = NULL;
 	if (view->rdclass == dns_rdataclass_in && need_hints &&
 	    ns_config_get(maps, "response-policy", &obj) == ISC_R_SUCCESS) {
-		CHECK(configure_rpz(view, obj, &old_rpz_ok));
+		CHECK(configure_rpz(view, maps, obj, &old_rpz_ok));
 	}
 
 	obj = NULL;
@@ -3352,6 +3657,31 @@ configure_view(dns_view_t *view, dns_viewlist_t *viewlist,
 		CHECK(configure_zone(config, zconfig, vconfig, mctx, view,
 				     viewlist, actx, ISC_FALSE, old_rpz_ok,
 				     ISC_FALSE));
+	}
+
+	/*
+	 * Check that a master or slave zone was found for each
+	 * zone named in the response policy statement
+	 * unless we are using Fastrpz.
+	 */
+	if (view->rpzs != NULL && !view->rpzs->p.fastrpz_enabled) {
+		dns_rpz_num_t n;
+
+		for (n = 0; n < view->rpzs->p.num_zones; ++n) {
+			if ((view->rpzs->defined & DNS_RPZ_ZBIT(n)) == 0) {
+				char namebuf[DNS_NAME_FORMATSIZE];
+
+				dns_name_format(&view->rpzs->zones[n]->origin,
+						namebuf, sizeof(namebuf));
+				isc_log_write(ns_g_lctx, NS_LOGCATEGORY_GENERAL,
+					      NS_LOGMODULE_SERVER,
+					      DNS_RPZ_ERROR_LEVEL, "rpz '%s'"
+					      " is not a master or slave zone",
+					      namebuf);
+				result = ISC_R_NOTFOUND;
+				goto cleanup;
+			}
+		}
 	}
 
 	/*
@@ -5435,10 +5765,13 @@ configure_zone(const cfg_obj_t *config, const cfg_obj_t *zconfig,
 	}
 
 	/*
-	 * Note whether this is a response policy zone and which one if so.
+	 * Note whether this is a response policy zone and which one if so,
+	 * unless we are using Fastrpz.  In that case, the BIND zone database
+	 * has nothing to do with rpz and so we don't care.
 	 */
 	for (rpz_num = 0; ; ++rpz_num) {
-		if (view->rpzs == NULL || rpz_num >= view->rpzs->p.num_zones) {
+		if (view->rpzs == NULL || rpz_num >= view->rpzs->p.num_zones ||
+		    view->rpzs->p.fastrpz_enabled) {
 			rpz_num = DNS_RPZ_INVALID_NUM;
 			break;
 		}
@@ -8100,6 +8433,22 @@ load_configuration(const char *filename, ns_server_t *server,
 
 	(void) ns_server_loadnta(server);
 
+#ifdef USE_FASTRPZ
+	/*
+	 * Start and connect to the Fastrpz daemon, dnsrpzd,
+	 * for each view that uses Fastrpz.
+	 */
+	for (view = ISC_LIST_HEAD(server->viewlist);
+	     view != NULL;
+	     view = ISC_LIST_NEXT(view, link)) {
+		result = dns_fastrpz_connect(view->rpzs);
+		if (result != ISC_R_SUCCESS) {
+			view = NULL;
+			goto cleanup;
+		}
+	}
+#endif
+
 	result = ISC_R_SUCCESS;
 
  cleanup:
@@ -8487,6 +8836,10 @@ ns_server_create(isc_mem_t *mctx, ns_server_t **serverp) {
 	server->aclenv.geoip = ns_g_geoip;
 #endif
 
+#ifdef USE_FASTRPZ
+	CHECKFATAL(dns_fastrpz_server_create(), "initializing Fastrpz");
+#endif
+
 	/* Initialize server data structures. */
 	server->zonemgr = NULL;
 	server->interfacemgr = NULL;
@@ -8687,6 +9040,10 @@ ns_server_destroy(ns_server_t **serverp) {
 	if (server->dtenv != NULL)
 		dns_dt_detach(&server->dtenv);
 #endif /* HAVE_DNSTAP */
+
+#ifdef USE_FASTRPZ
+	dns_fastrpz_server_destroy();
+#endif
 
 	ns_controls_destroy(&server->controls);
 

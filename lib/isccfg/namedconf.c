@@ -1319,10 +1319,14 @@ static cfg_type_t cfg_type_dnstapoutput = {
  *	zone <string> [ policy (given|disabled|passthru|drop|tcp-only|
  *					nxdomain|nodata|cname <domain> ) ]
  *		      [ recursive-only yes|no ] [ log yes|no ]
- *		      [ max-policy-ttl number ] ;
+ *		      [ max-policy-ttl number ]
+ *		      [ nsip-enable yes|no ] [ nsdname-enable yes|no ];
  *  } [ recursive-only yes|no ] [ max-policy-ttl number ]
  *	 [ break-dnssec yes|no ] [ min-ns-dots number ]
- *	 [ qname-wait-recurse yes|no ] ;
+ *	 [ qname-wait-recurse yes|no ]
+ *	 [ nsip-enable yes|no ] [ nsdname-enable yes|no ]
+ *	 [ fastrpz-enable yes|no ]
+ *	 [ fastrpz-options "Fastrpz configuration string" ];
  */
 
 static void
@@ -1512,6 +1516,8 @@ static cfg_tuplefielddef_t rpz_zone_fields[] = {
 	{ "max-policy-ttl", &cfg_type_uint32, 0 },
 	{ "policy", &cfg_type_rpz_policy, 0 },
 	{ "recursive-only", &cfg_type_boolean, 0 },
+	{ "nsip-enable", &cfg_type_boolean, 0 },
+	{ "nsdname-enable", &cfg_type_boolean, 0 },
 	{ NULL, NULL, 0 }
 };
 static cfg_type_t cfg_type_rpz_tuple = {
@@ -1532,6 +1538,10 @@ static cfg_tuplefielddef_t rpz_fields[] = {
 	{ "nsip-wait-recurse", &cfg_type_boolean, 0 },
 	{ "qname-wait-recurse", &cfg_type_boolean, 0 },
 	{ "recursive-only", &cfg_type_boolean, 0 },
+	{ "nsip-enable", &cfg_type_boolean, 0 },
+	{ "nsdname-enable", &cfg_type_boolean, 0 },
+	{ "fastrpz-enable", &cfg_type_boolean, 0 },
+	{ "fastrpz-options", &cfg_type_qstring, 0 },
 	{ NULL, NULL, 0 }
 };
 static cfg_type_t cfg_type_rpz = {
@@ -1816,6 +1826,8 @@ view_clauses[] = {
 	{ "resolver-query-timeout", &cfg_type_uint32, 0 },
 	{ "response-padding", &cfg_type_resppadding, 0 },
 	{ "response-policy", &cfg_type_rpz, 0 },
+	{ "fastrpz-enable", &cfg_type_boolean, 0 },
+	{ "fastrpz-options", &cfg_type_qstring, 0 },
 	{ "rfc2308-type1", &cfg_type_boolean, CFG_CLAUSEFLAG_NYI },
 	{ "root-delegation-only",  &cfg_type_optional_exclude, 0 },
 	{ "rrset-order", &cfg_type_rrsetorder, 0 },
