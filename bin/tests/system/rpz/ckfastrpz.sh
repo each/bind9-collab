@@ -47,7 +47,6 @@ if test -n "$AS_NS"; then
     MASTER="$MASTER
 			qname-as-ns yes
 			ip-as-ns yes"
-else
 fi
 
 wfiles () {
@@ -67,18 +66,14 @@ EOF
 }
 
 
-if test -e fastrpz-off; then
+test -e fastrpz-off && \
     wfiles "## fastrpz disabled by the existence of fastrpz-off"
-fi
 
-if test ! -x $FASTRPZ_CMD; then
+test ! -x $FASTRPZ_CMD &&
     wfiles "## make $FASTRPZ_CMD to test fastrpz"
-fi
 
-if $FASTRPZ_CMD -a 2>&1; then
-else
+$FASTRPZ_CMD -a 2>&1 || \
     wfiles "## no fastrpz tests; install fastrpz to test with it"
-fi
 
 # Try to fetch the license
 # use alt-dnsrpzd-license.conf if it exists
@@ -88,9 +83,9 @@ test -f $LCONF || LCONF=../rpz/dnsrpzd-license.conf
 cp $LCONF $CLCONF
 
 NAME=`sed -n -e '/^zone/s/.* \([-a-z0-9]*.license.fastrpz.com\).*/\1/p' $CLCONF`
-if test -z "$NAME"; then
+test -z "$NAME" && \
     wfiles "## no fastrpz tests; no license domain name in $CLCONF"
-fi
+
 # This TSIG key is common and NOT a secret
 KEY='hmac-sha256:farsight_fastrpz_license:f405d02b4c8af54855fcebc1'
 LSERVER=license1.fastrpz.com
