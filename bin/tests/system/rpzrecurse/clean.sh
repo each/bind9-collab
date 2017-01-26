@@ -18,3 +18,4 @@ rm -f ns3/named.conf
 rm -f ns*/*core *core
 rm -f dnsrpzd*
 rm -f fastrpz*.conf
+rm -f testnum

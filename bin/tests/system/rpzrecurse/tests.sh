@@ -11,6 +11,7 @@ SYSTEMTESTTOP=..
 . $SYSTEMTESTTOP/conf.sh
 
 status=0
+
 t=0
 
 FASTRPZ_TEST_MODE=
@@ -18,9 +19,10 @@ FASTRPZ_SW=fastrpz-off	# touch ./fastrpz-off to not test with fastrpz
 ARGS=
 DEBUG=
 
-USAGE="$0: [-xSF]"
-while getopts "xSF" c; do
+USAGE="$0: [-xSF] [-t testnum]"
+while getopts "xSFt:" c; do
     case $c in
+	t) t="$OPTARG";;
 	x) set -x; DEBUG=-x; ARGS="$ARGS -x";;
 	F) FASTRPZ_TEST_MODE=no;;	# -F to do a single test
 	*) echo "$USAGE" 1>&2; exit 1;;
@@ -47,6 +49,9 @@ if test -z "$FASTRPZ_TEST_MODE" && ../rpz/fastrpz -a >/dev/null; then
     # first set of tests
     $SHELL ./$0 -F $ARGS || exit 1
 
+    # get the test number before it's removed by clean.sh
+    [ -f testnum ] && . testnum
+
     echo "I:reload the servers to test with fastrpz $CMT"
     $TOGGLE $FASTRPZ_SW
     $SHELL ./setup.sh $DEBUG
@@ -55,8 +60,8 @@ if test -z "$FASTRPZ_TEST_MODE" && ../rpz/fastrpz -a >/dev/null; then
     $RNDC -c $SYSTEMTESTTOP/common/rndc.conf -p 9953 -s 10.53.0.2 flush
     $RNDC -c $SYSTEMTESTTOP/common/rndc.conf -p 9953 -s 10.53.0.3 flush
 
-    # second set of tests
-    $SHELL ./$0 $ARGS -F || status=1
+    # second set of tests, with updated test number
+    $SHELL ./$0 $ARGS -t $t -F || status=1
 
     rm -f $FASTRPZ_SW
     [ $status -eq 0 ] && echo "I:exit status: $status"
@@ -98,8 +103,8 @@ expect_norecurse() {
     t=`expr $t + 1`
     echo "I:testing $NAME doesn't recurse (${t})"
     run_query $TESTNAME $LINE || {
-        echo "I:test ${t} failed"
-        status=1
+	echo "I:test ${t} failed"
+	status=1
     }
 }
 
@@ -113,8 +118,8 @@ expect_recurse() {
     t=`expr $t + 1`
     echo "I:testing $NAME recurses (${t})"
     run_query $TESTNAME $LINE && {
-        echo "I:test ${t} failed"
-        status=1
+	echo "I:test ${t} failed"
+	status=1
     }
 }
 
@@ -254,8 +259,8 @@ for n in 1 2 3 4 5 6 7 8 9; do
     sleep 1
     [ -s dig.out.${t} ] || continue
     grep "status: NOERROR" dig.out.${t} > /dev/null 2>&1 || {
-        echo "I:test ${t} failed"
-        status=1
+	echo "I:test ${t} failed"
+	status=1
     }
 done
 
@@ -301,8 +306,8 @@ for n in 1 2 3 4 5 6 7 8 9; do
     sleep 1
     [ -s dig.out.${t} ] || continue
     grep "status: NOERROR" dig.out.${t} > /dev/null 2>&1 || {
-        echo "I:test ${t} failed"
-        status=1
+	echo "I:test ${t} failed"
+	status=1
     }
 done
 
@@ -438,6 +443,9 @@ echo "I:elasped time $p2 seconds"
 if test $p1 -le $p2; then ret=1; fi
 if test $ret != 0; then echo "I:failed"; fi
 status=`expr $status + $ret`
+
+# record test number
+echo "t=$t" > testnum
 
 # Let the parent test process announce an exit status of 0
 if test $status -ne 0 -o -z "$FASTRPZ_TEST_MODE"; then
