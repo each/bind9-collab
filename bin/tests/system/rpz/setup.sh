@@ -32,10 +32,7 @@ fi
 $SHELL clean.sh $DEBUG
 
 # decide whether to use fastrpz
-sh ../rpz/ckfastrpz.sh >fastrpz.conf || true
-
-# fastrpz configuration for named processes that do not start dnsrpzd
-sed -e "s/stdout'/& dnsrpzd ''/" fastrpz.conf >fastrpz-slave.conf
+sh ../rpz/ckfastrpz.sh -A $DEBUG
 
 # set up test policy zones.
 #   bl is the main test zone

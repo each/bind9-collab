@@ -16,5 +16,5 @@ rm -f ns2/named.[0-9]*.conf
 rm -f ns2/named.conf
 rm -f ns3/named.conf
 rm -f ns*/*core *core
-rm -f dnsrpzd.*
+rm -f dnsrpzd*
 rm -f fastrpz*.conf

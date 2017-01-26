@@ -6,11 +6,63 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+
 SYSTEMTESTTOP=..
 . $SYSTEMTESTTOP/conf.sh
 
 status=0
 t=0
+
+FASTRPZ_TEST_MODE=
+FASTRPZ_SW=fastrpz-off	# touch ./fastrpz-off to not test with fastrpz
+ARGS=
+DEBUG=
+
+USAGE="$0: [-xSF]"
+while getopts "xSF" c; do
+    case $c in
+	x) set -x; DEBUG=-x; ARGS="$ARGS -x";;
+	F) FASTRPZ_TEST_MODE=no;;	# -F to do a single test
+	*) echo "$USAGE" 1>&2; exit 1;;
+    esac
+done
+shift `expr $OPTIND - 1 || true`
+if test "$#" -ne 0; then
+    echo "$USAGE" 1>&2
+    exit 1
+fi
+# really quit on control-C
+trap 'exit 1' 1 2 15
+
+
+# Run the tests twice, with and without Fastrpz, if it is available.
+if test -z "$FASTRPZ_TEST_MODE" && ../rpz/fastrpz -a >/dev/null; then
+    if test -f dnsrpzd.rpzf; then
+	TOGGLE=touch
+	CMT=off
+    else
+	TOGGLE='rm -f'
+	CMT=on
+    fi
+    # first set of tests
+    $SHELL ./$0 -F $ARGS || exit 1
+
+    echo "I:reload the servers to test with fastrpz $CMT"
+    $TOGGLE $FASTRPZ_SW
+    $SHELL ./setup.sh $DEBUG
+    $RNDC -c $SYSTEMTESTTOP/common/rndc.conf -p 9953 -s 10.53.0.2 reload
+    $RNDC -c $SYSTEMTESTTOP/common/rndc.conf -p 9953 -s 10.53.0.3 reload
+    $RNDC -c $SYSTEMTESTTOP/common/rndc.conf -p 9953 -s 10.53.0.2 flush
+    $RNDC -c $SYSTEMTESTTOP/common/rndc.conf -p 9953 -s 10.53.0.3 flush
+
+    # second set of tests
+    $SHELL ./$0 $ARGS -F || status=1
+
+    rm -f $FASTRPZ_SW
+    [ $status -eq 0 ] && echo "I:exit status: $status"
+    exit $status
+fi
+
 
 # $1 = test name (such as 1a, 1b, etc. for which named.$1.conf exists)
 run_server() {
@@ -66,6 +118,7 @@ expect_recurse() {
     }
 }
 
+# show whether any why Fastrpz is enabled or disabled
 sed -n 's/^## /I:/p' fastrpz.conf
 
 t=`expr $t + 1`
@@ -386,5 +439,8 @@ if test $p1 -le $p2; then ret=1; fi
 if test $ret != 0; then echo "I:failed"; fi
 status=`expr $status + $ret`
 
-echo "I:exit status: $status"
+# Let the parent test process announce an exit status of 0
+if test $status -ne 0 -o -z "$FASTRPZ_TEST_MODE"; then
+    echo "I:exit status: $status"
+fi
 [ $status -eq 0 ] || exit 1

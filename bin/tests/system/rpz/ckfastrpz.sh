@@ -16,44 +16,87 @@ SYSTEMTESTTOP=..
 
 FASTRPZ_CMD=../rpz/fastrpz
 
+AS_NS=
+MCONF=fastrpz.conf
+SCONF=fastrpz-slave.conf
+USAGE="$0: [-xA]  -M fastrpz.conf  -S fastrpz-slave.conf"
+while getopts "xAC:S:" c; do
+    case $c in
+	x) set -x; DEBUG=-x;;
+	A) AS_NS=yes;;
+	M) MCONF="$OPTARG";;
+	S) SCONF="$OPTARG";;
+	*) echo "$USAGE" 1>&2; exit 1;;
+    esac
+done
+shift `expr $OPTIND - 1 || true`
+if test "$#" -ne 0; then
+    echo "$USAGE" 1>&2
+    exit 1
+fi
 
-cat <<EOF
-# common fastrpz configuration setttings
-	fastrpz-options "dnsrpzd-conf ../dnsrpzd.conf
+
+CMN="	fastrpz-options \"dnsrpzd-conf ../dnsrpzd.conf
 			dnsrpzd-sock ../dnsrpzd.sock
 			dnsrpzd-rpzf ../dnsrpzd.rpzf
-			dnsrpzd-args '-dddd -L stdout'";
+			dnsrpzd-args '-dddd -L stdout'"
+
+MASTER="$CMN
+			log-level 3"
+if test -n "$AS_NS"; then
+    MASTER="$MASTER
+			qname-as-ns yes
+			ip-as-ns yes"
+else
+fi
+
+wfiles () {
+    # write fastrpz setttings for master resolver
+    cat <<EOF >$MCONF
+$MASTER";
+$1
 EOF
 
+    # write fastrpz setttings resolvers that should not start dnsrpzd
+    cat <<EOF >$SCONF
+$CMN
+			dnsrpzd ''";
+$1
+EOF
+    exit 0
+}
+
+
 if test -e fastrpz-off; then
-    echo "## fastrpz disabled by the existence of fastrpz-off"
-    exit 1
+    wfiles "## fastrpz disabled by the existence of fastrpz-off"
 fi
 
 if test ! -x $FASTRPZ_CMD; then
-    echo "## make $FASTRPZ_CMD to test fastrpz"
-    exit 1
+    wfiles "## make $FASTRPZ_CMD to test fastrpz"
 fi
 
 if $FASTRPZ_CMD -a 2>&1; then
-    echo
 else
-    echo "## no fastrpz; install fastrpz to test with it"
-    exit 1
+    wfiles "## no fastrpz tests; install fastrpz to test with it"
 fi
 
 # Try to fetch the license
-if [ ! -f fastrpz.license ]; then
-    echo "## fastrpz disabled; license file missing"
-    exit 1
-fi
+# use alt-dnsrpzd-license.conf if it exists
+LCONF=../rpz/alt-dnsrpzd-license.conf
+CLCONF=dnsrpzd-license-cur.conf
+test -f $LCONF || LCONF=../rpz/dnsrpzd-license.conf
+cp $LCONF $CLCONF
 
-. fastrpz.license
+NAME=`sed -n -e '/^zone/s/.* \([-a-z0-9]*.license.fastrpz.com\).*/\1/p' $CLCONF`
+if test -z "$NAME"; then
+    wfiles "## no fastrpz tests; no license domain name in $CLCONF"
+fi
+# This TSIG key is common and NOT a secret
+KEY='hmac-sha256:farsight_fastrpz_license:f405d02b4c8af54855fcebc1'
+LSERVER=license1.fastrpz.com
 if `$DIG -t axfr -y$KEY $NAME @$LSERVER | grep "^$NAME.*TXT" >/dev/null`; then
-    echo "## testing with fastrpz"
-    echo "	fastrpz-enable yes;"
-    exit 0
+    wfiles "## testing with fastrpz
+	fastrpz-enable yes;"
 fi
 
-echo "## fastrpz disabled; no license for $NAME"
-exit 1
+wfiles "## fastrpz tests disabled without a license for $NAME"

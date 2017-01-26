@@ -13,32 +13,43 @@ set -e
 SYSTEMTESTTOP=..
 . $SYSTEMTESTTOP/conf.sh
 
-$SHELL clean.sh
+USAGE="$0: [-x]"
+DEBUG=
+while getopts "x" c; do
+    case $c in
+	x) set -x; DEBUG=-x;;
+	*) echo "$USAGE" 1>&2; exit 1;;
+    esac
+done
+shift `expr $OPTIND - 1 || true`
+if test "$#" -ne 0; then
+    echo "$USAGE" 1>&2
+    exit 1
+fi
+
+$SHELL clean.sh $DEBUG
 
 perl testgen.pl
 cp -f ns2/named.default.conf ns2/named.conf
 cp -f ns3/named1.conf ns3/named.conf
 
 # decide whether to use fastrpz
-if sh ../rpz/ckfastrpz.sh >fastrpz.conf; then
+sh ../rpz/ckfastrpz.sh $DEBUG
+if test -n "`grep 'fastrpz-enable yes' fastrpz.conf`"; then
     HAVE_FASTRPZ=yes
 else
     HAVE_FASTRPZ=
 fi
 
-# fastrpz configuration for named processes that do not start dnsrpzd
-sed -e "s/stdout'/& dnsrpzd ''/" fastrpz.conf >fastrpz-slave.conf
-
-DNSRPZD_LCONF=`pwd`
-DNSRPZD_LCONF=`dirname $DNSRPZD_LCONF`/rpz/dnsrpzd-license.conf
+CWD=`pwd`
 cat <<EOF >dnsrpzd.conf
-PID-FILE `pwd`/dnsrpzd.pid;
+PID-FILE $CWD/dnsrpzd.pid;
 
-include "$DNSRPZD_LCONF"
+include $CWD/dnsrpzd-license-cur.conf
 
 zone "policy" { type master; file "`pwd`/ns3/policy.db"; };
 EOF
-sed -n -e 's/^ *//' -e "/zone.*.*master/s@file \"@&`pwd`/ns2/@p" ns2/*.conf \
+sed -n -e 's/^ *//' -e "/zone.*.*master/s@file \"@&$CWD/ns2/@p" ns2/*.conf \
     >>dnsrpzd.conf
 
 # Run dnsrpzd to prime the static policy zones if we have fastrpz.
@@ -46,5 +57,4 @@ if test -n $HAVE_FASTRPZ; then
     DNSRPZD="`../rpz/fastrpz -p`"
     "$DNSRPZD" -D./dnsrpzd.rpzf -S./dnsrpzd.sock -C./dnsrpzd.conf \
 		-w 0 -dddd -L stdout >./dnsrpzd.run 2>&1
-    cd ..
 fi

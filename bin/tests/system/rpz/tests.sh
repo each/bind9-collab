@@ -1,15 +1,12 @@
+#!/bin/sh
+#
 # Copyright (C) 2011-2016  Internet Systems Consortium, Inc. ("ISC")
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-# $Id$
-
-
 # test response policy zones (RPZ)
-
-# touch fastrpz-off to not test with fastrpz
 
 SYSTEMTESTTOP=..
 . $SYSTEMTESTTOP/conf.sh
@@ -24,13 +21,21 @@ ns6=$ns.6		# a forwarding server
 ns7=$ns.7		# another rewriting resolver
 
 HAVE_CORE=
+
+status=0
+
 SAVE_RESULTS=
+FASTRPZ_TEST_MODE=
+FASTRPZ_SW=fastrpz-off	# touch ./fastrpz-off to not test with fastrpz
+ARGS=
+DEBUG=
 
-
-USAGE="$0: [-x]"
-while getopts "x" c; do
+USAGE="$0: [-xSF]"
+while getopts "xSF" c; do
     case $c in
-	x) set -x;;
+	x) set -x; DEBUG=-x; ARGS="$ARGS -x";;
+	S) SAVE_RESULTS=-S; ARGS="$ARGS -S";;
+	F) FASTRPZ_TEST_MODE=no;;	# -F to do a single test
 	*) echo "$USAGE" 1>&2; exit 1;;
     esac
 done
@@ -52,6 +57,35 @@ comment () {
 
 RNDCCMD="$RNDC -c $SYSTEMTESTTOP/common/rndc.conf -p 9953 -s"
 
+HAVE_FASTRPZ=yes
+test -f dnsrpzd.rpzf || HAVE_FASTRPZ=
+
+# Run the tests twice, with and without Fastrpz, if it is available.
+if test -z "$FASTRPZ_TEST_MODE" && ../rpz/fastrpz -a >/dev/null; then
+    if test -n "$HAVE_FASTRPZ"; then
+	TOGGLE=touch
+	CMT=off
+    else
+	TOGGLE='rm -f'
+	CMT=on
+    fi
+    # first set of tests
+    $SHELL ./$0 -F $ARGS || exit 1
+
+    echo "I:reload the servers to test with fastrpz $CMT"
+    $PERL $SYSTEMTESTTOP/stop.pl .
+    $TOGGLE $FASTRPZ_SW
+    $SHELL ./setup.sh $DEBUG
+    $PERL $SYSTEMTESTTOP/start.pl --noclean --restart .
+
+    # second set of tests
+    $SHELL ./$0 $ARGS -F || status=1
+
+    rm -f $FASTRPZ_SW
+    [ $status -eq 0 ] && echo "I:exit status: $status"
+    exit $status
+fi
+
 FASTRPZ_CMD=./fastrpz
 if test -x $FASTRPZ_CMD; then
     # speed up the many delays for dnsrpzd by waiting only 0.1 seconds
@@ -61,6 +95,8 @@ else
     WAIT_CMD="sleep 1"
     TEN_SECS=10
 fi
+
+# show whether and why Fastrpz is enabled or disabled
 sed -n 's/^## /I:/p' fastrpz.conf
 
 
@@ -72,8 +108,8 @@ digcmd () {
     # Also default to -bX where X is the @value so that OS X will choose
     #	    the right IP source address.
     digcmd_args=`echo "+nocookie +noadd +time=2 +tries=1 -p 5300 $*" |	\
-	    sed -e "/@/!s/.*/& @$ns3/"				\
-		-e '/-b/!s/@\([^ ]*\)/@\1 -b\1/'		\
+	    sed -e "/@/!s/.*/& @$ns3/"					\
+		-e '/-b/!s/@\([^ ]*\)/@\1 -b\1/'			\
 		-e '/+n?o?auth/!s/.*/+noauth &/'`
     #echo I:dig $digcmd_args 1>&2
     $DIG $digcmd_args
@@ -120,7 +156,7 @@ get_sn_fast () {
 # $1=domain  $2=DNS server IP address
 FZONES=`sed -n -e 's/^zone "\(.*\)".*\(10.53.0..\).*/Z=\1;M=\2/p' dnsrpzd.conf`
 fastrpz_loaded() {
-    test -f dnsrpzd.rpzf || return
+    test -n "$HAVE_FASTRPZ" || return
     n=0
     for V in $FZONES; do
 	eval "$V"
@@ -147,7 +183,7 @@ fastrpz_loaded() {
 ck_soa() {
     n=0
     while true; do
-	if test -f dnsrpzd.rpzf; then
+	if test -n "$HAVE_FASTRPZ"; then
 	    get_sn_fast "$2"
 	    test "$RSN" -eq "$1" && return
 	else
@@ -340,7 +376,7 @@ addr () {
     digcmd $2 >$DIGNM
     #ckalive "$2" "I:server crashed by 'dig $2'" || return 1
     ADDR_ESC=`echo "$ADDR" | sed -e 's/\./\\\\./g'`
-    ADDR_TTL=`sed -n -e "s/^[-.a-z0-9]\{1,\}	*\([0-9]*\)	IN	AA*	${ADDR_ESC}\$/\1/p" $DIGNM`
+    ADDR_TTL=`sed -n -e "s/^[-.a-z0-9]\{1,\}[	 ]*\([0-9]*\)	IN	AA*	${ADDR_ESC}\$/\1/p" $DIGNM`
     if test -z "$ADDR_TTL"; then
 	setret "I:'dig $2' wrong; no address $ADDR record in $DIGNM"
 	return 1
@@ -390,8 +426,6 @@ digcmd nonexistent @$ns2 >proto.nxdomain
 digcmd txt-only.tld2 @$ns2 >proto.nodata
 
 
-status=0
-
 start_group "QNAME rewrites" test1
 nochange .				# 1 do not crash or rewrite root
 nxdomain a0-1.tld2			# 2
@@ -436,26 +470,26 @@ ckstats $ns5 test1 ns5 1
 ckstats $ns6 test1 ns6 0
 
 start_group "NXDOMAIN/NODATA action on QNAME trigger" test1
-nxdomain a0-1.tld2 @$ns6                   # 1
-nodata a3-1.tld2 @$ns6                     # 2
-nodata a3-2.tld2 @$ns6                     # 3 nodata at DNAME itself
-nxdomain a4-2.tld2 @$ns6                   # 4 rewrite based on CNAME target
-nxdomain a4-2-cname.tld2 @$ns6             # 5
-nodata a4-3-cname.tld2 @$ns6               # 6
+nxdomain a0-1.tld2 @$ns6		   # 1
+nodata a3-1.tld2 @$ns6			   # 2
+nodata a3-2.tld2 @$ns6			   # 3 nodata at DNAME itself
+nxdomain a4-2.tld2 @$ns6		   # 4 rewrite based on CNAME target
+nxdomain a4-2-cname.tld2 @$ns6		   # 5
+nodata a4-3-cname.tld2 @$ns6		   # 6
 addr 12.12.12.12  "a4-1.sub1.tld2 @$ns6"   # 7 A replacement
 addr 12.12.12.12  "a4-1.sub2.tld2 @$ns6"   # 8 A replacement with wildcard
-addr 127.4.4.1    "a4-4.tld2 @$ns6"        # 9 prefer 1st conflicting QNAME zone
+addr 127.4.4.1    "a4-4.tld2 @$ns6"	   # 9 prefer 1st conflicting QNAME zone
 addr 12.12.12.12  "nxc1.sub1.tld2 @$ns6"   # 10 replace NXDOMAIN w/ CNAME
 addr 12.12.12.12  "nxc2.sub1.tld2 @$ns6"   # 11 replace NXDOMAIN w/ CNAME chain
-addr 127.6.2.1    "a6-2.tld2 @$ns6"        # 12
-addr 56.56.56.56  "a3-6.tld2 @$ns6"        # 13 wildcard CNAME
+addr 127.6.2.1    "a6-2.tld2 @$ns6"	   # 12
+addr 56.56.56.56  "a3-6.tld2 @$ns6"	   # 13 wildcard CNAME
 addr 57.57.57.57  "a3-7.sub1.tld2 @$ns6"   # 14 wildcard CNAME
 addr 127.0.0.16   "a4-5-cname3.tld2 @$ns6" # 15 CNAME chain
 addr 127.0.0.17   "a4-6-cname3.tld2 @$ns6" # 16 stop short in CNAME chain
-nxdomain c1.crash2.tld3 @$ns6              # 17 assert in rbtdb.c
-nxdomain a0-1.tld2 +dnssec @$ns6           # 18 simple DO=1 without sigs
+nxdomain c1.crash2.tld3 @$ns6		   # 17 assert in rbtdb.c
+nxdomain a0-1.tld2 +dnssec @$ns6	   # 18 simple DO=1 without sigs
 nxdomain a0-1s-cname.tld2s  +dnssec @$ns6  # 19
-drop a3-8.tld2 any @$ns6                   # 20 drop
+drop a3-8.tld2 any @$ns6		   # 20 drop
 end_group
 ckstatsrange $ns3 test1 ns3 22 25
 ckstats $ns5 test1 ns5 0
@@ -522,8 +556,15 @@ addr 12.12.12.12 a4-1.tld2		# 9 prefer QNAME policy to NSDNAME
 addr 127.0.0.1 a3-1.sub3.tld2		# 10 prefer policy for largest NSDNAME
 addr 127.0.0.2 a3-1.subsub.sub3.tld2
 nxdomain xxx.crash1.tld2		# 12 dns_db_detachnode() crash
+if test -n "$HAVE_FASTRPZ"; then
+    addr 12.12.12.12 as-ns.tld5.	# 13 qname-as-ns
+fi
 end_group
-ckstats $ns3 test3 ns3 7
+if test -n "$HAVE_FASTRPZ"; then
+    ckstats $ns3 test3 ns3 8
+else
+    ckstats $ns3 test3 ns3 7
+fi
 
 # these tests assume "min-ns-dots 0"
 start_group "NSIP rewrites" test4
@@ -531,6 +572,9 @@ nxdomain a3-1.tld2			# 1 NXDOMAIN for all of tld2
 nochange a3-2.tld2.			# 2 exempt rewrite by name
 nochange a0-1.tld2.			# 3 exempt rewrite by address block
 nochange a3-1.tld4			# 4 different NS IP address
+if test -n "$HAVE_FASTRPZ"; then
+    addr 12.12.12.12 as-ns.tld5.	# 5 ip-as-ns
+fi
 end_group
 
 start_group "walled garden NSIP rewrites" test4a
@@ -541,7 +585,11 @@ here a3-1.tld2 TXT <<'EOF'		# 3 text message for all of tld2
     a3-1.tld2.	    x	IN	TXT   "NSIP walled garden"
 EOF
 end_group
-ckstats $ns3 test4 ns3 4
+if test -n "$HAVE_FASTRPZ"; then
+    ckstats $ns3 test4 ns3 5
+else
+    ckstats $ns3 test4 ns3 4
+fi
 
 # policies in ./test5 overridden by response-policy{} in ns3/named.conf
 #   and in ns5/named.conf
@@ -643,6 +691,27 @@ else
     echo "I:performance not checked; queryperf not available"
 fi
 
+if test -n "$HAVE_FASTRPZ"; then
+    echo "I:checking that dnsrpzd is automatically restarted"
+    OLD_PID=`cat dnsrpzd.pid`
+    kill "$OLD_PID"
+    n=0
+    while true; do
+	NEW_PID=`cat dnsrpzd.pid 2>/dev/null`
+	if test -n "$NEW_PID" -a "0$OLD_PID" -ne "0$NEW_PID"; then
+	    #echo "OLD_PID=$OLD_PID  NEW_PID=$NEW_PID"
+	    break;
+	fi
+	$DIG -p 5300 +norecurse +short +norecurse a0-1.tld2 @$ns3 >/dev/null
+	n=`expr $n + 1`
+	if test "$n" -gt $TEN_SECS; then
+	    setret "I:dnsrpzd did not restart"
+	    break
+	fi
+	$WAIT_CMD
+    done
+fi
+
 
 # restart the main test RPZ server to see if that creates a core file
 if test -z "$HAVE_CORE"; then
@@ -703,11 +772,14 @@ grep NXDOMAIN dig.out.ns7 > /dev/null || setret I:failed
 
 # fastrpz does not allow NS RRs in policy zones, so this check
 # with fastrpz results in no rewriting.
-if test ! -f dnsrpzd.rpzf; then
+if test -z "$HAVE_FASTRPZ"; then
     echo "I:checking rpz with delegation fails correctly"
     $DIG -p 5300 @$ns3 ns example.com > dig.out.delegation
     grep "status: SERVFAIL" dig.out.delegation > /dev/null || setret "I:failed"
 fi
 
-echo "I:exit status: $status"
+# Let the parent test process announce an exit status of 0
+if test $status -ne 0 -o -z "$FASTRPZ_TEST_MODE"; then
+    echo "I:exit status: $status"
+fi
 [ $status -eq 0 ] || exit 1
