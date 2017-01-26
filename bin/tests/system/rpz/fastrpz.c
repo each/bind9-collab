@@ -6,8 +6,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-/* $Id$ */
-
 /*
  * -a		exit(0) if Fastrpz is available or dlopen() msg if not
  * -p		print the path to dnsrpzd configured in fastrpz so that
@@ -45,7 +43,7 @@ typedef struct {char c[120];} librpz_emsg_t;
 static isc_boolean_t link_fastrpz(librpz_emsg_t *emsg);
 
 
-#define USAGE "usage: [-ap] [-n domain] [-w sec.onds]\n"
+#define USAGE "usage: [-ap] [-n domain] [-w seconds]\n"
 
 int
 main(int argc, char **argv) {
@@ -138,7 +136,7 @@ main(int argc, char **argv) {
 				fputs(USAGE, stderr);
 				return (1);
 			}
-			usleep((int)(seconds*1000.0*1000.0));
+			usleep((int)(seconds * 1000.0 * 1000.0));
 			return (0);
 
 		default:
