@@ -20,12 +20,15 @@ implementation of the DNS (Domain Name System) protocol.
 
 The BIND name server, named, is able to serve as an authoritative name
 server, recursive resolver, DNS forwarder, or all three simultaneously. It
-implements DNS Security features (DNSSEC) to sign and validate responses,
-response policy zones (RPZ) to protect clients from malicious data, and
-many other advanced DNS features. BIND also includes a suite of
-administrative tools, including dig and delv (DNS lookup tools), nsupdate
-(dynamic DNS update tool), rndc (remote name server administration tool),
-and more.
+implements views for split-horizon DNS, automatic DNSSEC zone signing and
+key management, catalog zones to facilitate provisioning of zone data
+throughout a name server constellation, response policy zones (RPZ) to
+protect clients from malicious data, response rate limiting (RRL) and
+recursive query limits to reduce distributed denial of service attacks,
+and many other advanced DNS features. BIND also includes a suite of
+administrative tools, including the dig and delv DNS lookup tools,
+nsupdate for dynamic DNS zone updates, rndc for remote name server
+administration, and more.
 
 BIND 9 is a complete re-write of the BIND architecture that was used in
 versions 4 and 8. Internet Systems Consortium (https://www.isc.org), a 501
