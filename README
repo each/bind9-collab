@@ -95,21 +95,6 @@ BUILD_CPPFLAGS
 BUILD_LDFLAGS
 BUILD_LIBS
 
-Some settings for STD_CDEFINES include:
-
-Setting                   Description
--DISC_FACILITY=LOG_LOCAL0 Change the default syslog facility for named
-                          Enable DNSSEC signature chasing support in dig.
--DDIG_SIGCHASE=1          (Note: This feature is deprecated. Use delv
-                          instead.)
--DNS_CLIENT_DROPPORT=0    Disable dropping queries from particular
-                          well-known ports:
--DCHECK_SIBLING=0         Don't check sibling glue in named-checkzone
--DCHECK_LOCAL=0           Don't check out-of-zone addresses in
-                          named-checkzone
--DNS_RUN_PID_DIR=0        Create default PID files in ${localstatedir}/run
-                          rather than ${localstatedir}/run/{named,lwresd}/
-
 Compile-time options
 
 On most platforms, BIND 9 is built with multithreading support, allowing
@@ -175,6 +160,29 @@ is a --prefix option, sysconfdir defaults to $prefix/etc and localstatedir
 defaults to $prefix/var.
 
 To see additional configuration options, run configure --help.
+
+Setting the STD_CDEFINES environment variable before running configure can
+be used to enable certain code options that are not explicitly defined in
+configure. Some of these settings are:
+
+Setting                   Description
+                          Don't ovewrite memory when allocating or freeing
+-DISC_MEM_FILL=0          it; this improves performance but makes
+                          debugging more difficult.
+                          Don't track memory allocations by file and line
+-DISC_MEM_TRACKLINES=0    number; this improves performance but makes
+                          debugging more difficult.
+-DISC_FACILITY=LOG_LOCAL0 Change the default syslog facility for named
+-DNS_CLIENT_DROPPORT=0    Disable dropping queries from particular
+                          well-known ports:
+-DCHECK_SIBLING=0         Don't check sibling glue in named-checkzone
+-DCHECK_LOCAL=0           Don't check out-of-zone addresses in
+                          named-checkzone
+-DNS_RUN_PID_DIR=0        Create default PID files in ${localstatedir}/run
+                          rather than ${localstatedir}/run/{named,lwresd}/
+                          Enable DNSSEC signature chasing support in dig.
+-DDIG_SIGCHASE=1          (Note: This feature is deprecated. Use delv
+                          instead.)
 
 Automated testing
 
