@@ -90,8 +90,8 @@ test-force:
 	exit $$status
 
 README: README.md
-	pandoc --email-obfuscation=none -s -t html README.md | \
-		w3m -dump -cols 75 -O ascii -T text/html > README
+	${PANDOC} --email-obfuscation=none -s -t html README.md | \
+		${W3M} -dump -cols 75 -O ascii -T text/html > $@
 
 FAQ: FAQ.xml
 	${XSLTPROC} doc/xsl/isc-docbook-text.xsl FAQ.xml | \
