@@ -1,5 +1,18 @@
 BIND 9
 
+Contents
+
+ 1. Introduction
+ 2. Reporting bugs and getting help
+ 3. Contributing to BIND
+ 4. BIND 9.12 features
+ 5. Building BIND
+ 6. Compile-time options
+ 7. Automated testing
+ 8. Documentation
+ 9. Change log
+10. Acknowledgments
+
 Introduction
 
 BIND (Berkeley Internet Name Domain) is a complete, highly portable
@@ -31,7 +44,25 @@ the file CHANGES.
 For up-to-date release notes and errata, see http://www.isc.org/software/
 bind9/releasenotes
 
-BIND 9.12
+Reporting bugs and and getting help
+
+Bug reports should be sent to bind9-bugs@isc.org
+
+Feature requests can be sent to bind-suggest@isc.org
+
+To join or view the archives of the BIND Users mailing list, visit https:/
+/lists.isc.org/mailman/listinfo/bind-users
+
+If you're planning on making changes to the BIND 9 source code, you may
+also want to join the BIND Workers mailing list, at https://lists.isc.org/
+mailman/listinfo/bind-workers
+
+Contributing to BIND
+
+Information on source access, coding style and developer guidelines can be
+found at http://www.isc.org/git/
+
+BIND 9.12 features
 
 BIND 9.12.0 is the newest development branch of BIND 9. It includes a
 number of changes from BIND 9.11 and earlier releases. New features
@@ -48,7 +79,7 @@ include:
   * named-checkconf -l lists zones found in named.conf
   * Added support for the EDNS Padding and Keepalive options
 
-Building
+Building BIND
 
 BIND requires a UNIX or Linux system with an ANSI C compiler, basic POSIX
 support, and a 64-bit integer type. Successful builds have been observed
@@ -212,7 +243,7 @@ Frequently asked questions and their answers can be found in FAQ.
 Additional information on various subjects can be found in other README
 files throughout the source tree.
 
-Change Log
+Change log
 
 A detailed list of all changes that have been made throughout the
 development BIND 9 is included in the file CHANGES, with the most recent
@@ -246,22 +277,6 @@ In general, [func] and [experimental] tags will only appear in new-feature
 releases (i.e., those with version numbers ending in zero). Some new
 functionality may be backported to older releases on a case-by-case basis.
 All other change types may be applied to all currently-supported releases.
-
-Bug Reports and Mailing Lists
-
-Bug reports should be sent to bind9-bugs@isc.org
-
-Feature requests can be sent to bind-suggest@isc.org
-
-To join or view the archives of the BIND Users mailing list, visit https:/
-/lists.isc.org/mailman/listinfo/bind-users
-
-If you're planning on making changes to the BIND 9 source code, you may
-also want to join the BIND Workers mailing list, at https://lists.isc.org/
-mailman/listinfo/bind-workers
-
-Information on read-only Git access, coding style and developer guidelines
-can be found at http://www.isc.org/git/
 
 Acknowledgments
 

@@ -1,6 +1,19 @@
 # BIND 9
 
-### Introduction
+### Contents
+
+1. [Introduction](#intro)
+1. [Reporting bugs and getting help](#help)
+1. [Contributing to BIND](#contrib)
+1. [BIND 9.12 features](#features)
+1. [Building BIND](#build)
+1. [Compile-time options](#opts)
+1. [Automated testing](#testing)
+1. [Documentation](#doc)
+1. [Change log](#changes)
+1. [Acknowledgments](#ack)
+
+### <a name="intro"/> Introduction
 
 BIND (Berkeley Internet Name Domain) is a complete, highly portable
 implementation of the DNS (Domain Name System) protocol.
@@ -31,7 +44,27 @@ the file `CHANGES`.
 For up-to-date release notes and errata, see
 [http://www.isc.org/software/bind9/releasenotes](http://www.isc.org/software/bind9/releasenotes)
 
-### BIND 9.12
+### <a name="help"/> Reporting bugs and and getting help
+
+Bug reports should be sent to
+[bind9-bugs@isc.org](mailto:bind9-bugs@isc.org)
+
+Feature requests can be sent to
+[bind-suggest@isc.org](mailto:bind-suggest@isc.org)
+
+To join or view the archives of the __BIND Users__ mailing list, visit
+[https://lists.isc.org/mailman/listinfo/bind-users](https://lists.isc.org/mailman/listinfo/bind-users)
+
+If you're planning on making changes to the BIND 9 source code, you may
+also want to join the __BIND Workers__ mailing list, at
+[https://lists.isc.org/mailman/listinfo/bind-workers](https://lists.isc.org/mailman/listinfo/bind-workers)
+
+### <a name="contrib"/> Contributing to BIND
+
+Information on source access, coding style and developer guidelines
+can be found at [http://www.isc.org/git/](http://www.isc.org/git/)
+
+### <a name="features"/> BIND 9.12 features
 
 BIND 9.12.0 is the newest development branch of BIND 9. It includes a
 number of changes from BIND 9.11 and earlier releases.  New features
@@ -48,7 +81,7 @@ include:
 * `named-checkconf -l` lists zones found in `named.conf`
 * Added support for the EDNS Padding and Keepalive options
 
-### Building
+### <a name="build"/> Building BIND
 
 BIND requires a UNIX or Linux system with an ANSI C compiler, basic POSIX
 support, and a 64-bit integer type. Successful builds have been observed on
@@ -88,7 +121,7 @@ affect compilation:
 |`BUILD_LDFLAGS`||
 |`BUILD_LIBS`||
 
-### Compile-time options
+#### <a name="opts"/> Compile-time options
 
 On most platforms, BIND 9 is built with multithreading support, allowing it
 to take advantage of multiple CPUs.  You can configure this by specifying
@@ -171,7 +204,7 @@ in `configure`. Some of these settings are:
 |`-DNS_RUN_PID_DIR=0`|Create default PID files in `${localstatedir}/run` rather than `${localstatedir}/run/{named,lwresd}/`|
 |`-DDIG_SIGCHASE=1`|Enable DNSSEC signature chasing support in `dig`.  (Note: This feature is deprecated. Use `delv` instead.)|
 
-### Automated testing
+### <a name="testing"/> Automated testing
 
 A system test suite can be run with `make test`.  The system tests require
 you to configure a set of virtual IP addresses on your system (this allows
@@ -185,7 +218,7 @@ Unit tests are implemented using Automated Testing Framework (ATF).
 To run them, use `configure --with-atf`, then run `make test` or
 `make unit`.
 
-### Documentation
+### <a name="doc"/> Documentation
 
 The *BIND 9 Administrator Reference Manual* is included with the source
 distribution, in DocBook XML, HTML and PDF format, in the `doc/arm`
@@ -200,7 +233,7 @@ Frequently asked questions and their answers can be found in `FAQ`.
 Additional information on various subjects can be found in other
 `README` files throughout the source tree.
 
-### Change Log
+### <a name="changes"/> Change log
 
 A detailed list of all changes that have been made throughout the
 development BIND 9 is included in the file CHANGES, with the most recent
@@ -229,25 +262,7 @@ releases (i.e., those with version numbers ending in zero).  Some new
 functionality may be backported to older releases on a case-by-case basis.
 All other change types may be applied to all currently-supported releases.
 
-### Bug Reports and Mailing Lists
-
-Bug reports should be sent to
-[bind9-bugs@isc.org](mailto:bind9-bugs@isc.org)
-
-Feature requests can be sent to
-[bind-suggest@isc.org](mailto:bind-suggest@isc.org)
-
-To join or view the archives of the __BIND Users__ mailing list, visit
-[https://lists.isc.org/mailman/listinfo/bind-users](https://lists.isc.org/mailman/listinfo/bind-users)
-
-If you're planning on making changes to the BIND 9 source code, you may
-also want to join the __BIND Workers__ mailing list, at
-[https://lists.isc.org/mailman/listinfo/bind-workers](https://lists.isc.org/mailman/listinfo/bind-workers)
-
-Information on read-only Git access, coding style and developer guidelines
-can be found at [http://www.isc.org/git/](http://www.isc.org/git/)
-
-### Acknowledgments
+### <a name="ack"/> Acknowledgments
 
 * The original development of BIND 9 was underwritten by the
   following organizations:
