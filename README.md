@@ -18,8 +18,8 @@ BIND 9 is a complete re-write of the BIND architecture that was used in
 versions 4 and 8.  Internet Systems Consortium
 ([https://www.isc.org](https://www.isc.org)), a 501(c)(3) public benefit
 corporation dedicated to providing software and services in support of the
-Internet infrastructure, developed BIND 9 and is responsible for ongoing
-maintenance and development of BIND.  BIND is open source software,
+Internet infrastructure, developed BIND 9 and is responsible for its
+ongoing maintenance and improvement.  BIND is open source software
 licenced under the terms of the Mozilla Public License, version 2.0.
 
 For a summary of features introduced in major releases of BIND, see
