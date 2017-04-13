@@ -1,323 +1,330 @@
-                                     BIND 9
-
-   BIND is a full implementation of the DNS protocol, able to serve as an
-   authoritative name server, recursive resolver, or forwarder,
-   implementing DNS Security features (DNSSEC) to sign and validate DNS
-   responses. BIND 9 was a complete re-write of the BIND architecture used
-   in versions 4 and 8. Development was underwritten by the following
-   organizations:
-    Sun Microsystems, Inc.
-    Hewlett Packard
-    Compaq Computer Corporation
-    IBM
-    Process Software Corporation
-    Silicon Graphics, Inc.
-    Network Associates, Inc.
-    U.S. Defense Information Systems Agency
-    USENIX Association
-    Stichting NLnet - NLnet Foundation
-    Nominum, Inc.
-
-   Internet Systems Consortium, Inc. https://www.isc.org is responsible
-   for ongoing maintenance and development of BIND 9.
-
-   For a detailed list of changes made throughout the history of BIND 9,
-   see the CHANGES file.
-
-   For up-to-date release notes and errata, see
-   http://www.isc.org/software/bind9/releasenotes
-
-  Major features of BIND 9.12
-
-   BIND 9.12.0 includes a number of changes from BIND 9.11 and earlier
-   releases. New features include:
-     * The query handling code has been substantially refactored for
-       improved readability, maintainability and testability
-     * dnstap output files can now be configured to roll automatically
-       when reaching a given size
-     * Log file timestamps can now also be formatted in ISO 8601 (local)
-       or ISO 8601 (UTC) formats
-     * Logging channels and dnstap output files can now be configured to
-       use a timestamp as the suffix when rolling to a new file
-     * named-checkconf -l lists zones found in named.conf
-     * Added support for the EDNS Padding and Keepalive options
-
-   For a summary of features introduced in prior major releases of BIND,
-   see the HISTORY file.
-
-  Building
-
-   BIND requires a UNIX or Linux system with an ANSI C compiler, basic
-   POSIX support, and a 64-bit integer type. Successful builds have been
-   observed on many versions of Linux including RedHat, Fedora, Debian,
-   Ubuntu, SuSE, Slackware, FreeBSD, NetBSD, OpenBSD, Mac OS X, Solaris,
-   HP-UX, AIX, SCO OpenServer, and OpenWRT.
-
-   BIND is also available for Windows XP, 2003, 2008, and higher. (Older
-   versions of Windows, including Windows NT and Windows 2000, are not
-   supported.) See win32utils/readme1st.txt for details on building for
-   Windows systems.
-
-   To build on a UNIX or Linux system, use:
-    $ ./configure
-    $ make
-
-   (NOTE: Using multiple processors in make is not reliable and is not
-   advised.)
-
-   Several environment variables that can be set before running configure
-   will affect compilation:
-CC
-    The C compiler to use.  `configure` tries to figure
-    out the right one for supported systems.
-
-CFLAGS
-    C compiler flags.  Defaults to include -g and/or -O2
-    as supported by the compiler.  Please include '-g'
-    if you need to set `CFLAGS`.
-
-STD_CINCLUDES
-    System header file directories.  Can be used to specify
-    where add-on thread or IPv6 support is, for example.
-    Defaults to empty string.
-
-STD_CDEFINES
-    Any additional preprocessor symbols you want defined.
-    Defaults to empty string.
-
-    Possible settings:
-    Change the default syslog facility for `named` or `lwresd`:
-      `-DISC_FACILITY=LOG_LOCAL0`
-
-    Enable DNSSEC signature chasing support in `dig`.
-              `-DDIG_SIGCHASE=1` (sets `-DDIG_SIGCHASE_TD=1` and
-              `-DDIG_SIGCHASE_BU=1`)
-      (Note: This feature is deprecated. Use `delv` instead.)
-
-    Disable dropping queries from particular well known ports:
-      `-DNS_CLIENT_DROPPORT=0`
-
-    Sibling glue checking in named-checkzone is enabled by default.
-    To disable the default check, set `-DCHECK_SIBLING=0`
-
-    `named-checkzone` checks out-of-zone addresses by default.
-    To disable this default, set `-DCHECK_LOCAL=0`
-
-            To create the default pid files in `${localstatedir}/run`
-            rather than `${localstatedir}/run/{named,lwresd}/`, set:
-            `-DNS_RUN_PID_DIR=0`
-
-            Enable workaround for Solaris kernel bug handling
-            `/dev/poll`, use: `-DISC_SOCKET_USE_POLLWATCH=1`. The watch
-            timeout is also configurable, e.g.,
-            `-DISC_SOCKET_POLLWATCH_TIMEOUT=20`
-
-LDFLAGS
-    Linker flags. Defaults to empty string.
-
-   The following environment variables need to be set when
-   cross-compiling:
-BUILD_CC
-    The native C compiler.
-BUILD_CFLAGS (optional)
-BUILD_CPPFLAGS (optional)
-    Possible Settings:
-    -DNEED_OPTARG=1         (optarg is not declared in <unistd.h>)
-BUILD_LDFLAGS (optional)
-    BUILD_LIBS (optional)
-
-   On most platforms, BIND 9 is built with multithreading support,
-   allowing it to take advantage of multiple CPUs. You can configure this
-   by specifying --enable-threads or --disable-threads on the configure
-   command line. The default is to enable threads, except on some older
-   operating systems on which threads are known to have had problems in
-   the past. (Note: Prior to BIND 9.10, the default was to disable threads
-   on Linux systems; this has now been reversed. On Linux systems, the
-   threaded build is known to change BIND's behavior with respect to file
-   permissions; it may be necessary to specify a user with the -u option
-   when running named.)
-
-   To build shared libraries, specify --with-libtool on the configure
-   command line.
-
-   Certain compiled-in constants and default settings can be increased to
-   values better suited to large servers with abundant memory resources
-   (e.g, 64-bit servers with 12G or more of memory) by specifying
-   --with-tuning=large on the configure command line. This can improve
-   performance on big servers, but will consume more memory and may
-   degrade performance on smaller systems.
-
-   For the server to support DNSSEC, you need to build it with crypto
-   support. You must have OpenSSL 1.0.1t or newer installed. If OpenSSL is
-   installed under a nonstandard prefix, you can tell configure where to
-   look for it using --with-openssl=/prefix.
-
-   To support the HTTP statistics channel, the server must be linked with
-   at least one of the following: libxml2 http://xmlsoft.org or json-c
-   https://github.com/json-c. If these are installed at a nonstandard
-   prefix, use --with-libxml2=/prefix or --with-libjson=/prefix.
-
-   To support compression on the HTTP statistics channel, the server must
-   be linked against libzlib. If this is installed at a nonstandard
-   prefix, use --with-zlib=/prefix.
-
-   Python requires the 'argparse' and 'ply' modules to be available.
-   'argparse' is a standard module as of Python 2.7 and Python 3.2.
-
-   On some platforms it is necessary to explicitly request large file
-   support to handle files bigger than 2GB. This can be done by using
-   --enable-largefile on the configure command line.
-
-   Support for the "fixed" rrset-order option can be enabled or disabled
-   by specifying --enable-fixed-rrset or --disable-fixed-rrset on the
-   configure command line. By default, fixed rrset-order is disabled to
-   reduce memory footprint.
-
-   If your operating system has integrated support for IPv6, it will be
-   used automatically. If you have installed KAME IPv6 separately, use
-   --with-kame[=PATH] to specify its location.
-
-   make install will install named and the various BIND 9 libraries. By
-   default, installation is into /usr/local, but this can be changed with
-   the --prefix option when running configure.
-
-   You may specify the option --sysconfdir to set the directory where
-   configuration files like named.conf go by default, and --localstatedir
-   to set the default parent directory of run/named.pid. For backwards
-   compatibility with BIND 8, --sysconfdir defaults to /etc and
-   --localstatedir defaults to /var if no --prefix option is given. If
-   there is a --prefix option, sysconfdir defaults to $prefix/etc and
-   localstatedir defaults to $prefix/var.
-
-   To see additional configure options, run configure --help. Note that
-   the help message does not reflect the BIND 8 compatibility defaults for
-   sysconfdir and localstatedir.
-
-   If you're planning on making changes to the BIND 9 source, you should
-   also make depend. If you're using Emacs, you might find make tags
-   helpful.
-
-   If you need to re-run configure, run make distclean first. This will
-   ensure that all the option changes take.
-
-   Known compiler issues:
-     * gcc-3.2.1 and gcc-3.1.1 are known to cause problems with
-       solaris-x86
-     * gcc prior to gcc-3.2.3 ultrasparc generates incorrect code at -02
-     * gcc-3.3.5 powerpc generates incorrect code at -02
-     * Irix, MipsPRO 7.4.1m is known to cause problems
 
-   A limited test suite can be run with make test. Many of the tests
-   require you to configure a set of virtual IP addresses on your system,
-   and some require Perl or Python; see bin/tests/system/README for
-   details.
-
-  Known limitations
 
-     * Linux requires kernel build 2.6.39 or later to get performance
-       benefits from using multiple sockets.
+BIND 9
 
-  Documentation
 
-   The BIND 9 Administrator Reference Manual is included with the source
-   distribution in DocBook XML and HTML format, in the doc/arm directory.
-
-   Some of the programs in the BIND 9 distribution have man pages in their
-   directories. In particular, the command line options of named are
-   documented in bin/named/named.8. There is now also a set of man pages
-   for the lwres library.
-
-   If you are upgrading from BIND 8, please read the migration notes in
-   doc/misc/migration. If you are upgrading from BIND 4, read
-   doc/misc/migration-4to9.
-
-   Frequently asked questions and their answers can be found in FAQ.
-
-   Additional information on various subjects can be found in the other
-   README files.
-
-  Change Log
-
-   A detailed list of all changes to BIND 9 is included in the file
-   CHANGES, with the most recent changes listed first. Change notes
-   include tags indicating the category of the change that was made; these
-   categories are:
-
-   [func]
-          New feature
-
-   [bug]
-          General bug fix
-
-   [security]
-          Fix for a significant security flaw
-
-   [experimental]
-          Used for new features when the syntax or other aspects of the
-          design are still in flux and may change
-
-   [port]
-          Portability enhancement
-
-   [maint]
-          Updates to built-in data such as root server addresses and keys
-
-   [tuning]
-          Changes to built-in configuration defaults and constants to
-          improve performance
-
-   [performance]
-          Other changes to improve server performance
-
-   [protocol]
-          Updates to the DNS protocol such as new RR types
-
-   [test]
-          Changes to the automatic tests, not affecting server
-          functionality
-
-   [cleanup]
-          Minor corrections and refactoring
-
-   [doc]
-          Documentation
-
-   [contrib]
-          Changes to the contributed tools and libraries in the 'contrib'
-          subdirectory
-
-   [placeholder]
-          Used in the master development branch to reserve change numbers
-          for use in other branches, e.g. when fixing a bug that only
-          exists in older releases
-
-   In general, [func] and [experimental] tags will only appear in
-   new-feature releases (i.e., those with version numbers ending in zero).
-   Some new functionality may be backported to older releases on a
-   case-by-case basis. All other change types may be applied to all
-   currently-supported releases.
-
-  Bug Reports and Mailing Lists
-
-   Bug reports should be sent to bind9-bugs at isc dot org
-
-   Feature requests can be sent to bind-suggest at isc dot org
-
-   To join or view the archives of the BIND Users mailing list, visit
-   https://lists.isc.org/mailman/listinfo/bind-users
-
-   If you're planning on making changes to the BIND 9 source code, you may
-   also want to join the BIND Workers mailing list, at
-   https://lists.isc.org/mailman/listinfo/bind-workers
-
-   Information on read-only Git access, coding style and developer
-   guidelines can be found at http://www.isc.org/git/
-
-  Acknowledgments
-
-     * This product includes software developed by the OpenSSL Project for
-       use in the OpenSSL Toolkit. http://www.OpenSSL.org/
-     * This product includes cryptographic software written by Eric Young
-       (eay@cryptsoft.com)
-     * This product includes software written by Tim Hudson
-       (tjh@cryptsoft.com)
+BIND (Berkeley Internet Name Domain) is a complete, highly portable
+implementation of the domain name system (DNS) protocol. The BIND name
+server, named, is able to serve as an authoritative name server,
+recursive resolver, DNS forwarder, or all three simultaneously. It
+implements DNS Security features (DNSSEC) to sign and validate
+responses, response policy zones (RPZ) to protect from malicious data,
+and many other advanced DNS features.
+
+BIND also includes a suite of administrative tools, including dig and
+delv (DNS lookup tools), nsupdate (dynamic DNS update tool), rndc
+(remote server administration tool) and many more.
+
+BIND 9 is a complete re-write of the BIND architecture that was used in
+versions 4 and 8.
+
+Internet Systems Consortium, Inc. https://www.isc.org is responsible for
+ongoing maintenance and development of BIND.
+
+For a detailed list of changes made throughout the history of BIND 9,
+see the CHANGES file.
+
+For up-to-date release notes and errata, see
+http://www.isc.org/software/bind9/releasenotes
+
+Major features of BIND 9.12
+
+BIND 9.12.0 includes a number of changes from BIND 9.11 and earlier
+releases. New features include:
+
+-   The query handling code has been substantially refactored for
+    improved readability, maintainability and testability
+-   dnstap output files can now be configured to roll automatically when
+    reaching a given size
+-   Log file timestamps can now also be formatted in ISO 8601 (local) or
+    ISO 8601 (UTC) formats
+-   Logging channels and dnstap output files can now be configured to
+    use a timestamp as the suffix when rolling to a new file
+-   named-checkconf -l lists zones found in named.conf
+-   Added support for the EDNS Padding and Keepalive options
+
+For a summary of features introduced in prior major releases of BIND,
+see the HISTORY file.
+
+Building
+
+BIND requires a UNIX or Linux system with an ANSI C compiler, basic
+POSIX support, and a 64-bit integer type. Successful builds have been
+observed on many versions of Linux including RedHat, Fedora, Debian,
+Ubuntu, SuSE, Slackware, FreeBSD, NetBSD, OpenBSD, Mac OS X, Solaris,
+HP-UX, AIX, SCO OpenServer, and OpenWRT.
+
+BIND is also available for Windows XP, 2003, 2008, and higher. (Older
+versions of Windows, including Windows NT and Windows 2000, are not
+supported.) See win32utils/readme1st.txt for details on building for
+Windows systems.
+
+To build on a UNIX or Linux system, use:
+
+        $ ./configure
+        $ make
+
+(NOTE: Using multiple processors in make is not reliable and is not
+advised.)
+
+Several environment variables that can be set before running configure
+will affect compilation:
+
+  ----------------------------------------------------------------------
+  Variable              Description
+  --------------------- ------------------------------------------------
+  CC                    The C compiler to use. configure tries to figure
+                        out the right one for supported systems.
+
+  CFLAGS                C compiler flags. Defaults to include -g and/or
+                        -O2 as supported by the compiler. Please include
+                        '-g' if you need to set CFLAGS.
+
+  STD_CINCLUDES         System header file directories. Can be used to
+                        specify where add-on thread or IPv6 support is,
+                        for example. Defaults to empty string.
+
+  STD_CDEFINES          Any additional preprocessor symbols you want
+                        defined. Defaults to empty string. For a list of
+                        possible settings, see below.
+
+  LDFLAGS               Linker flags. Defaults to empty string.
+
+  BUILD_CC              Needed when cross-compiling: the native C
+                        compiler to use when building for the target
+                        system.
+
+  BUILD_CFLAGS          Optional, used for cross-compiling
+
+  BUILD_CPPFLAGS        
+
+  BUILD_LDFLAGS         
+
+  BUILD_LIBS            
+  ----------------------------------------------------------------------
+
+    Possible settings for `STD_CDEFINES` include:
+
+        Change the default syslog facility for `named` or `lwresd`:
+          `-DISC_FACILITY=LOG_LOCAL0`
+
+        Enable DNSSEC signature chasing support in `dig`.
+          `-DDIG_SIGCHASE=1` (sets `-DDIG_SIGCHASE_TD=1` and
+          `-DDIG_SIGCHASE_BU=1`)
+          (Note: This feature is deprecated. Use `delv` instead.)
+
+        Disable dropping queries from particular well known ports:
+          `-DNS_CLIENT_DROPPORT=0`
+
+        Sibling glue checking in named-checkzone is enabled by default.
+        To disable the default check, set `-DCHECK_SIBLING=0`
+
+        `named-checkzone` checks out-of-zone addresses by default.
+        To disable this default, set `-DCHECK_LOCAL=0`
+
+        To create the default pid files in `${localstatedir}/run`
+        rather than `${localstatedir}/run/{named,lwresd}/`, set:
+          `-DNS_RUN_PID_DIR=0`
+
+        Enable workaround for Solaris kernel bug handling
+                `/dev/poll`, use:
+          `-DISC_SOCKET_USE_POLLWATCH=1`.
+
+        The watch timeout is also configurable, e.g.:
+          `-DISC_SOCKET_POLLWATCH_TIMEOUT=20`
+
+If you're planning on making changes to the BIND 9 source, you should
+run make depend. If you're using Emacs, you might find make tags
+helpful.
+
+If you need to re-run configure, run make distclean first. This will
+ensure that all the option changes take.
+
+Compile-time options
+
+On most platforms, BIND 9 is built with multithreading support, allowing
+it to take advantage of multiple CPUs. You can configure this by
+specifying --enable-threads or --disable-threads on the configure
+command line. The default is to enable threads, except on some older
+operating systems on which threads are known to have had problems in the
+past. (Note: Prior to BIND 9.10, the default was to disable threads on
+Linux systems; this has now been reversed. On Linux systems, the
+threaded build is known to change BIND's behavior with respect to file
+permissions; it may be necessary to specify a user with the -u option
+when running named.)
+
+To build shared libraries, specify --with-libtool on the configure
+command line.
+
+Certain compiled-in constants and default settings can be increased to
+values better suited to large servers with abundant memory resources
+(e.g, 64-bit servers with 12G or more of memory) by specifying
+--with-tuning=large on the configure command line. This can improve
+performance on big servers, but will consume more memory and may degrade
+performance on smaller systems.
+
+For the server to support DNSSEC, you need to build it with crypto
+support. You must have OpenSSL 1.0.1t or newer installed. If OpenSSL is
+installed at a nonstandard prefix, you can tell configure where to look
+for it using --with-openssl=/prefix.
+
+To support the HTTP statistics channel, the server must be linked with
+at least one of the following: libxml2 http://xmlsoft.org or json-c
+https://github.com/json-c. If these are installed at a nonstandard
+prefix, use --with-libxml2=/prefix or --with-libjson=/prefix.
+
+To support compression on the HTTP statistics channel, the server must
+be linked against libzlib. If this is installed at a nonstandard prefix,
+use --with-zlib=/prefix.
+
+Python requires the 'argparse' and 'ply' modules to be available.
+'argparse' is a standard module as of Python 2.7 and Python 3.2.
+
+On some platforms it is necessary to explicitly request large file
+support to handle files bigger than 2GB. This can be done by using
+--enable-largefile on the configure command line.
+
+Support for the "fixed" rrset-order option can be enabled or disabled by
+specifying --enable-fixed-rrset or --disable-fixed-rrset on the
+configure command line. By default, fixed rrset-order is disabled to
+reduce memory footprint.
+
+If your operating system has integrated support for IPv6, it will be
+used automatically. If you have installed KAME IPv6 separately, use
+--with-kame[=PATH] to specify its location.
+
+make install will install named and the various BIND 9 libraries. By
+default, installation is into /usr/local, but this can be changed with
+the --prefix option when running configure.
+
+You may specify the option --sysconfdir to set the directory where
+configuration files like named.conf go by default, and --localstatedir
+to set the default parent directory of run/named.pid. For backwards
+compatibility with BIND 8, --sysconfdir defaults to /etc and
+--localstatedir defaults to /var if no --prefix option is given. If
+there is a --prefix option, sysconfdir defaults to $prefix/etc and
+localstatedir defaults to $prefix/var.
+
+To see additional configuration options, run configure --help.
+
+Automated testing
+
+A system test suite can be run with make test. The system tests require
+you to configure a set of virtual IP addresses on your system (this
+allows multiple servers to run locally and communicate with one
+another). Some tests have dependencies on Perl or Python, and will be
+skipped if they are unavailable. If system tests fail, test output will
+be preserved in bin/tests/system/systests.output. See
+bin/tests/system/README for additional details.
+
+Unit tests are implemented using Automated Testing Framework (ATF). To
+run them, use configure --with-atf, then run make test or make unit.
+
+Documentation
+
+The _BIND 9 Administrator Reference Manual_ is included with the source
+distribution, in DocBook XML, HTML and PDF format, in the doc/arm
+directory.
+
+Some of the programs in the BIND 9 distribution have man pages in their
+directories. In particular, the command line options of named are
+documented in bin/named/named.8.
+
+Frequently asked questions and their answers can be found in FAQ.
+
+Additional information on various subjects can be found in other README
+files throughout the source tree.
+
+Change Log
+
+A detailed list of all changes that have been made throughout the
+development BIND 9 is included in the file CHANGES, with the most recent
+changes listed first. Change notes include tags indicating the category
+of the change that was made; these categories are:
+
+  ----------------------------------------------------------------
+  Category        Description
+  --------------- ------------------------------------------------
+  [func]          New feature
+
+  [bug]           General bug fix
+
+  [security]      Fix for a significant security flaw
+
+  [experimental]  Used for new features when the syntax or other
+                  aspects of the design are still in flux and may
+                  change
+
+  [port]          Portability enhancement
+
+  [maint]         Updates to built-in data such as root server
+                  addresses and keys
+
+  [tuning]        Changes to built-in configuration defaults and
+                  constants to improve performance
+
+  [performance]   Other changes to improve server performance
+
+  [protocol]      Updates to the DNS protocol such as new RR types
+
+  [test]          Changes to the automatic tests, not affecting
+                  server functionality
+
+  [cleanup]       Minor corrections and refactoring
+
+  [doc]           Documentation
+
+  [contrib]       Changes to the contributed tools and libraries
+                  in the 'contrib' subdirectory
+
+  [placeholder]   Used in the master development branch to reserve
+                  change numbers for use in other branches, e.g.
+                  when fixing a bug that only exists in older
+                  releases
+  ----------------------------------------------------------------
+
+In general, [func] and [experimental] tags will only appear in
+new-feature releases (i.e., those with version numbers ending in zero).
+Some new functionality may be backported to older releases on a
+case-by-case basis. All other change types may be applied to all
+currently-supported releases.
+
+Bug Reports and Mailing Lists
+
+Bug reports should be sent to bind9-bugs@isc.org
+
+Feature requests can be sent to bind-suggest@isc.org
+
+To join or view the archives of the BIND USERS mailing list, visit
+https://lists.isc.org/mailman/listinfo/bind-users
+
+If you're planning on making changes to the BIND 9 source code, you may
+also want to join the BIND WORKERS mailing list, at
+https://lists.isc.org/mailman/listinfo/bind-workers
+
+Information on read-only Git access, coding style and developer
+guidelines can be found at http://www.isc.org/git/
+
+Acknowledgments
+
+-   The original development of BIND 9 was underwritten by the following
+    organizations:
+
+        Sun Microsystems, Inc.
+        Hewlett Packard
+        Compaq Computer Corporation
+        IBM
+        Process Software Corporation
+        Silicon Graphics, Inc.
+        Network Associates, Inc.
+        U.S. Defense Information Systems Agency
+        USENIX Association
+        Stichting NLnet - NLnet Foundation
+        Nominum, Inc.
+
+-   This product includes software developed by the OpenSSL Project for
+    use in the OpenSSL Toolkit. http://www.OpenSSL.org/
+-   This product includes cryptographic software written by Eric
+    Young (eay@cryptsoft.com)
+-   This product includes software written by Tim
+    Hudson (tjh@cryptsoft.com)
