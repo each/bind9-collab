@@ -69,6 +69,9 @@ To build on a UNIX or Linux system, use:
 (NOTE: Using multiple processors in `make` is not reliable and is not
 advised.)
 
+If you're planning on making changes to the BIND 9 source, you should run
+`make depend`.  If you're using Emacs, you might find `make tags` helpful.
+
 Several environment variables that can be set before running `configure` will
 affect compilation:
 
@@ -87,39 +90,33 @@ affect compilation:
 
 Possible settings for `STD_CDEFINES` include:
 
-        Change the default syslog facility for `named` or `lwresd`:
-          `-DISC_FACILITY=LOG_LOCAL0`
+* Change the default syslog facility for `named` or `lwresd`:<br />
+    -DISC_FACILITY=LOG_LOCAL0
 
-        Enable DNSSEC signature chasing support in `dig`.
-          `-DDIG_SIGCHASE=1` (sets `-DDIG_SIGCHASE_TD=1` and
-          `-DDIG_SIGCHASE_BU=1`)
-          (Note: This feature is deprecated. Use `delv` instead.)
+* Enable DNSSEC signature chasing support in `dig`.<br />
+    -DDIG_SIGCHASE=1<br />
+  This sets `-DDIG_SIGCHASE_TD=1` and `-DDIG_SIGCHASE_BU=1`
+  (Note: This feature is deprecated. Use `delv` instead.)
 
-        Disable dropping queries from particular well known ports:
-          `-DNS_CLIENT_DROPPORT=0`
+* Disable dropping queries from particular well-known ports:<br />
+    -DNS_CLIENT_DROPPORT=0
 
-        Sibling glue checking in named-checkzone is enabled by default.
-        To disable the default check, set `-DCHECK_SIBLING=0`
+* Sibling glue checking in `named-checkzone` is enabled by default.
+  To disable this default, set:<br />
+    -DCHECK_SIBLING=0
 
-        `named-checkzone` checks out-of-zone addresses by default.
-        To disable this default, set `-DCHECK_LOCAL=0`
+* `named-checkzone` checks out-of-zone addresses by default.
+  To disable this default, set:<br />
+    -DCHECK_LOCAL=0
 
-        To create the default pid files in `${localstatedir}/run`
-        rather than `${localstatedir}/run/{named,lwresd}/`, set:
-          `-DNS_RUN_PID_DIR=0`
+* To create default PID files in `${localstatedir}/run` rather
+  than `${localstatedir}/run/{named,lwresd}/`, set:<br />
+    -DNS_RUN_PID_DIR=0
 
-        Enable workaround for Solaris kernel bug handling
-        `/dev/poll`, use:
-          `-DISC_SOCKET_USE_POLLWATCH=1`.
-
-        The watch timeout is also configurable, e.g.:
-          `-DISC_SOCKET_POLLWATCH_TIMEOUT=20`
-
-If you're planning on making changes to the BIND 9 source, you should run
-`make depend`.  If you're using Emacs, you might find `make tags` helpful.
-
-If you need to re-run `configure`, run `make distclean` first.  This will
-ensure that all the option changes take.
+* To enable a workaround for a Solaris kernel bug handling `/dev/poll`, use:<br />
+    -DISC_SOCKET_USE_POLLWATCH=1<br />
+  The watch timeout is also configurable, e.g.:<br />
+    -DISC_SOCKET_POLLWATCH_TIMEOUT=20
 
 ### Compile-time options
 
