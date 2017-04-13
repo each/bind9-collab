@@ -258,9 +258,9 @@ All other change types may be applied to all currently-supported releases.
 
 Bug Reports and Mailing Lists
 
-Bug reports should be sent to bind9-bugs at isc dot org
+Bug reports should be sent to bind9-bugs@isc.org
 
-Feature requests can be sent to bind-suggest at isc dot org
+Feature requests can be sent to bind-suggest@isc.org
 
 To join or view the archives of the BIND Users mailing list, visit https:/
 /lists.isc.org/mailman/listinfo/bind-users

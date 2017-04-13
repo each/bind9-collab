@@ -90,7 +90,7 @@ test-force:
 	exit $$status
 
 README: README.mkd
-	pandoc -s -t html README.mkd | \
+	pandoc --email-obfuscation=none -s -t html README.mkd | \
 		w3m -dump -cols 75 -O ascii -T text/html > README
 
 FAQ: FAQ.xml
