@@ -3,31 +3,39 @@
 BIND 9
 
 
-BIND (Berkeley Internet Name Domain) is a complete, highly portable
-implementation of the domain name system (DNS) protocol. The BIND name
-server, named, is able to serve as an authoritative name server,
-recursive resolver, DNS forwarder, or all three simultaneously. It
-implements DNS Security features (DNSSEC) to sign and validate
-responses, response policy zones (RPZ) to protect from malicious data,
-and many other advanced DNS features.
+Introduction
 
-BIND also includes a suite of administrative tools, including dig and
-delv (DNS lookup tools), nsupdate (dynamic DNS update tool), rndc
-(remote server administration tool) and many more.
+BIND (Berkeley Internet Name Domain) is a complete, highly portable
+implementation of the domain name system (DNS) protocol.
+
+The BIND name server, named, is able to serve as an authoritative name
+server, recursive resolver, DNS forwarder, or all three simultaneously.
+It implements DNS Security features (DNSSEC) to sign and validate
+responses, response policy zones (RPZ) to protect from malicious data,
+and many other advanced DNS features. BIND also includes a suite of
+administrative tools, including dig and delv (DNS lookup tools),
+nsupdate (dynamic DNS update tool), rndc (remote server administration
+tool) and many more.
 
 BIND 9 is a complete re-write of the BIND architecture that was used in
-versions 4 and 8.
-
-Internet Systems Consortium, Inc. https://www.isc.org is responsible for
+versions 4 and 8. Internet Systems Consortium (https://www.isc.org), a
+501(c)(3) public benefit corporation dedicated to providing software and
+services in support of the Internet infrastructure, is responsible for
 ongoing maintenance and development of BIND.
 
+BIND 9 is open source software, licenced under the terms of the Mozilla
+Public License, version 2.0.
+
+For a summary of features introduced in major releases of BIND, see the
+file HISTORY.
+
 For a detailed list of changes made throughout the history of BIND 9,
-see the CHANGES file.
+see the file CHANGES.
 
 For up-to-date release notes and errata, see
 http://www.isc.org/software/bind9/releasenotes
 
-Major features of BIND 9.12
+BIND 9.12
 
 BIND 9.12.0 includes a number of changes from BIND 9.11 and earlier
 releases. New features include:
@@ -42,9 +50,6 @@ releases. New features include:
     use a timestamp as the suffix when rolling to a new file
 -   named-checkconf -l lists zones found in named.conf
 -   Added support for the EDNS Padding and Keepalive options
-
-For a summary of features introduced in prior major releases of BIND,
-see the HISTORY file.
 
 Building
 
@@ -103,7 +108,7 @@ will affect compilation:
   BUILD_LIBS            
   ----------------------------------------------------------------------
 
-    Possible settings for `STD_CDEFINES` include:
+Possible settings for STD_CDEFINES include:
 
         Change the default syslog facility for `named` or `lwresd`:
           `-DISC_FACILITY=LOG_LOCAL0`
@@ -127,7 +132,7 @@ will affect compilation:
           `-DNS_RUN_PID_DIR=0`
 
         Enable workaround for Solaris kernel bug handling
-                `/dev/poll`, use:
+        `/dev/poll`, use:
           `-DISC_SOCKET_USE_POLLWATCH=1`.
 
         The watch timeout is also configurable, e.g.:

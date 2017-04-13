@@ -1,31 +1,38 @@
 # BIND 9
 
+### Introduction
+
 BIND (Berkeley Internet Name Domain) is a complete, highly portable
-implementation of the domain name system (DNS) protocol.  The BIND name
-server, `named`, is able to serve as an authoritative name server,
-recursive resolver, DNS forwarder, or all three simultaneously.  It
+implementation of the domain name system (DNS) protocol.
+
+The BIND name server, `named`, is able to serve as an authoritative name
+server, recursive resolver, DNS forwarder, or all three simultaneously.  It
 implements DNS Security features (DNSSEC) to sign and validate responses,
 response policy zones (RPZ) to protect from malicious data, and many other
-advanced DNS features.
-
-BIND also includes a suite of administrative tools, including `dig` and
-`delv` (DNS lookup tools), `nsupdate` (dynamic DNS update tool),
-`rndc` (remote server administration tool) and many more.
+advanced DNS features.  BIND also includes a suite of administrative tools,
+including `dig` and `delv` (DNS lookup tools), `nsupdate` (dynamic DNS
+update tool), `rndc` (remote server administration tool) and many more.
 
 BIND 9 is a complete re-write of the BIND architecture that was used in
-versions 4 and 8.
+versions 4 and 8.  Internet Systems Consortium
+([https://www.isc.org](https://www.isc.org)), a 501(c)(3) public benefit
+corporation dedicated to providing software and services in support of the
+Internet infrastructure, is responsible for ongoing maintenance and
+development of BIND.
 
-Internet Systems Consortium, Inc.
-[https://www.isc.org](https://www.isc.org) is responsible for ongoing
-maintenance and development of BIND.
+BIND 9 is open source software, licenced under the terms of the Mozilla
+Public License, version 2.0.
+
+For a summary of features introduced in major releases of BIND, see
+the file `HISTORY`.
 
 For a detailed list of changes made throughout the history of BIND 9, see
-the CHANGES file.
+the file `CHANGES`.
 
 For up-to-date release notes and errata, see
 [http://www.isc.org/software/bind9/releasenotes](http://www.isc.org/software/bind9/releasenotes)
 
-### Major features of BIND 9.12
+### BIND 9.12
 
 BIND 9.12.0 includes a number of changes from BIND 9.11 and earlier
 releases.  New features include:
@@ -40,9 +47,6 @@ releases.  New features include:
   timestamp as the suffix when rolling to a new file
 * `named-checkconf -l` lists zones found in `named.conf`
 * Added support for the EDNS Padding and Keepalive options
-
-For a summary of features introduced in prior major releases of BIND, see
-the HISTORY file.
 
 ### Building
 
@@ -81,35 +85,35 @@ affect compilation:
 |`BUILD_LDFLAGS`||
 |`BUILD_LIBS`||
 
-	Possible settings for `STD_CDEFINES` include:
+Possible settings for `STD_CDEFINES` include:
 
-		Change the default syslog facility for `named` or `lwresd`:
-		  `-DISC_FACILITY=LOG_LOCAL0`
+        Change the default syslog facility for `named` or `lwresd`:
+          `-DISC_FACILITY=LOG_LOCAL0`
 
-		Enable DNSSEC signature chasing support in `dig`.
-		  `-DDIG_SIGCHASE=1` (sets `-DDIG_SIGCHASE_TD=1` and
-		  `-DDIG_SIGCHASE_BU=1`)
-		  (Note: This feature is deprecated. Use `delv` instead.)
+        Enable DNSSEC signature chasing support in `dig`.
+          `-DDIG_SIGCHASE=1` (sets `-DDIG_SIGCHASE_TD=1` and
+          `-DDIG_SIGCHASE_BU=1`)
+          (Note: This feature is deprecated. Use `delv` instead.)
 
-		Disable dropping queries from particular well known ports:
-		  `-DNS_CLIENT_DROPPORT=0`
+        Disable dropping queries from particular well known ports:
+          `-DNS_CLIENT_DROPPORT=0`
 
-		Sibling glue checking in named-checkzone is enabled by default.
-		To disable the default check, set `-DCHECK_SIBLING=0`
+        Sibling glue checking in named-checkzone is enabled by default.
+        To disable the default check, set `-DCHECK_SIBLING=0`
 
-		`named-checkzone` checks out-of-zone addresses by default.
-		To disable this default, set `-DCHECK_LOCAL=0`
+        `named-checkzone` checks out-of-zone addresses by default.
+        To disable this default, set `-DCHECK_LOCAL=0`
 
-		To create the default pid files in `${localstatedir}/run`
-		rather than `${localstatedir}/run/{named,lwresd}/`, set:
-		  `-DNS_RUN_PID_DIR=0`
+        To create the default pid files in `${localstatedir}/run`
+        rather than `${localstatedir}/run/{named,lwresd}/`, set:
+          `-DNS_RUN_PID_DIR=0`
 
-		Enable workaround for Solaris kernel bug handling
-                `/dev/poll`, use:
-		  `-DISC_SOCKET_USE_POLLWATCH=1`.
+        Enable workaround for Solaris kernel bug handling
+        `/dev/poll`, use:
+          `-DISC_SOCKET_USE_POLLWATCH=1`.
 
-		The watch timeout is also configurable, e.g.:
-		  `-DISC_SOCKET_POLLWATCH_TIMEOUT=20`
+        The watch timeout is also configurable, e.g.:
+          `-DISC_SOCKET_POLLWATCH_TIMEOUT=20`
 
 If you're planning on making changes to the BIND 9 source, you should run
 `make depend`.  If you're using Emacs, you might find `make tags` helpful.
