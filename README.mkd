@@ -245,43 +245,66 @@ A detailed list of all changes to BIND 9 is included in the file CHANGES,
 with the most recent changes listed first.  Change notes include tags
 indicating the category of the change that was made; these categories are:
 
-           [func]         New feature
+[func]
 
-           [bug]          General bug fix
+:    New feature
 
-           [security]     Fix for a significant security flaw
+[bug]
 
-	   [experimental] Used for new features when the syntax
-			  or other aspects of the design are still
-			  in flux and may change
+:    General bug fix
 
-	   [port]         Portability enhancement
+[security]
 
-	   [maint]        Updates to built-in data such as root
-			  server addresses and keys
+:    Fix for a significant security flaw
 
-	   [tuning]       Changes to built-in configuration defaults
-			  and constants to improve performance
+[experimental]
 
-	   [performance]  Other changes to improve server performance
+:    Used for new features when the syntax or other aspects of the design
+are still in flux and may change
 
-	   [protocol]     Updates to the DNS protocol such as new
-			  RR types
+[port]
 
-	   [test]         Changes to the automatic tests, not
-			  affecting server functionality
+:    Portability enhancement
 
-	   [cleanup]      Minor corrections and refactoring
+[maint]
 
-	   [doc]          Documentation
+:    Updates to built-in data such as root server addresses and keys
 
-	   [contrib]	  Changes to the contributed tools and
-			  libraries in the 'contrib' subdirectory
+[tuning]
 
-	   [placeholder]  Used in the master development branch to
-			  reserve change numbers for use in other
-			  branches, e.g. when fixing a bug that only
-			  exists in older releases
+:    Changes to built-in configuration defaults and constants to improve
+performance
+
+[performance]
+
+:    Other changes to improve server performance
+
+[protocol]
+
+:    Updates to the DNS protocol such as new RR types
+
+[test]
+
+:    Changes to the automatic tests, not affecting server functionality
+
+[cleanup]
+
+:    Minor corrections and refactoring
+
+[doc]
+
+:    Documentation
+
+[contrib]
+
+:    Changes to the contributed tools and libraries in the 'contrib'
+subdirectory
+
+[placeholder]
+
+:    Used in the master development branch to reserve change numbers for
+use in other branches, e.g. when fixing a bug that only exists in older
+releases
 
 In general, [func] and [experimental] tags will only appear in new-feature
 releases (i.e., those with version numbers ending in zero).  Some new

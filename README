@@ -242,42 +242,53 @@ BUILD_LDFLAGS (optional)
    CHANGES, with the most recent changes listed first. Change notes
    include tags indicating the category of the change that was made; these
    categories are:
-       [func]         New feature
 
-       [bug]          General bug fix
+   [func]
+          New feature
 
-       [security]     Fix for a significant security flaw
+   [bug]
+          General bug fix
 
-   [experimental] Used for new features when the syntax
-          or other aspects of the design are still
-          in flux and may change
+   [security]
+          Fix for a significant security flaw
 
-   [port]         Portability enhancement
+   [experimental]
+          Used for new features when the syntax or other aspects of the
+          design are still in flux and may change
 
-   [maint]        Updates to built-in data such as root
-          server addresses and keys
+   [port]
+          Portability enhancement
 
-   [tuning]       Changes to built-in configuration defaults
-          and constants to improve performance
+   [maint]
+          Updates to built-in data such as root server addresses and keys
 
-   [performance]  Other changes to improve server performance
+   [tuning]
+          Changes to built-in configuration defaults and constants to
+          improve performance
 
-   [protocol]     Updates to the DNS protocol such as new
-          RR types
+   [performance]
+          Other changes to improve server performance
 
-   [test]         Changes to the automatic tests, not
-          affecting server functionality
+   [protocol]
+          Updates to the DNS protocol such as new RR types
 
-   [cleanup]      Minor corrections and refactoring
+   [test]
+          Changes to the automatic tests, not affecting server
+          functionality
 
-   [doc]          Documentation
+   [cleanup]
+          Minor corrections and refactoring
 
-   [contrib]      Changes to the contributed tools and
-          libraries in the 'contrib' subdirectory
+   [doc]
+          Documentation
 
-   [placeholder]  Used in the master development branch to
-          reserve change numbers for use in other
-          branches, e.g. when fixing a bug that only
+   [contrib]
+          Changes to the contributed tools and libraries in the 'contrib'
+          subdirectory
+
+   [placeholder]
+          Used in the master development branch to reserve change numbers
+          for use in other branches, e.g. when fixing a bug that only
           exists in older releases
 
    In general, [func] and [experimental] tags will only appear in
