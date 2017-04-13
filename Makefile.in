@@ -89,8 +89,8 @@ test-force:
 	(test -f unit/unittest.sh && $(SHELL) unit/unittest.sh) || status=1; \
 	exit $$status
 
-README: README.mkd
-	pandoc --email-obfuscation=none -s -t html README.mkd | \
+README: README.md
+	pandoc --email-obfuscation=none -s -t html README.md | \
 		w3m -dump -cols 75 -O ascii -T text/html > README
 
 FAQ: FAQ.xml

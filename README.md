@@ -3,25 +3,24 @@
 ### Introduction
 
 BIND (Berkeley Internet Name Domain) is a complete, highly portable
-implementation of the domain name system (DNS) protocol.
+implementation of the DNS (Domain Name System) protocol.
 
 The BIND name server, `named`, is able to serve as an authoritative name
 server, recursive resolver, DNS forwarder, or all three simultaneously.  It
 implements DNS Security features (DNSSEC) to sign and validate responses,
-response policy zones (RPZ) to protect from malicious data, and many other
-advanced DNS features.  BIND also includes a suite of administrative tools,
-including `dig` and `delv` (DNS lookup tools), `nsupdate` (dynamic DNS
-update tool), `rndc` (remote server administration tool) and many more.
+response policy zones (RPZ) to protect clients from malicious data, and
+many other advanced DNS features.  BIND also includes a suite of
+administrative tools, including `dig` and `delv` (DNS lookup tools),
+`nsupdate` (dynamic DNS update tool), `rndc` (remote name server
+administration tool), and more.
 
 BIND 9 is a complete re-write of the BIND architecture that was used in
 versions 4 and 8.  Internet Systems Consortium
 ([https://www.isc.org](https://www.isc.org)), a 501(c)(3) public benefit
 corporation dedicated to providing software and services in support of the
-Internet infrastructure, is responsible for ongoing maintenance and
-development of BIND.
-
-BIND 9 is open source software, licenced under the terms of the Mozilla
-Public License, version 2.0.
+Internet infrastructure, developed BIND 9 and is responsible for ongoing
+maintenance and development of BIND.  BIND is open source software,
+licenced under the terms of the Mozilla Public License, version 2.0.
 
 For a summary of features introduced in major releases of BIND, see
 the file `HISTORY`.
@@ -34,8 +33,9 @@ For up-to-date release notes and errata, see
 
 ### BIND 9.12
 
-BIND 9.12.0 includes a number of changes from BIND 9.11 and earlier
-releases.  New features include:
+BIND 9.12.0 is the newest development branch of BIND 9. It includes a
+number of changes from BIND 9.11 and earlier releases.  New features
+include:
 
 * The query handling code has been substantially refactored for improved
   readability, maintainability and testability 
@@ -52,9 +52,9 @@ releases.  New features include:
 
 BIND requires a UNIX or Linux system with an ANSI C compiler, basic POSIX
 support, and a 64-bit integer type. Successful builds have been observed on
-many versions of Linux including RedHat, Fedora, Debian, Ubuntu, SuSE,
-Slackware, FreeBSD, NetBSD, OpenBSD, Mac OS X, Solaris, HP-UX, AIX, SCO
-OpenServer, and OpenWRT. 
+many versions of Linux and UNIX, including RedHat, Fedora, Debian, Ubuntu,
+SuSE, Slackware, FreeBSD, NetBSD, OpenBSD, Mac OS X, Solaris, HP-UX, AIX,
+SCO OpenServer, and OpenWRT. 
 
 BIND is also available for Windows XP, 2003, 2008, and higher. (Older
 versions of Windows, including Windows NT and Windows 2000, are not
@@ -88,35 +88,16 @@ affect compilation:
 |`BUILD_LDFLAGS`||
 |`BUILD_LIBS`||
 
-Possible settings for `STD_CDEFINES` include:
+Some settings for `STD_CDEFINES` include:
 
-* Change the default syslog facility for `named` or `lwresd`:<br />
-    -DISC_FACILITY=LOG_LOCAL0
-
-* Enable DNSSEC signature chasing support in `dig`.<br />
-    -DDIG_SIGCHASE=1<br />
-  This sets `-DDIG_SIGCHASE_TD=1` and `-DDIG_SIGCHASE_BU=1`
-  (Note: This feature is deprecated. Use `delv` instead.)
-
-* Disable dropping queries from particular well-known ports:<br />
-    -DNS_CLIENT_DROPPORT=0
-
-* Sibling glue checking in `named-checkzone` is enabled by default.
-  To disable this default, set:<br />
-    -DCHECK_SIBLING=0
-
-* `named-checkzone` checks out-of-zone addresses by default.
-  To disable this default, set:<br />
-    -DCHECK_LOCAL=0
-
-* To create default PID files in `${localstatedir}/run` rather
-  than `${localstatedir}/run/{named,lwresd}/`, set:<br />
-    -DNS_RUN_PID_DIR=0
-
-* To enable a workaround for a Solaris kernel bug handling `/dev/poll`, use:<br />
-    -DISC_SOCKET_USE_POLLWATCH=1<br />
-  The watch timeout is also configurable, e.g.:<br />
-    -DISC_SOCKET_POLLWATCH_TIMEOUT=20
+|Setting                             |Description |
+|-----------------------------------|----------------------------------------|
+|<nobr>`-DISC_FACILITY=LOG_LOCAL0`</nobr>|Change the default syslog facility for `named`|
+|`-DDIG_SIGCHASE=1`|Enable DNSSEC signature chasing support in `dig`.  (Note: This feature is deprecated. Use `delv` instead.)|
+|`-DNS_CLIENT_DROPPORT=0`|Disable dropping queries from particular well-known ports:|
+|`-DCHECK_SIBLING=0`|Don't check sibling glue in `named-checkzone`|
+|`-DCHECK_LOCAL=0`|Don't check out-of-zone addresses in `named-checkzone`|
+|`-DNS_RUN_PID_DIR=0`|Create default PID files in `${localstatedir}/run` rather than `${localstatedir}/run/{named,lwresd}/`|
 
 ### Compile-time options
 
