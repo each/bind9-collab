@@ -520,17 +520,17 @@ as part of the 'used' subregion:
 Several functions are provided for both reading and writing
 to the buffer:
 
-* `isc_buffer_getuint8`: Read and return an 8-bit unsigned integer
-* `isc_buffer_putuint8`: Write an 8-bit unsigned integer to a buffer
+* `isc_buffer_getuint8()`: Read and return an 8-bit unsigned integer
+* `isc_buffer_putuint8()`: Write an 8-bit unsigned integer to a buffer
 
-* `isc_buffer_getuint16`: Read a 16-bit unsigned integer in
+* `isc_buffer_getuint16()`: Read a 16-bit unsigned integer in
   network byte order, convert to host byte order, and return it
-* `isc_buffer_putuint16`: Convert an unsigned 16-bit integer from
+* `isc_buffer_putuint16()`: Convert an unsigned 16-bit integer from
   host to network byte order and write it to a buffer.
 
-* `isc_buffer_getuint32`: Read a 32-bit unsigned integer in
+* `isc_buffer_getuint32()`: Read a 32-bit unsigned integer in
   network byte order, convert to host byte order, and return it
-* `isc_buffer_putuint32`: Convert an unsigned 32-bit integer from
+* `isc_buffer_putuint32()`: Convert an unsigned 32-bit integer from
   host to network byte order and write it to a buffer.
 
 * `isc_buffer_putstr()`: Copy a null-terminated string into a buffer
