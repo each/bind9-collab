@@ -48,7 +48,7 @@ CHANGES file format.
 For up-to-date release notes and errata, see
 [http://www.isc.org/software/bind9/releasenotes](http://www.isc.org/software/bind9/releasenotes)
 
-### <a name="help"/> Reporting bugs and and getting help
+### <a name="help"/> Reporting bugs and getting help
 
 General bug reports can be sent to
 [bind9-bugs@isc.org](mailto:bind9-bugs@isc.org).
