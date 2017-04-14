@@ -1,343 +1,128 @@
-<!--
- - Copyright (C) 2000, 2001, 2004, 2005, 2007-2009, 2014-2016  Internet Systems Consortium, Inc. ("ISC")
- -
- - This Source Code Form is subject to the terms of the Mozilla Public
- - License, v. 2.0. If a copy of the MPL was not distributed with this
- - file, You can obtain one at http://mozilla.org/MPL/2.0/.
--->
-<!-- Converted by db4-upgrade version 1.0 -->
-<refentry xmlns:db="http://docbook.org/ns/docbook" version="5.0" xml:id="man.lwresd"> <info> <date>2009-01-20</date> </info> <refentryinfo> <corpname>ISC</corpname> <corpauthor>Internet Systems Consortium, Inc.</corpauthor> </refentryinfo>
-
-<refmeta> <refentrytitle><application>lwresd</application></refentrytitle> <manvolnum>8</manvolnum> <refmiscinfo>BIND9</refmiscinfo> </refmeta>
-
-<refnamediv> <refname><application>lwresd</application></refname> <refpurpose>lightweight resolver daemon</refpurpose> </refnamediv>
-
-<docinfo> <copyright> <year>2000</year> <year>2001</year> <year>2004</year> <year>2005</year> <year>2007</year> <year>2008</year> <year>2009</year> <year>2014</year> <year>2015</year> <year>2016</year> <holder>Internet Systems Consortium, Inc. ("ISC")</holder> </copyright> </docinfo>
-
-<refsynopsisdiv>
-<cmdsynopsis sepchar=" ">
-      <command>lwresd</command>
-      <arg choice="opt" rep="norepeat"><option>-c <replaceable class="parameter">config-file</replaceable></option></arg>
-      <arg choice="opt" rep="norepeat"><option>-C <replaceable class="parameter">config-file</replaceable></option></arg>
-      <arg choice="opt" rep="norepeat"><option>-d <replaceable class="parameter">debug-level</replaceable></option></arg>
-      <arg choice="opt" rep="norepeat"><option>-f</option></arg>
-      <arg choice="opt" rep="norepeat"><option>-g</option></arg>
-      <arg choice="opt" rep="norepeat"><option>-i <replaceable class="parameter">pid-file</replaceable></option></arg>
-      <arg choice="opt" rep="norepeat"><option>-m <replaceable class="parameter">flag</replaceable></option></arg>
-      <arg choice="opt" rep="norepeat"><option>-n <replaceable class="parameter">#cpus</replaceable></option></arg>
-      <arg choice="opt" rep="norepeat"><option>-P <replaceable class="parameter">port</replaceable></option></arg>
-      <arg choice="opt" rep="norepeat"><option>-p <replaceable class="parameter">port</replaceable></option></arg>
-      <arg choice="opt" rep="norepeat"><option>-s</option></arg>
-      <arg choice="opt" rep="norepeat"><option>-t <replaceable class="parameter">directory</replaceable></option></arg>
-      <arg choice="opt" rep="norepeat"><option>-u <replaceable class="parameter">user</replaceable></option></arg>
-      <arg choice="opt" rep="norepeat"><option>-v</option></arg>
-      <arg choice="opt" rep="norepeat"><option>-4</option></arg>
-      <arg choice="opt" rep="norepeat"><option>-6</option></arg>
-    </cmdsynopsis>
-
-</refsynopsisdiv>
-
-<refsection><info>
-<title>
+ISC
+Internet Systems Consortium, Inc.
+lwresd
+8
+BIND9
+lwresd
+lightweight resolver daemon
+2000
+2001
+2004
+2005
+2007
+2008
+2009
+2014
+2015
+2016
+Internet Systems Consortium, Inc. ("ISC")
+lwresd
+-c
+config-file
+-C
+config-file
+-d
+debug-level
+-f
+-g
+-i
+pid-file
+-m
+flag
+-n
+\#cpus
+-P
+port
+-p
+port
+-s
+-t
+directory
+-u
+user
+-v
+-4
+-6
 DESCRIPTION
-</title>
-</info>
+===========
 
-    <para><command>lwresd</command>
-      is the daemon providing name lookup
-      services to clients that use the BIND 9 lightweight resolver
-      library.  It is essentially a stripped-down, caching-only name
-      server that answers queries using the BIND 9 lightweight
-      resolver protocol rather than the DNS protocol.
-    </para>
+`lwresd` is the daemon providing name lookup services to clients that use the BIND 9 lightweight resolver library. It is essentially a stripped-down, caching-only name server that answers queries using the BIND 9 lightweight resolver protocol rather than the DNS protocol.
 
-    <para><command>lwresd</command>
-      listens for resolver queries on a
-      UDP port on the IPv4 loopback interface, 127.0.0.1.  This
-      means that <command>lwresd</command> can only be used by
-      processes running on the local machine.  By default, UDP port
-      number 921 is used for lightweight resolver requests and
-      responses.
-    </para>
-    <para>
-      Incoming lightweight resolver requests are decoded by the
-      server which then resolves them using the DNS protocol.  When
-      the DNS lookup completes, <command>lwresd</command> encodes
-      the answers in the lightweight resolver format and returns
-      them to the client that made the request.
-    </para>
-    <para>
-      If <filename>/etc/resolv.conf</filename> contains any
-      <option>nameserver</option> entries, <command>lwresd</command>
-      sends recursive DNS queries to those servers.  This is similar
-      to the use of forwarders in a caching name server.  If no
-      <option>nameserver</option> entries are present, or if
-      forwarding fails, <command>lwresd</command> resolves the
-      queries autonomously starting at the root name servers, using
-      a built-in list of root server hints.
-    </para>
+`lwresd` listens for resolver queries on a UDP port on the IPv4 loopback interface, 127.0.0.1. This means that `lwresd` can only be used by processes running on the local machine. By default, UDP port number 921 is used for lightweight resolver requests and responses.
 
-</refsection>
+Incoming lightweight resolver requests are decoded by the server which then resolves them using the DNS protocol. When the DNS lookup completes, `lwresd` encodes the answers in the lightweight resolver format and returns them to the client that made the request.
 
-<refsection><info>
-<title>
+If `/etc/resolv.conf` contains any `nameserver` entries, `lwresd` sends recursive DNS queries to those servers. This is similar to the use of forwarders in a caching name server. If no `nameserver` entries are present, or if forwarding fails, `lwresd` resolves the queries autonomously starting at the root name servers, using a built-in list of root server hints.
+
 OPTIONS
-</title>
-</info>
+=======
 
-    <variablelist>
+-4  
+Use IPv4 only even if the host machine is capable of IPv6. `-4` and `-6` are mutually exclusive.
 
-      <varlistentry>
-        <term>-4</term>
-        <listitem>
-          <para>
-            Use IPv4 only even if the host machine is capable of IPv6.
-            <option>-4</option> and <option>-6</option> are mutually
-            exclusive.
-          </para>
-        </listitem>
-      </varlistentry>
+-6  
+Use IPv6 only even if the host machine is capable of IPv4. `-4` and `-6` are mutually exclusive.
 
-      <varlistentry>
-        <term>-6</term>
-        <listitem>
-          <para>
-            Use IPv6 only even if the host machine is capable of IPv4.
-            <option>-4</option> and <option>-6</option> are mutually
-            exclusive.
-          </para>
-        </listitem>
-      </varlistentry>
+-c config-file  
+Use config-file as the configuration file instead of the default, `/etc/lwresd.conf`. `-c` can not be used with `-C`.
 
-      <!-- this is in source but not mentioned? does this matter? -->
-      <varlistentry>
-        <term>-c <replaceable class="parameter">config-file</replaceable></term>
-        <listitem>
-          <para>
-            Use <replaceable class="parameter">config-file</replaceable> as the
-            configuration file instead of the default,
-            <filename>/etc/lwresd.conf</filename>.
-        <!-- Should this be an absolute path name? -->
-        <option>-c</option> can not be used with <option>-C</option>.
-          </para>
-        </listitem>
-      </varlistentry>
+-C config-file  
+Use config-file as the configuration file instead of the default, `/etc/resolv.conf`. `-C` can not be used with `-c`.
 
-      <varlistentry>
-        <term>-C <replaceable class="parameter">config-file</replaceable></term>
-        <listitem>
-          <para>
-            Use <replaceable class="parameter">config-file</replaceable> as the
-            configuration file instead of the default,
-            <filename>/etc/resolv.conf</filename>.
-        <option>-C</option> can not be used with <option>-c</option>.
-          </para>
-        </listitem>
-      </varlistentry>
+-d debug-level  
+Set the daemon's debug level to debug-level. Debugging traces from `lwresd` become more verbose as the debug level increases.
 
-      <varlistentry>
-        <term>-d <replaceable class="parameter">debug-level</replaceable></term>
-        <listitem>
-          <para>
-            Set the daemon's debug level to <replaceable class="parameter">debug-level</replaceable>.
-            Debugging traces from <command>lwresd</command> become
-                    more verbose as the debug level increases.
-          </para>
-        </listitem>
-      </varlistentry>
+-f  
+Run the server in the foreground (i.e. do not daemonize).
 
-      <varlistentry>
-        <term>-f</term>
-        <listitem>
-          <para>
-            Run the server in the foreground (i.e. do not daemonize).
-          </para>
-        </listitem>
-      </varlistentry>
+-g  
+Run the server in the foreground and force all logging to `stderr`.
 
-      <varlistentry>
-        <term>-g</term>
-        <listitem>
-          <para>
-            Run the server in the foreground and force all logging
-            to <filename>stderr</filename>.
-          </para>
-        </listitem>
-      </varlistentry>
+-i pid-file  
+Use pid-file as the PID file instead of the default, `/var/run/lwresd/lwresd.pid`.
 
-      <varlistentry>
-        <term>-i <replaceable class="parameter">pid-file</replaceable></term>
-        <listitem>
-          <para>
-            Use <replaceable class="parameter">pid-file</replaceable> as the
-            PID file instead of the default,
-            <filename>/var/run/lwresd/lwresd.pid</filename>.
-          </para>
-        </listitem>
-      </varlistentry>
+-m flag  
+Turn on memory usage debugging flags. Possible flags are usage, trace, record, size, and mctx. These correspond to the ISC\_MEM\_DEBUGXXXX flags described in `<isc/mem.h>`.
 
-      <varlistentry>
-        <term>-m <replaceable class="parameter">flag</replaceable></term>
-        <listitem>
-          <para>
-            Turn on memory usage debugging flags.  Possible flags are
-            <replaceable class="parameter">usage</replaceable>,
-            <replaceable class="parameter">trace</replaceable>,
-            <replaceable class="parameter">record</replaceable>,
-            <replaceable class="parameter">size</replaceable>, and
-            <replaceable class="parameter">mctx</replaceable>.
-            These correspond to the ISC_MEM_DEBUGXXXX flags described in
-            <filename>&lt;isc/mem.h&gt;</filename>.
-          </para>
-        </listitem>
-      </varlistentry>
+-n \#cpus  
+Create \#cpus worker threads to take advantage of multiple CPUs. If not specified, `lwresd` will try to determine the number of CPUs present and create one thread per CPU. If it is unable to determine the number of CPUs, a single worker thread will be created.
 
-      <varlistentry>
-        <term>-n <replaceable class="parameter">#cpus</replaceable></term>
-        <listitem>
-          <para>
-            Create <replaceable class="parameter">#cpus</replaceable> worker threads
-            to take advantage of multiple CPUs.  If not specified,
-            <command>lwresd</command> will try to determine the
-            number of CPUs present and create one thread per CPU.
-            If it is unable to determine the number of CPUs, a
-            single worker thread will be created.
-          </para>
-        </listitem>
-      </varlistentry>
+-P port  
+Listen for lightweight resolver queries on port port. If not specified, the default is port 921.
 
-      <varlistentry>
-        <term>-P <replaceable class="parameter">port</replaceable></term>
-        <listitem>
-          <para>
-            Listen for lightweight resolver queries on port
-            <replaceable class="parameter">port</replaceable>.  If
-                    not specified, the default is port 921.
-          </para>
-        </listitem>
-      </varlistentry>
+-p port  
+Send DNS lookups to port port. If not specified, the default is port 53. This provides a way of testing the lightweight resolver daemon with a name server that listens for queries on a non-standard port number.
 
-      <varlistentry>
-        <term>-p <replaceable class="parameter">port</replaceable></term>
-        <listitem>
-          <para>
-            Send DNS lookups to port <replaceable class="parameter">port</replaceable>.  If not
-            specified, the default is port 53.  This provides a
-            way of testing the lightweight resolver daemon with a
-            name server that listens for queries on a non-standard
-            port number.
-          </para>
-        </listitem>
-      </varlistentry>
+-s  
+Write memory usage statistics to `stdout` on exit.
 
-      <varlistentry>
-        <term>-s</term>
-        <listitem>
-          <para>
-            Write memory usage statistics to <filename>stdout</filename>
-            on exit.
-          </para>
-          <note>
-            <para>
-              This option is mainly of interest to BIND 9 developers
-              and may be removed or changed in a future release.
-            </para>
-          </note>
-        </listitem>
-      </varlistentry>
+> **Note**
+>
+> This option is mainly of interest to BIND 9 developers and may be removed or changed in a future release.
 
-      <varlistentry>
-        <term>-t <replaceable class="parameter">directory</replaceable></term>
-        <listitem>
-          <para>Chroot
-        to <replaceable class="parameter">directory</replaceable> after
-            processing the command line arguments, but before
-            reading the configuration file.
-          </para>
-          <warning>
-            <para>
-              This option should be used in conjunction with the
-              <option>-u</option> option, as chrooting a process
-              running as root doesn't enhance security on most
-              systems; the way <function>chroot(2)</function> is
-              defined allows a process with root privileges to
-              escape a chroot jail.
-            </para>
-          </warning>
-        </listitem>
-      </varlistentry>
+-t directory  
+Chroot to directory after processing the command line arguments, but before reading the configuration file.
 
-      <varlistentry>
-        <term>-u <replaceable class="parameter">user</replaceable></term>
-        <listitem>
-          <para>Setuid
-        to <replaceable class="parameter">user</replaceable> after completing
-            privileged operations, such as creating sockets that
-            listen on privileged ports.
-          </para>
-        </listitem>
-      </varlistentry>
+> **Warning**
+>
+> This option should be used in conjunction with the `-u` option, as chrooting a process running as root doesn't enhance security on most systems; the way `chroot(2)` is defined allows a process with root privileges to escape a chroot jail.
 
-      <varlistentry>
-        <term>-v</term>
-        <listitem>
-          <para>
-            Report the version number and exit.
-          </para>
-        </listitem>
-      </varlistentry>
+-u user  
+Setuid to user after completing privileged operations, such as creating sockets that listen on privileged ports.
 
-    </variablelist>
+-v  
+Report the version number and exit.
 
-</refsection>
-
-<refsection><info>
-<title>
 FILES
-</title>
-</info>
+=====
 
-    <variablelist>
+`/etc/resolv.conf`  
+The default configuration file.
 
-      <varlistentry>
-        <term><filename>/etc/resolv.conf</filename></term>
-        <listitem>
-          <para>
-            The default configuration file.
-          </para>
-        </listitem>
-      </varlistentry>
+`/var/run/lwresd.pid`  
+The default process-id file.
 
-      <varlistentry>
-        <term><filename>/var/run/lwresd.pid</filename></term>
-        <listitem>
-          <para>
-            The default process-id file.
-          </para>
-        </listitem>
-      </varlistentry>
-
-    </variablelist>
-
-</refsection>
-
-<refsection><info>
-<title>
 SEE ALSO
-</title>
-</info>
+========
 
-    <para><citerefentry>
-        <refentrytitle>named</refentrytitle><manvolnum>8</manvolnum>
-      </citerefentry>,
-      <citerefentry>
-        <refentrytitle>lwres</refentrytitle><manvolnum>3</manvolnum>
-      </citerefentry>,
-      <citerefentry>
-        <refentrytitle>resolver</refentrytitle><manvolnum>5</manvolnum>
-      </citerefentry>.
-    </para>
-
-</refsection>
-
-</refentry>
+named8, lwres3, resolver5.

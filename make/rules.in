@@ -328,7 +328,7 @@ ALWAYS_MAKE_SYMTABLE =	@ALWAYS_MAKE_SYMTABLE@
 .SUFFIXES: .docbook .html .md .1 .2 .3 .4 .5 .6 .7 .8
 
 .docbook.md:
-	${PANDOC} --email-obfuscation=none -s -t markdown_github $< > $@
+	${PANDOC} --email-obfuscation=none -s -f docbook -t markdown_github $< > $@
 
 .docbook.html:
 	${XSLTPROC} -o $@ ${top_srcdir}/doc/xsl/isc-docbook-html.xsl $<

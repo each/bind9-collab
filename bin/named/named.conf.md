@@ -1,606 +1,659 @@
-<!--
- - Copyright (C) 2004-2017  Internet Systems Consortium, Inc. ("ISC")
- -
- - This Source Code Form is subject to the terms of the Mozilla Public
- - License, v. 2.0. If a copy of the MPL was not distributed with this
- - file, You can obtain one at http://mozilla.org/MPL/2.0/.
--->
-<!-- Converted by db4-upgrade version 1.0 -->
-<refentry xmlns:db="http://docbook.org/ns/docbook" version="5.0" xml:id="man.named.conf"> <info> <date>2014-01-08</date> </info> <refentryinfo> <corpname>ISC</corpname> <corpauthor>Internet Systems Consortium, Inc.</corpauthor> </refentryinfo>
-
-<refmeta> <refentrytitle><filename>named.conf</filename></refentrytitle> <manvolnum>5</manvolnum> <refmiscinfo>BIND9</refmiscinfo> </refmeta>
-
-<refnamediv> <refname><filename>named.conf</filename></refname> <refpurpose>configuration file for <command>named</command></refpurpose> </refnamediv>
-
-<docinfo> <copyright> <year>2004</year> <year>2005</year> <year>2006</year> <year>2007</year> <year>2008</year> <year>2009</year> <year>2010</year> <year>2011</year> <year>2012</year> <year>2013</year> <year>2014</year> <year>2015</year> <year>2016</year> <year>2017</year> <holder>Internet Systems Consortium, Inc. ("ISC")</holder> </copyright> </docinfo>
-
-<refsynopsisdiv>
-<cmdsynopsis sepchar=" ">
-      <command>named.conf</command>
-    </cmdsynopsis>
-
-</refsynopsisdiv>
-
-<refsection><info>
-<title>
+ISC
+Internet Systems Consortium, Inc.
+named.conf
+5
+BIND9
+named.conf
+configuration file for
+named
+2004
+2005
+2006
+2007
+2008
+2009
+2010
+2011
+2012
+2013
+2014
+2015
+2016
+2017
+Internet Systems Consortium, Inc. ("ISC")
+named.conf
 DESCRIPTION
-</title>
-</info>
+===========
 
-    <para><filename>named.conf</filename> is the configuration file
-      for
-      <command>named</command>.  Statements are enclosed
-      in braces and terminated with a semi-colon.  Clauses in
-      the statements are also semi-colon terminated.  The usual
-      comment styles are supported:
-    </para>
-    <para>
-      C style: /* */
-    </para>
-    <para>
-      C++ style: // to end of line
-    </para>
-    <para>
-      Unix style: # to end of line
-    </para>
+`named.conf` is the configuration file for `named`. Statements are enclosed in braces and terminated with a semi-colon. Clauses in the statements are also semi-colon terminated. The usual comment styles are supported:
 
-</refsection>
+C style: /\* \*/
 
-<refsection><info>
-<title>
+C++ style: // to end of line
+
+Unix style: \# to end of line
+
 ACL
-</title>
-</info>
+===
 
-    <literallayout class="normal">
+    acl string { address_match_element; ... };
 
-acl <replaceable>string</replaceable> { <replaceable>address\_match\_element</replaceable>; ... };
-
-</literallayout>
-</refsection>
-
-<refsection><info>
-<title>
 KEY
-</title>
-</info>
+===
 
-    <literallayout class="normal">
+    key domain_name {
+        algorithm string;
+        secret string;
+    };
 
-key <replaceable>domain\_name</replaceable> { algorithm <replaceable>string</replaceable>; secret <replaceable>string</replaceable>; };
-</literallayout>
-</refsection>
-
-<refsection><info>
-<title>
 MASTERS
-</title>
-</info>
+=======
 
-    <literallayout class="normal">
+    masters string  port integer  {
+        ( masters | ipv4_address port integer |
+        ipv6_address port integer )  key string ; ...
+    };
 
-masters <replaceable>string</replaceable> <optional> port <replaceable>integer</replaceable> </optional> { ( <replaceable>masters</replaceable> | <replaceable>ipv4\_address</replaceable> <optional>port <replaceable>integer</replaceable></optional> | <replaceable>ipv6\_address</replaceable> <optional>port <replaceable>integer</replaceable></optional> ) <optional> key <replaceable>string</replaceable> </optional>; ... };
-</literallayout>
-</refsection>
-
-<refsection><info>
-<title>
 SERVER
-</title>
-</info>
+======
 
-    <literallayout class="normal">
+    server ( ipv4_address/prefixlen | ipv6_address/prefixlen ) {
+        bogus boolean;
+        edns boolean;
+        edns-udp-size integer;
+        max-udp-size integer;
+        padding integer;
+        tcp-only boolean;
+        tcp-keepalive boolean;
+        provide-ixfr boolean;
+        request-ixfr boolean;
+        keys server_key;
+        transfers integer;
+        transfer-format ( many-answers | one-answer );
+        transfer-source ( ipv4_address | * )
+             port ( integer | * ) ;
+        transfer-source-v6 ( ipv6_address | * )
+             port ( integer | * ) ;
 
-server ( <replaceable>ipv4\_address<optional>/prefixlen</optional></replaceable> | <replaceable>ipv6\_address<optional>/prefixlen</optional></replaceable> ) { bogus <replaceable>boolean</replaceable>; edns <replaceable>boolean</replaceable>; edns-udp-size <replaceable>integer</replaceable>; max-udp-size <replaceable>integer</replaceable>; padding <replaceable>integer</replaceable>; tcp-only <replaceable>boolean</replaceable>; tcp-keepalive <replaceable>boolean</replaceable>; provide-ixfr <replaceable>boolean</replaceable>; request-ixfr <replaceable>boolean</replaceable>; keys <replaceable>server\_key</replaceable>; transfers <replaceable>integer</replaceable>; transfer-format ( many-answers | one-answer ); transfer-source ( <replaceable>ipv4\_address</replaceable> | \* ) <optional> port ( <replaceable>integer</replaceable> | \* ) </optional>; transfer-source-v6 ( <replaceable>ipv6\_address</replaceable> | \* ) <optional> port ( <replaceable>integer</replaceable> | \* ) </optional>;
+        support-ixfr boolean; // obsolete
+    };
 
-    support-ixfr <replaceable>boolean</replaceable>; // obsolete
-
-};
-</literallayout>
-</refsection>
-
-<refsection><info>
-<title>
 TRUSTED-KEYS
-</title>
-</info>
-
-    <literallayout class="normal">
-
-trusted-keys { <replaceable>domain\_name</replaceable> <replaceable>flags</replaceable> <replaceable>protocol</replaceable> <replaceable>algorithm</replaceable> <replaceable>key</replaceable>; ... };
-</literallayout>
-</refsection>
-
-<refsection><info>
-<title>
-MANAGED-KEYS
-</title>
-</info>
-
-    <literallayout class="normal">
-
-managed-keys { <replaceable>domain\_name</replaceable> <constant>initial-key</constant> <replaceable>flags</replaceable> <replaceable>protocol</replaceable> <replaceable>algorithm</replaceable> <replaceable>key</replaceable>; ... };
-</literallayout>
-</refsection>
-
-<refsection><info>
-<title>
-CONTROLS
-</title>
-</info>
-
-    <literallayout class="normal">
-
-controls { inet ( <replaceable>ipv4\_address</replaceable> | <replaceable>ipv6\_address</replaceable> | \* ) <optional> port ( <replaceable>integer</replaceable> | \* ) </optional> allow { <replaceable>address\_match\_element</replaceable>; ... } <optional> keys { <replaceable>string</replaceable>; ... } </optional>; unix <replaceable>unsupported</replaceable>; // not implemented };
-</literallayout>
-</refsection>
-
-<refsection><info>
-<title>
-LOGGING
-</title>
-</info>
-
-    <literallayout class="normal">
-
-logging { channel <replaceable>string</replaceable> { file <replaceable>log\_file</replaceable>; syslog <replaceable>optional\_facility</replaceable>; null; stderr; severity <replaceable>log\_severity</replaceable>; print-time <replaceable>boolean</replaceable>; print-severity <replaceable>boolean</replaceable>; print-category <replaceable>boolean</replaceable>; }; category <replaceable>string</replaceable> { <replaceable>string</replaceable>; ... }; };
-</literallayout>
-</refsection>
-
-<refsection><info>
-<title>
-LWRES
-</title>
-</info>
-
-    <literallayout class="normal">
-
-lwres { listen-on <optional> port <replaceable>integer</replaceable> </optional> { ( <replaceable>ipv4\_address</replaceable> | <replaceable>ipv6\_address</replaceable> ) <optional> port <replaceable>integer</replaceable> </optional>; ... }; view <replaceable>string</replaceable> <replaceable>optional\_class</replaceable>; search { <replaceable>string</replaceable>; ... }; ndots <replaceable>integer</replaceable>; lwres-tasks <replaceable>integer</replaceable>; lwres-clients <replaceable>integer</replaceable>; };
-</literallayout>
-</refsection>
-
-<refsection><info>
-<title>
-OPTIONS
-</title>
-</info>
-
-    <literallayout class="normal">
-
-options { avoid-v4-udp-ports { <replaceable>port</replaceable>; ... }; avoid-v6-udp-ports { <replaceable>port</replaceable>; ... }; blackhole { <replaceable>address\_match\_element</replaceable>; ... }; coresize <replaceable>size</replaceable>; datasize <replaceable>size</replaceable>; directory <replaceable>quoted\_string</replaceable>; dnstap { <replaceable>message\_type</replaceable>; ... }; dnstap-output ( <literal>file</literal> | <literal>unix</literal> ) <replaceable>path\_name</replaceable>; dnstap-identity ( <replaceable>string</replaceable> | <literal>hostname</literal> | <literal>none</literal> ); dnstap-version ( <replaceable>string</replaceable> | <literal>none</literal> ); dump-file <replaceable>quoted\_string</replaceable>; files <replaceable>size</replaceable>; fstrm-set-buffer-hint <replaceable>number</replaceable>; fstrm-set-flush-timeout <replaceable>number</replaceable>; fstrm-set-input-queue-size <replaceable>number</replaceable>; fstrm-set-output-notify-threshold <replaceable>number</replaceable>; fstrm-set-output-queue-model ( <replaceable>mpsc</replaceable> | <replaceable>spsc</replaceable> ) ; fstrm-set-output-queue-size <replaceable>number</replaceable>; fstrm-set-reopen-interval <replaceable>number</replaceable>; heartbeat-interval <replaceable>integer</replaceable>; host-statistics <replaceable>boolean</replaceable>; // not implemented host-statistics-max <replaceable>number</replaceable>; // not implemented hostname ( <replaceable>quoted\_string</replaceable> | none ); interface-interval <replaceable>integer</replaceable>; keep-response-order { <replaceable>address\_match\_element</replaceable>; ... }; listen-on <optional> port <replaceable>integer</replaceable> </optional> { <replaceable>address\_match\_element</replaceable>; ... }; listen-on-v6 <optional> port <replaceable>integer</replaceable> </optional> { <replaceable>address\_match\_element</replaceable>; ... }; match-mapped-addresses <replaceable>boolean</replaceable>; memstatistics-file <replaceable>quoted\_string</replaceable>; pid-file ( <replaceable>quoted\_string</replaceable> | none ); port <replaceable>integer</replaceable>; querylog <replaceable>boolean</replaceable>; recursing-file <replaceable>quoted\_string</replaceable>; reserved-sockets <replaceable>integer</replaceable>; random-device <replaceable>quoted\_string</replaceable>; recursive-clients <replaceable>integer</replaceable>; serial-query-rate <replaceable>integer</replaceable>; server-id ( <replaceable>quoted\_string</replaceable> | hostname | none ); stacksize <replaceable>size</replaceable>; statistics-file <replaceable>quoted\_string</replaceable>; statistics-interval <replaceable>integer</replaceable>; // not yet implemented tcp-clients <replaceable>integer</replaceable>; tcp-listen-queue <replaceable>integer</replaceable>; tkey-dhkey <replaceable>quoted\_string</replaceable> <replaceable>integer</replaceable>; tkey-gssapi-credential <replaceable>quoted\_string</replaceable>; tkey-gssapi-keytab <replaceable>quoted\_string</replaceable>; tkey-domain <replaceable>quoted\_string</replaceable>; transfer-message-size <replaceable>integer</replaceable>; transfers-per-ns <replaceable>integer</replaceable>; transfers-in <replaceable>integer</replaceable>; transfers-out <replaceable>integer</replaceable>; version ( <replaceable>quoted\_string</replaceable> | none ); allow-recursion { <replaceable>address\_match\_element</replaceable>; ... }; allow-recursion-on { <replaceable>address\_match\_element</replaceable>; ... }; sortlist { <replaceable>address\_match\_element</replaceable>; ... }; topology { <replaceable>address\_match\_element</replaceable>; ... }; // not implemented auth-nxdomain <replaceable>boolean</replaceable>; // default changed minimal-any <replaceable>boolean</replaceable>; minimal-responses ( <replaceable>boolean</replaceable> | no-auth | no-auth-recursive ); recursion <replaceable>boolean</replaceable>; rrset-order { <optional> class <replaceable>string</replaceable> </optional> <optional> type <replaceable>string</replaceable> </optional> <optional> name <replaceable>quoted\_string</replaceable> </optional> <replaceable>string</replaceable> <replaceable>string</replaceable>; ... }; provide-ixfr <replaceable>boolean</replaceable>; request-ixfr <replaceable>boolean</replaceable>; rfc2308-type1 <replaceable>boolean</replaceable>; // not yet implemented additional-from-auth <replaceable>boolean</replaceable>; additional-from-cache <replaceable>boolean</replaceable>; query-source ( ( <replaceable>ipv4\_address</replaceable> | \* ) | <optional> address ( <replaceable>ipv4\_address</replaceable> | \* ) </optional> ) <optional> port ( <replaceable>integer</replaceable> | \* ) </optional>; query-source-v6 ( ( <replaceable>ipv6\_address</replaceable> | \* ) | <optional> address ( <replaceable>ipv6\_address</replaceable> | \* ) </optional> ) <optional> port ( <replaceable>integer</replaceable> | \* ) </optional>; use-queryport-pool <replaceable>boolean</replaceable>; queryport-pool-ports <replaceable>integer</replaceable>; queryport-pool-updateinterval <replaceable>integer</replaceable>; cleaning-interval <replaceable>integer</replaceable>; resolver-query-timeout <replaceable>integer</replaceable>; min-roots <replaceable>integer</replaceable>; // not implemented lame-ttl <replaceable>integer</replaceable>; max-ncache-ttl <replaceable>integer</replaceable>; max-cache-ttl <replaceable>integer</replaceable>; transfer-format ( many-answers | one-answer ); max-cache-size <replaceable>size</replaceable>; max-acache-size <replaceable>size</replaceable>; clients-per-query <replaceable>number</replaceable>; max-clients-per-query <replaceable>number</replaceable>; check-names ( master | slave | response ) ( fail | warn | ignore ); check-mx ( fail | warn | ignore ); check-integrity <replaceable>boolean</replaceable>; check-mx-cname ( fail | warn | ignore ); check-srv-cname ( fail | warn | ignore ); cache-file <replaceable>quoted\_string</replaceable>; // test option catalog-zones { zone <replaceable>quoted\_string</replaceable> <optional> default-masters <optional>port <replaceable>ip\_port</replaceable></optional> <optional>dscp <replaceable>ip\_dscp</replaceable></optional> { ( <replaceable>masters\_list</replaceable> | <replaceable>ip\_addr</replaceable> <optional>port <replaceable>ip\_port</replaceable></optional> <optional>key <replaceable>key</replaceable></optional> ) ; <optional>...</optional> }</optional> <optional>in-memory <replaceable>yes\_or\_no</replaceable></optional> <optional>min-update-interval <replaceable>interval</replaceable></optional> ; ... }; ; suppress-initial-notify <replaceable>boolean</replaceable>; // not yet implemented preferred-glue <replaceable>string</replaceable>; dual-stack-servers <optional> port <replaceable>integer</replaceable> </optional> { ( <replaceable>quoted\_string</replaceable> <optional>port <replaceable>integer</replaceable></optional> | <replaceable>ipv4\_address</replaceable> <optional>port <replaceable>integer</replaceable></optional> | <replaceable>ipv6\_address</replaceable> <optional>port <replaceable>integer</replaceable></optional> ); ... }; edns-udp-size <replaceable>integer</replaceable>; max-udp-size <replaceable>integer</replaceable>; root-delegation-only <optional> exclude { <replaceable>quoted\_string</replaceable>; ... } </optional>; disable-algorithms <replaceable>string</replaceable> { <replaceable>string</replaceable>; ... }; disable-ds-digests <replaceable>string</replaceable> { <replaceable>string</replaceable>; ... }; dnssec-enable <replaceable>boolean</replaceable>; dnssec-validation <replaceable>boolean</replaceable>; dnssec-lookaside ( <replaceable>auto</replaceable> | <replaceable>no</replaceable> | <replaceable>domain</replaceable> trust-anchor <replaceable>domain</replaceable> ); dnssec-must-be-secure <replaceable>string</replaceable> <replaceable>boolean</replaceable>; dnssec-accept-expired <replaceable>boolean</replaceable>;
-
-    dns64-server <replaceable>string</replaceable>;
-    dns64-contact <replaceable>string</replaceable>;
-    dns64 <replaceable>prefix</replaceable> {
-        clients { <replaceable>acl</replaceable>; };
-        exclude { <replaceable>acl</replaceable>; };
-        mapped { <replaceable>acl</replaceable>; };
-        break-dnssec <replaceable>boolean</replaceable>;
-        recursive-only <replaceable>boolean</replaceable>;
-        suffix <replaceable>ipv6_address</replaceable>;
-    };
-
-    empty-server <replaceable>string</replaceable>;
-    empty-contact <replaceable>string</replaceable>;
-    empty-zones-enable <replaceable>boolean</replaceable>;
-    disable-empty-zone <replaceable>string</replaceable>;
-
-    dialup <replaceable>dialuptype</replaceable>;
-    ixfr-from-differences <replaceable>ixfrdiff</replaceable>;
-
-    allow-query { <replaceable>address_match_element</replaceable>; ... };
-    allow-query-on { <replaceable>address_match_element</replaceable>; ... };
-    allow-query-cache { <replaceable>address_match_element</replaceable>; ... };
-    allow-query-cache-on { <replaceable>address_match_element</replaceable>; ... };
-    allow-transfer { <replaceable>address_match_element</replaceable>; ... };
-    allow-update { <replaceable>address_match_element</replaceable>; ... };
-    allow-update-forwarding { <replaceable>address_match_element</replaceable>; ... };
-    update-check-ksk <replaceable>boolean</replaceable>;
-    dnssec-dnskey-kskonly <replaceable>boolean</replaceable>;
-
-    masterfile-format ( text | raw | map );
-    notify <replaceable>notifytype</replaceable>;
-    notify-source ( <replaceable>ipv4_address</replaceable> | * ) <optional> port ( <replaceable>integer</replaceable> | * ) </optional>;
-    notify-source-v6 ( <replaceable>ipv6_address</replaceable> | * ) <optional> port ( <replaceable>integer</replaceable> | * ) </optional>;
-    notify-delay <replaceable>seconds</replaceable>;
-    notify-to-soa <replaceable>boolean</replaceable>;
-    also-notify <optional> port <replaceable>integer</replaceable> </optional> { ( <replaceable>ipv4_address</replaceable> | <replaceable>ipv6_address</replaceable> )
-        <optional> port <replaceable>integer</replaceable> </optional>; ...
-        <optional> key <replaceable>keyname</replaceable> </optional> ... };
-    allow-notify { <replaceable>address_match_element</replaceable>; ... };
-
-    forward ( first | only );
-    forwarders <optional> port <replaceable>integer</replaceable> </optional> {
-        ( <replaceable>ipv4_address</replaceable> | <replaceable>ipv6_address</replaceable> ) <optional> port <replaceable>integer</replaceable> </optional>; ...
-    };
-
-    max-journal-size <replaceable>size_no_default</replaceable>;
-    max-records <replaceable>integer</replaceable>;
-    max-transfer-time-in <replaceable>integer</replaceable>;
-    max-transfer-time-out <replaceable>integer</replaceable>;
-    max-transfer-idle-in <replaceable>integer</replaceable>;
-    max-transfer-idle-out <replaceable>integer</replaceable>;
-    max-retry-time <replaceable>integer</replaceable>;
-    min-retry-time <replaceable>integer</replaceable>;
-    max-refresh-time <replaceable>integer</replaceable>;
-    min-refresh-time <replaceable>integer</replaceable>;
-    multi-master <replaceable>boolean</replaceable>;
-
-    sig-validity-interval <replaceable>integer</replaceable>;
-    sig-re-signing-interval <replaceable>integer</replaceable>;
-    sig-signing-nodes <replaceable>integer</replaceable>;
-    sig-signing-signatures <replaceable>integer</replaceable>;
-    sig-signing-type <replaceable>integer</replaceable>;
-
-    transfer-source ( <replaceable>ipv4_address</replaceable> | * )
-        <optional> port ( <replaceable>integer</replaceable> | * ) </optional>;
-    transfer-source-v6 ( <replaceable>ipv6_address</replaceable> | * )
-        <optional> port ( <replaceable>integer</replaceable> | * ) </optional>;
-
-    alt-transfer-source ( <replaceable>ipv4_address</replaceable> | * )
-        <optional> port ( <replaceable>integer</replaceable> | * ) </optional>;
-    alt-transfer-source-v6 ( <replaceable>ipv6_address</replaceable> | * )
-        <optional> port ( <replaceable>integer</replaceable> | * ) </optional>;
-    use-alt-transfer-source <replaceable>boolean</replaceable>;
-
-    zone-statistics <replaceable>boolean</replaceable>;
-    key-directory <replaceable>quoted_string</replaceable>;
-    managed-keys-directory <replaceable>quoted_string</replaceable>;
-    auto-dnssec <constant>allow</constant>|<constant>maintain</constant>|<constant>off</constant>;
-    try-tcp-refresh <replaceable>boolean</replaceable>;
-    zero-no-soa-ttl <replaceable>boolean</replaceable>;
-    zero-no-soa-ttl-cache <replaceable>boolean</replaceable>;
-    dnssec-secure-to-insecure <replaceable>boolean</replaceable>;
-    automatic-interface-scan <replaceable>boolean</replaceable>;
-
-    cookie-algorithm ( <replaceable>aes</replaceable> | <replaceable>sha1</replaceable> | <replaceable>sha256</replaceable> );
-    cookie-secret <replaceable>string</replaceable>;
-    require-server-cookie <replaceable>boolean</replaceable>;
-    send-cookie <replaceable>boolean</replaceable>;
-    nocookie-udp-size <replaceable>integer</replaceable>;
-
-    response-padding {
-        <replaceable>address_match_list</replaceable>
-    } block-size <replaceable>integer</replaceable>;
-
-    deny-answer-addresses {
-        <replaceable>address_match_list</replaceable>
-    } <optional> except-from { <replaceable>namelist</replaceable> } </optional>;
-    deny-answer-aliases {
-        <replaceable>namelist</replaceable>
-    } <optional> except-from { <replaceable>namelist</replaceable> } </optional>;
-
-    nsec3-test-zone <replaceable>boolean</replaceable>;  // testing only
-
-    allow-v6-synthesis { <replaceable>address_match_element</replaceable>; ... }; // obsolete
-    deallocate-on-exit <replaceable>boolean</replaceable>; // obsolete
-    fake-iquery <replaceable>boolean</replaceable>; // obsolete
-    fetch-glue <replaceable>boolean</replaceable>; // obsolete
-    has-old-clients <replaceable>boolean</replaceable>; // obsolete
-    maintain-ixfr-base <replaceable>boolean</replaceable>; // obsolete
-    max-ixfr-log-size <replaceable>size</replaceable>; // obsolete
-    multiple-cnames <replaceable>boolean</replaceable>; // obsolete
-    named-xfer <replaceable>quoted_string</replaceable>; // obsolete
-    serial-queries <replaceable>integer</replaceable>; // obsolete
-    treat-cr-as-space <replaceable>boolean</replaceable>; // obsolete
-    use-id-pool <replaceable>boolean</replaceable>; // obsolete
-    use-ixfr <replaceable>boolean</replaceable>; // obsolete
-
-};
-</literallayout>
-</refsection>
-
-<refsection><info>
-<title>
-VIEW
-</title>
-</info>
-
-    <literallayout class="normal">
-
-view <replaceable>string</replaceable> <replaceable>optional\_class</replaceable> { match-clients { <replaceable>address\_match\_element</replaceable>; ... }; match-destinations { <replaceable>address\_match\_element</replaceable>; ... }; match-recursive-only <replaceable>boolean</replaceable>;
-
-    key <replaceable>string</replaceable> {
-        algorithm <replaceable>string</replaceable>;
-        secret <replaceable>string</replaceable>;
-    };
-
-    zone <replaceable>string</replaceable> <replaceable>optional_class</replaceable> {
-        ...
-    };
-
-    server ( <replaceable>ipv4_address<optional>/prefixlen</optional></replaceable> | <replaceable>ipv6_address<optional>/prefixlen</optional></replaceable> ) {
-        ...
-    };
+============
 
     trusted-keys {
-        <replaceable>string</replaceable> <replaceable>integer</replaceable> <replaceable>integer</replaceable> <replaceable>integer</replaceable> <replaceable>quoted_string</replaceable>;
-        <optional>...</optional>
+        domain_name flags protocol algorithm key; ...
     };
+
+MANAGED-KEYS
+============
 
     managed-keys {
-        <replaceable>domain_name</replaceable> <constant>initial-key</constant> <replaceable>flags</replaceable> <replaceable>protocol</replaceable> <replaceable>algorithm</replaceable> <replaceable>key</replaceable>;
-        <optional>...</optional>
+        domain_name initial-key flags protocol algorithm key; ...
     };
 
-    allow-recursion { <replaceable>address_match_element</replaceable>; ... };
-    allow-recursion-on { <replaceable>address_match_element</replaceable>; ... };
-    sortlist { <replaceable>address_match_element</replaceable>; ... };
-    topology { <replaceable>address_match_element</replaceable>; ... }; // not implemented
-    auth-nxdomain <replaceable>boolean</replaceable>; // default changed
-    minimal-any <replaceable>boolean</replaceable>;
-    minimal-responses <replaceable>boolean</replaceable>;
-    recursion <replaceable>boolean</replaceable>;
-    rrset-order {
-        <optional> class <replaceable>string</replaceable> </optional> <optional> type <replaceable>string</replaceable> </optional>
-        <optional> name <replaceable>quoted_string</replaceable> </optional> <replaceable>string</replaceable> <replaceable>string</replaceable>; ...
-    };
-    provide-ixfr <replaceable>boolean</replaceable>;
-    request-ixfr <replaceable>boolean</replaceable>;
-    rfc2308-type1 <replaceable>boolean</replaceable>; // not yet implemented
-    additional-from-auth <replaceable>boolean</replaceable>;
-    additional-from-cache <replaceable>boolean</replaceable>;
-    query-source ( ( <replaceable>ipv4_address</replaceable> | * ) | <optional> address ( <replaceable>ipv4_address</replaceable> | * ) </optional> ) <optional> port ( <replaceable>integer</replaceable> | * ) </optional>;
-    query-source-v6 ( ( <replaceable>ipv6_address</replaceable> | * ) | <optional> address ( <replaceable>ipv6_address</replaceable> | * ) </optional> ) <optional> port ( <replaceable>integer</replaceable> | * ) </optional>;
-    use-queryport-pool <replaceable>boolean</replaceable>;
-    queryport-pool-ports <replaceable>integer</replaceable>;
-    queryport-pool-updateinterval <replaceable>integer</replaceable>;
-    cleaning-interval <replaceable>integer</replaceable>;
-    resolver-query-timeout <replaceable>integer</replaceable>;
-    min-roots <replaceable>integer</replaceable>; // not implemented
-    lame-ttl <replaceable>integer</replaceable>;
-    max-ncache-ttl <replaceable>integer</replaceable>;
-    max-cache-ttl <replaceable>integer</replaceable>;
-    transfer-format ( many-answers | one-answer );
-    max-cache-size <replaceable>size</replaceable>;
-    max-acache-size <replaceable>size</replaceable>;
-    clients-per-query <replaceable>number</replaceable>;
-    max-clients-per-query <replaceable>number</replaceable>;
-    check-names ( master | slave | response )
-        ( fail | warn | ignore );
-    check-mx ( fail | warn | ignore );
-    check-integrity <replaceable>boolean</replaceable>;
-    check-mx-cname ( fail | warn | ignore );
-    check-srv-cname ( fail | warn | ignore );
-    cache-file <replaceable>quoted_string</replaceable>; // test option
-    suppress-initial-notify <replaceable>boolean</replaceable>; // not yet implemented
-    preferred-glue <replaceable>string</replaceable>;
-    dual-stack-servers <optional> port <replaceable>integer</replaceable> </optional> {
-        ( <replaceable>quoted_string</replaceable> <optional>port <replaceable>integer</replaceable></optional> |
-        <replaceable>ipv4_address</replaceable> <optional>port <replaceable>integer</replaceable></optional> |
-        <replaceable>ipv6_address</replaceable> <optional>port <replaceable>integer</replaceable></optional> ); ...
-    };
-    edns-udp-size <replaceable>integer</replaceable>;
-    max-udp-size <replaceable>integer</replaceable>;
-    root-delegation-only <optional> exclude { <replaceable>quoted_string</replaceable>; ... } </optional>;
-    disable-algorithms <replaceable>string</replaceable> { <replaceable>string</replaceable>; ... };
-    disable-ds-digests <replaceable>string</replaceable> { <replaceable>string</replaceable>; ... };
-    dnssec-enable <replaceable>boolean</replaceable>;
-    dnssec-validation <replaceable>boolean</replaceable>;
-    dnssec-lookaside ( <replaceable>auto</replaceable> | <replaceable>no</replaceable> | <replaceable>domain</replaceable> trust-anchor <replaceable>domain</replaceable> );
-    dnssec-must-be-secure <replaceable>string</replaceable> <replaceable>boolean</replaceable>;
-    dnssec-accept-expired <replaceable>boolean</replaceable>;
+CONTROLS
+========
 
-    dns64-server <replaceable>string</replaceable>;
-    dns64-contact <replaceable>string</replaceable>;
-    dns64 <replaceable>prefix</replaceable> {
-        clients { <replaceable>acl</replaceable>; };
-        exclude { <replaceable>acl</replaceable>; };
-        mapped { <replaceable>acl</replaceable>; };
-        break-dnssec <replaceable>boolean</replaceable>;
-        recursive-only <replaceable>boolean</replaceable>;
-        suffix <replaceable>ipv6_address</replaceable>;
+    controls {
+        inet ( ipv4_address | ipv6_address | * )
+             port ( integer | * ) 
+            allow { address_match_element; ... }
+             keys { string; ... } ;
+        unix unsupported; // not implemented
     };
 
-    empty-server <replaceable>string</replaceable>;
-    empty-contact <replaceable>string</replaceable>;
-    empty-zones-enable <replaceable>boolean</replaceable>;
-    disable-empty-zone <replaceable>string</replaceable>;
+LOGGING
+=======
 
-    dialup <replaceable>dialuptype</replaceable>;
-    ixfr-from-differences <replaceable>ixfrdiff</replaceable>;
-
-    allow-query { <replaceable>address_match_element</replaceable>; ... };
-    allow-query-on { <replaceable>address_match_element</replaceable>; ... };
-    allow-query-cache { <replaceable>address_match_element</replaceable>; ... };
-    allow-query-cache-on { <replaceable>address_match_element</replaceable>; ... };
-    allow-transfer { <replaceable>address_match_element</replaceable>; ... };
-    allow-update { <replaceable>address_match_element</replaceable>; ... };
-    allow-update-forwarding { <replaceable>address_match_element</replaceable>; ... };
-    update-check-ksk <replaceable>boolean</replaceable>;
-    dnssec-dnskey-kskonly <replaceable>boolean</replaceable>;
-
-    masterfile-format ( text | raw | map );
-    notify <replaceable>notifytype</replaceable>;
-    notify-source ( <replaceable>ipv4_address</replaceable> | * ) <optional> port ( <replaceable>integer</replaceable> | * ) </optional>;
-    notify-source-v6 ( <replaceable>ipv6_address</replaceable> | * ) <optional> port ( <replaceable>integer</replaceable> | * ) </optional>;
-    notify-delay <replaceable>seconds</replaceable>;
-    notify-to-soa <replaceable>boolean</replaceable>;
-    also-notify <optional> port <replaceable>integer</replaceable> </optional> { ( <replaceable>ipv4_address</replaceable> | <replaceable>ipv6_address</replaceable> )
-        <optional> port <replaceable>integer</replaceable> </optional>; ...
-        <optional> key <replaceable>keyname</replaceable> </optional> ... };
-    allow-notify { <replaceable>address_match_element</replaceable>; ... };
-
-    forward ( first | only );
-    forwarders <optional> port <replaceable>integer</replaceable> </optional> {
-        ( <replaceable>ipv4_address</replaceable> | <replaceable>ipv6_address</replaceable> ) <optional> port <replaceable>integer</replaceable> </optional>; ...
+    logging {
+        channel string {
+            file log_file;
+            syslog optional_facility;
+            null;
+            stderr;
+            severity log_severity;
+            print-time boolean;
+            print-severity boolean;
+            print-category boolean;
+        };
+        category string { string; ... };
     };
 
-    max-journal-size <replaceable>size_no_default</replaceable>;
-    max-records <replaceable>integer</replaceable>;
-    max-transfer-time-in <replaceable>integer</replaceable>;
-    max-transfer-time-out <replaceable>integer</replaceable>;
-    max-transfer-idle-in <replaceable>integer</replaceable>;
-    max-transfer-idle-out <replaceable>integer</replaceable>;
-    max-retry-time <replaceable>integer</replaceable>;
-    min-retry-time <replaceable>integer</replaceable>;
-    max-refresh-time <replaceable>integer</replaceable>;
-    min-refresh-time <replaceable>integer</replaceable>;
-    multi-master <replaceable>boolean</replaceable>;
-    sig-validity-interval <replaceable>integer</replaceable>;
+LWRES
+=====
 
-    transfer-source ( <replaceable>ipv4_address</replaceable> | * )
-        <optional> port ( <replaceable>integer</replaceable> | * ) </optional>;
-    transfer-source-v6 ( <replaceable>ipv6_address</replaceable> | * )
-        <optional> port ( <replaceable>integer</replaceable> | * ) </optional>;
+    lwres {
+        listen-on  port integer  {
+            ( ipv4_address | ipv6_address )  port integer ; ...
+        };
+        view string optional_class;
+        search { string; ... };
+        ndots integer;
+        lwres-tasks integer;
+        lwres-clients integer;
+    };
 
-    alt-transfer-source ( <replaceable>ipv4_address</replaceable> | * )
-        <optional> port ( <replaceable>integer</replaceable> | * ) </optional>;
-    alt-transfer-source-v6 ( <replaceable>ipv6_address</replaceable> | * )
-        <optional> port ( <replaceable>integer</replaceable> | * ) </optional>;
-    use-alt-transfer-source <replaceable>boolean</replaceable>;
+OPTIONS
+=======
 
-    zone-statistics <replaceable>boolean</replaceable>;
-    try-tcp-refresh <replaceable>boolean</replaceable>;
-    key-directory <replaceable>quoted_string</replaceable>;
-    zero-no-soa-ttl <replaceable>boolean</replaceable>;
-    zero-no-soa-ttl-cache <replaceable>boolean</replaceable>;
-    dnssec-secure-to-insecure <replaceable>boolean</replaceable>;
+    options {
+        avoid-v4-udp-ports { port; ... };
+        avoid-v6-udp-ports { port; ... };
+        blackhole { address_match_element; ... };
+        coresize size;
+        datasize size;
+        directory quoted_string;
+        dnstap { message_type; ... };
+        dnstap-output ( file | unix ) path_name;
+        dnstap-identity ( string | hostname | none );
+        dnstap-version ( string | none );
+        dump-file quoted_string;
+        files size;
+        fstrm-set-buffer-hint number;
+        fstrm-set-flush-timeout number;
+        fstrm-set-input-queue-size number;
+        fstrm-set-output-notify-threshold number;
+        fstrm-set-output-queue-model ( mpsc | spsc ) ;
+        fstrm-set-output-queue-size number;
+        fstrm-set-reopen-interval number;
+        heartbeat-interval integer;
+        host-statistics boolean; // not implemented
+        host-statistics-max number; // not implemented
+        hostname ( quoted_string | none );
+        interface-interval integer;
+        keep-response-order { address_match_element; ... };
+        listen-on  port integer  { address_match_element; ... };
+        listen-on-v6  port integer  { address_match_element; ... };
+        match-mapped-addresses boolean;
+        memstatistics-file quoted_string;
+        pid-file ( quoted_string | none );
+        port integer;
+        querylog boolean;
+        recursing-file quoted_string;
+        reserved-sockets integer;
+        random-device quoted_string;
+        recursive-clients integer;
+        serial-query-rate integer;
+        server-id ( quoted_string | hostname | none );
+        stacksize size;
+        statistics-file quoted_string;
+        statistics-interval integer; // not yet implemented
+        tcp-clients integer;
+        tcp-listen-queue integer;
+        tkey-dhkey quoted_string integer;
+        tkey-gssapi-credential quoted_string;
+        tkey-gssapi-keytab quoted_string;
+        tkey-domain quoted_string;
+        transfer-message-size integer;
+        transfers-per-ns integer;
+        transfers-in integer;
+        transfers-out integer;
+        version ( quoted_string | none );
+        allow-recursion { address_match_element; ... };
+        allow-recursion-on { address_match_element; ... };
+        sortlist { address_match_element; ... };
+        topology { address_match_element; ... }; // not implemented
+        auth-nxdomain boolean; // default changed
+        minimal-any boolean;
+        minimal-responses ( boolean | no-auth | no-auth-recursive );
+        recursion boolean;
+        rrset-order {
+             class string   type string 
+             name quoted_string  string string; ...
+        };
+        provide-ixfr boolean;
+        request-ixfr boolean;
+        rfc2308-type1 boolean; // not yet implemented
+        additional-from-auth boolean;
+        additional-from-cache boolean;
+        query-source ( ( ipv4_address | * ) |  address ( ipv4_address | * )  )  port ( integer | * ) ;
+        query-source-v6 ( ( ipv6_address | * ) |  address ( ipv6_address | * )  )  port ( integer | * ) ;
+        use-queryport-pool boolean;
+        queryport-pool-ports integer;
+        queryport-pool-updateinterval integer;
+        cleaning-interval integer;
+        resolver-query-timeout integer;
+        min-roots integer; // not implemented
+        lame-ttl integer;
+        max-ncache-ttl integer;
+        max-cache-ttl integer;
+        transfer-format ( many-answers | one-answer );
+        max-cache-size size;
+        max-acache-size size;
+        clients-per-query number;
+        max-clients-per-query number;
+        check-names ( master | slave | response )
+            ( fail | warn | ignore );
+        check-mx ( fail | warn | ignore );
+        check-integrity boolean;
+        check-mx-cname ( fail | warn | ignore );
+        check-srv-cname ( fail | warn | ignore );
+        cache-file quoted_string; // test option
+        catalog-zones {
+            zone quoted_string
+             default-masters
+            port ip_port
+            dscp ip_dscp
+            { ( masters_list | ip_addr port ip_port key key ) ; ... }
+            in-memory yes_or_no
+            min-update-interval interval
+            ; ... };
+        ;
+        suppress-initial-notify boolean; // not yet implemented
+        preferred-glue string;
+        dual-stack-servers  port integer  {
+            ( quoted_string port integer |
+            ipv4_address port integer |
+            ipv6_address port integer ); ...
+        };
+        edns-udp-size integer;
+        max-udp-size integer;
+        root-delegation-only  exclude { quoted_string; ... } ;
+        disable-algorithms string { string; ... };
+        disable-ds-digests string { string; ... };
+        dnssec-enable boolean;
+        dnssec-validation boolean;
+        dnssec-lookaside ( auto | no | domain trust-anchor domain );
+        dnssec-must-be-secure string boolean;
+        dnssec-accept-expired boolean;
 
-    require-server-cookie <replaceable>boolean</replaceable>;
-    send-cookie <replaceable>boolean</replaceable>;
-    nocookie-udp-size <replaceable>integer</replaceable>;
+        dns64-server string;
+        dns64-contact string;
+        dns64 prefix {
+            clients { acl; };
+            exclude { acl; };
+            mapped { acl; };
+            break-dnssec boolean;
+            recursive-only boolean;
+            suffix ipv6_address;
+        };
 
-    allow-v6-synthesis { <replaceable>address_match_element</replaceable>; ... }; // obsolete
-    fetch-glue <replaceable>boolean</replaceable>; // obsolete
-    maintain-ixfr-base <replaceable>boolean</replaceable>; // obsolete
-    max-ixfr-log-size <replaceable>size</replaceable>; // obsolete
+        empty-server string;
+        empty-contact string;
+        empty-zones-enable boolean;
+        disable-empty-zone string;
 
-};
-</literallayout>
-</refsection>
+        dialup dialuptype;
+        ixfr-from-differences ixfrdiff;
 
-<refsection><info>
-<title>
+        allow-query { address_match_element; ... };
+        allow-query-on { address_match_element; ... };
+        allow-query-cache { address_match_element; ... };
+        allow-query-cache-on { address_match_element; ... };
+        allow-transfer { address_match_element; ... };
+        allow-update { address_match_element; ... };
+        allow-update-forwarding { address_match_element; ... };
+        update-check-ksk boolean;
+        dnssec-dnskey-kskonly boolean;
+
+        masterfile-format ( text | raw | map );
+        notify notifytype;
+        notify-source ( ipv4_address | * )  port ( integer | * ) ;
+        notify-source-v6 ( ipv6_address | * )  port ( integer | * ) ;
+        notify-delay seconds;
+        notify-to-soa boolean;
+        also-notify  port integer  { ( ipv4_address | ipv6_address )
+             port integer ; ...
+             key keyname  ... };
+        allow-notify { address_match_element; ... };
+
+        forward ( first | only );
+        forwarders  port integer  {
+            ( ipv4_address | ipv6_address )  port integer ; ...
+        };
+
+        max-journal-size size_no_default;
+        max-records integer;
+        max-transfer-time-in integer;
+        max-transfer-time-out integer;
+        max-transfer-idle-in integer;
+        max-transfer-idle-out integer;
+        max-retry-time integer;
+        min-retry-time integer;
+        max-refresh-time integer;
+        min-refresh-time integer;
+        multi-master boolean;
+
+        sig-validity-interval integer;
+        sig-re-signing-interval integer;
+        sig-signing-nodes integer;
+        sig-signing-signatures integer;
+        sig-signing-type integer;
+
+        transfer-source ( ipv4_address | * )
+             port ( integer | * ) ;
+        transfer-source-v6 ( ipv6_address | * )
+             port ( integer | * ) ;
+
+        alt-transfer-source ( ipv4_address | * )
+             port ( integer | * ) ;
+        alt-transfer-source-v6 ( ipv6_address | * )
+             port ( integer | * ) ;
+        use-alt-transfer-source boolean;
+
+        zone-statistics boolean;
+        key-directory quoted_string;
+        managed-keys-directory quoted_string;
+        auto-dnssec allow|maintain|off;
+        try-tcp-refresh boolean;
+        zero-no-soa-ttl boolean;
+        zero-no-soa-ttl-cache boolean;
+        dnssec-secure-to-insecure boolean;
+        automatic-interface-scan boolean;
+
+        cookie-algorithm ( aes | sha1 | sha256 );
+        cookie-secret string;
+        require-server-cookie boolean;
+        send-cookie boolean;
+        nocookie-udp-size integer;
+
+        response-padding {
+            address_match_list
+        } block-size integer;
+
+        deny-answer-addresses {
+            address_match_list
+        }  except-from { namelist } ;
+        deny-answer-aliases {
+            namelist
+        }  except-from { namelist } ;
+
+        nsec3-test-zone boolean;  // testing only
+
+        allow-v6-synthesis { address_match_element; ... }; // obsolete
+        deallocate-on-exit boolean; // obsolete
+        fake-iquery boolean; // obsolete
+        fetch-glue boolean; // obsolete
+        has-old-clients boolean; // obsolete
+        maintain-ixfr-base boolean; // obsolete
+        max-ixfr-log-size size; // obsolete
+        multiple-cnames boolean; // obsolete
+        named-xfer quoted_string; // obsolete
+        serial-queries integer; // obsolete
+        treat-cr-as-space boolean; // obsolete
+        use-id-pool boolean; // obsolete
+        use-ixfr boolean; // obsolete
+    };
+
+VIEW
+====
+
+    view string optional_class {
+        match-clients { address_match_element; ... };
+        match-destinations { address_match_element; ... };
+        match-recursive-only boolean;
+
+        key string {
+            algorithm string;
+            secret string;
+        };
+
+        zone string optional_class {
+            ...
+        };
+
+        server ( ipv4_address/prefixlen | ipv6_address/prefixlen ) {
+            ...
+        };
+
+        trusted-keys {
+            string integer integer integer quoted_string;
+            ...
+        };
+
+        managed-keys {
+            domain_name initial-key flags protocol algorithm key;
+            ...
+        };
+
+        allow-recursion { address_match_element; ... };
+        allow-recursion-on { address_match_element; ... };
+        sortlist { address_match_element; ... };
+        topology { address_match_element; ... }; // not implemented
+        auth-nxdomain boolean; // default changed
+        minimal-any boolean;
+        minimal-responses boolean;
+        recursion boolean;
+        rrset-order {
+             class string   type string 
+             name quoted_string  string string; ...
+        };
+        provide-ixfr boolean;
+        request-ixfr boolean;
+        rfc2308-type1 boolean; // not yet implemented
+        additional-from-auth boolean;
+        additional-from-cache boolean;
+        query-source ( ( ipv4_address | * ) |  address ( ipv4_address | * )  )  port ( integer | * ) ;
+        query-source-v6 ( ( ipv6_address | * ) |  address ( ipv6_address | * )  )  port ( integer | * ) ;
+        use-queryport-pool boolean;
+        queryport-pool-ports integer;
+        queryport-pool-updateinterval integer;
+        cleaning-interval integer;
+        resolver-query-timeout integer;
+        min-roots integer; // not implemented
+        lame-ttl integer;
+        max-ncache-ttl integer;
+        max-cache-ttl integer;
+        transfer-format ( many-answers | one-answer );
+        max-cache-size size;
+        max-acache-size size;
+        clients-per-query number;
+        max-clients-per-query number;
+        check-names ( master | slave | response )
+            ( fail | warn | ignore );
+        check-mx ( fail | warn | ignore );
+        check-integrity boolean;
+        check-mx-cname ( fail | warn | ignore );
+        check-srv-cname ( fail | warn | ignore );
+        cache-file quoted_string; // test option
+        suppress-initial-notify boolean; // not yet implemented
+        preferred-glue string;
+        dual-stack-servers  port integer  {
+            ( quoted_string port integer |
+            ipv4_address port integer |
+            ipv6_address port integer ); ...
+        };
+        edns-udp-size integer;
+        max-udp-size integer;
+        root-delegation-only  exclude { quoted_string; ... } ;
+        disable-algorithms string { string; ... };
+        disable-ds-digests string { string; ... };
+        dnssec-enable boolean;
+        dnssec-validation boolean;
+        dnssec-lookaside ( auto | no | domain trust-anchor domain );
+        dnssec-must-be-secure string boolean;
+        dnssec-accept-expired boolean;
+
+        dns64-server string;
+        dns64-contact string;
+        dns64 prefix {
+            clients { acl; };
+            exclude { acl; };
+            mapped { acl; };
+            break-dnssec boolean;
+            recursive-only boolean;
+            suffix ipv6_address;
+        };
+
+        empty-server string;
+        empty-contact string;
+        empty-zones-enable boolean;
+        disable-empty-zone string;
+
+        dialup dialuptype;
+        ixfr-from-differences ixfrdiff;
+
+        allow-query { address_match_element; ... };
+        allow-query-on { address_match_element; ... };
+        allow-query-cache { address_match_element; ... };
+        allow-query-cache-on { address_match_element; ... };
+        allow-transfer { address_match_element; ... };
+        allow-update { address_match_element; ... };
+        allow-update-forwarding { address_match_element; ... };
+        update-check-ksk boolean;
+        dnssec-dnskey-kskonly boolean;
+
+        masterfile-format ( text | raw | map );
+        notify notifytype;
+        notify-source ( ipv4_address | * )  port ( integer | * ) ;
+        notify-source-v6 ( ipv6_address | * )  port ( integer | * ) ;
+        notify-delay seconds;
+        notify-to-soa boolean;
+        also-notify  port integer  { ( ipv4_address | ipv6_address )
+             port integer ; ...
+             key keyname  ... };
+        allow-notify { address_match_element; ... };
+
+        forward ( first | only );
+        forwarders  port integer  {
+            ( ipv4_address | ipv6_address )  port integer ; ...
+        };
+
+        max-journal-size size_no_default;
+        max-records integer;
+        max-transfer-time-in integer;
+        max-transfer-time-out integer;
+        max-transfer-idle-in integer;
+        max-transfer-idle-out integer;
+        max-retry-time integer;
+        min-retry-time integer;
+        max-refresh-time integer;
+        min-refresh-time integer;
+        multi-master boolean;
+        sig-validity-interval integer;
+
+        transfer-source ( ipv4_address | * )
+             port ( integer | * ) ;
+        transfer-source-v6 ( ipv6_address | * )
+             port ( integer | * ) ;
+
+        alt-transfer-source ( ipv4_address | * )
+             port ( integer | * ) ;
+        alt-transfer-source-v6 ( ipv6_address | * )
+             port ( integer | * ) ;
+        use-alt-transfer-source boolean;
+
+        zone-statistics boolean;
+        try-tcp-refresh boolean;
+        key-directory quoted_string;
+        zero-no-soa-ttl boolean;
+        zero-no-soa-ttl-cache boolean;
+        dnssec-secure-to-insecure boolean;
+
+        require-server-cookie boolean;
+        send-cookie boolean;
+        nocookie-udp-size integer;
+
+        allow-v6-synthesis { address_match_element; ... }; // obsolete
+        fetch-glue boolean; // obsolete
+        maintain-ixfr-base boolean; // obsolete
+        max-ixfr-log-size size; // obsolete
+    };
+
 ZONE
-</title>
-</info>
+====
 
-    <literallayout class="normal">
+    zone string optional_class {
+        type ( master | slave | stub | hint | redirect |
+            forward | delegation-only );
+        file quoted_string;
 
-zone <replaceable>string</replaceable> <replaceable>optional\_class</replaceable> { type ( master | slave | stub | hint | redirect | forward | delegation-only ); file <replaceable>quoted\_string</replaceable>;
+        masters  port integer  {
+            ( masters |
+            ipv4_address port integer |
+            ipv6_address  port integer  )  key string ; ...
+        };
 
-    masters <optional> port <replaceable>integer</replaceable> </optional> {
-        ( <replaceable>masters</replaceable> |
-        <replaceable>ipv4_address</replaceable> <optional>port <replaceable>integer</replaceable></optional> |
-        <replaceable>ipv6_address</replaceable> <optional> port <replaceable>integer</replaceable> </optional> ) <optional> key <replaceable>string</replaceable> </optional>; ...
+        database string;
+        delegation-only boolean;
+        check-names ( fail | warn | ignore );
+        check-mx ( fail | warn | ignore );
+        check-integrity boolean;
+        check-mx-cname ( fail | warn | ignore );
+        check-srv-cname ( fail | warn | ignore );
+        dialup dialuptype;
+        ixfr-from-differences boolean;
+        journal quoted_string;
+        zero-no-soa-ttl boolean;
+        dnssec-secure-to-insecure boolean;
+
+        allow-query { address_match_element; ... };
+        allow-query-on { address_match_element; ... };
+        allow-transfer { address_match_element; ... };
+        allow-update { address_match_element; ... };
+        allow-update-forwarding { address_match_element; ... };
+        update-policy local |  {
+            ( grant | deny ) string
+            ( name | subdomain | wildcard | self | selfsub | selfwild |
+              krb5-self | ms-self | krb5-subdomain | ms-subdomain |
+              tcp-self | zonesub | 6to4-self ) string
+            rrtypelist;
+            ...
+        };
+        update-check-ksk boolean;
+        dnssec-dnskey-kskonly boolean;
+
+        masterfile-format ( text | raw | map );
+        notify notifytype;
+        notify-source ( ipv4_address | * )  port ( integer | * ) ;
+        notify-source-v6 ( ipv6_address | * )  port ( integer | * ) ;
+        notify-delay seconds;
+        notify-to-soa boolean;
+        also-notify  port integer  { ( ipv4_address | ipv6_address )
+             port integer ; ...
+             key keyname  ... };
+        allow-notify { address_match_element; ... };
+
+        forward ( first | only );
+        forwarders  port integer  {
+            ( ipv4_address | ipv6_address )  port integer ; ...
+        };
+
+        max-journal-size size_no_default;
+        max-records integer;
+        max-transfer-time-in integer;
+        max-transfer-time-out integer;
+        max-transfer-idle-in integer;
+        max-transfer-idle-out integer;
+        max-retry-time integer;
+        min-retry-time integer;
+        max-refresh-time integer;
+        min-refresh-time integer;
+        multi-master boolean;
+        request-ixfr boolean;
+        sig-validity-interval integer;
+
+        transfer-source ( ipv4_address | * )
+             port ( integer | * ) ;
+        transfer-source-v6 ( ipv6_address | * )
+             port ( integer | * ) ;
+
+        alt-transfer-source ( ipv4_address | * )
+             port ( integer | * ) ;
+        alt-transfer-source-v6 ( ipv6_address | * )
+             port ( integer | * ) ;
+        use-alt-transfer-source boolean;
+
+        zone-statistics boolean;
+        try-tcp-refresh boolean;
+        key-directory quoted_string;
+
+        nsec3-test-zone boolean;  // testing only
+
+        ixfr-base quoted_string; // obsolete
+        ixfr-tmp-file quoted_string; // obsolete
+        maintain-ixfr-base boolean; // obsolete
+        max-ixfr-log-size size; // obsolete
+        pubkey integer integer integer quoted_string; // obsolete
     };
 
-    database <replaceable>string</replaceable>;
-    delegation-only <replaceable>boolean</replaceable>;
-    check-names ( fail | warn | ignore );
-    check-mx ( fail | warn | ignore );
-    check-integrity <replaceable>boolean</replaceable>;
-    check-mx-cname ( fail | warn | ignore );
-    check-srv-cname ( fail | warn | ignore );
-    dialup <replaceable>dialuptype</replaceable>;
-    ixfr-from-differences <replaceable>boolean</replaceable>;
-    journal <replaceable>quoted_string</replaceable>;
-    zero-no-soa-ttl <replaceable>boolean</replaceable>;
-    dnssec-secure-to-insecure <replaceable>boolean</replaceable>;
-
-    allow-query { <replaceable>address_match_element</replaceable>; ... };
-    allow-query-on { <replaceable>address_match_element</replaceable>; ... };
-    allow-transfer { <replaceable>address_match_element</replaceable>; ... };
-    allow-update { <replaceable>address_match_element</replaceable>; ... };
-    allow-update-forwarding { <replaceable>address_match_element</replaceable>; ... };
-    update-policy <replaceable>local</replaceable> | <replaceable> {
-        ( grant | deny ) <replaceable>string</replaceable>
-        ( name | subdomain | wildcard | self | selfsub | selfwild |
-          krb5-self | ms-self | krb5-subdomain | ms-subdomain |
-          tcp-self | zonesub | 6to4-self ) <replaceable>string</replaceable>
-        <replaceable>rrtypelist</replaceable>;
-        <optional>...</optional>
-    }</replaceable>;
-    update-check-ksk <replaceable>boolean</replaceable>;
-    dnssec-dnskey-kskonly <replaceable>boolean</replaceable>;
-
-    masterfile-format ( text | raw | map );
-    notify <replaceable>notifytype</replaceable>;
-    notify-source ( <replaceable>ipv4_address</replaceable> | * ) <optional> port ( <replaceable>integer</replaceable> | * ) </optional>;
-    notify-source-v6 ( <replaceable>ipv6_address</replaceable> | * ) <optional> port ( <replaceable>integer</replaceable> | * ) </optional>;
-    notify-delay <replaceable>seconds</replaceable>;
-    notify-to-soa <replaceable>boolean</replaceable>;
-    also-notify <optional> port <replaceable>integer</replaceable> </optional> { ( <replaceable>ipv4_address</replaceable> | <replaceable>ipv6_address</replaceable> )
-        <optional> port <replaceable>integer</replaceable> </optional>; ...
-        <optional> key <replaceable>keyname</replaceable> </optional> ... };
-    allow-notify { <replaceable>address_match_element</replaceable>; ... };
-
-    forward ( first | only );
-    forwarders <optional> port <replaceable>integer</replaceable> </optional> {
-        ( <replaceable>ipv4_address</replaceable> | <replaceable>ipv6_address</replaceable> ) <optional> port <replaceable>integer</replaceable> </optional>; ...
-    };
-
-    max-journal-size <replaceable>size_no_default</replaceable>;
-    max-records <replaceable>integer</replaceable>;
-    max-transfer-time-in <replaceable>integer</replaceable>;
-    max-transfer-time-out <replaceable>integer</replaceable>;
-    max-transfer-idle-in <replaceable>integer</replaceable>;
-    max-transfer-idle-out <replaceable>integer</replaceable>;
-    max-retry-time <replaceable>integer</replaceable>;
-    min-retry-time <replaceable>integer</replaceable>;
-    max-refresh-time <replaceable>integer</replaceable>;
-    min-refresh-time <replaceable>integer</replaceable>;
-    multi-master <replaceable>boolean</replaceable>;
-    request-ixfr <replaceable>boolean</replaceable>;
-    sig-validity-interval <replaceable>integer</replaceable>;
-
-    transfer-source ( <replaceable>ipv4_address</replaceable> | * )
-        <optional> port ( <replaceable>integer</replaceable> | * ) </optional>;
-    transfer-source-v6 ( <replaceable>ipv6_address</replaceable> | * )
-        <optional> port ( <replaceable>integer</replaceable> | * ) </optional>;
-
-    alt-transfer-source ( <replaceable>ipv4_address</replaceable> | * )
-        <optional> port ( <replaceable>integer</replaceable> | * ) </optional>;
-    alt-transfer-source-v6 ( <replaceable>ipv6_address</replaceable> | * )
-        <optional> port ( <replaceable>integer</replaceable> | * ) </optional>;
-    use-alt-transfer-source <replaceable>boolean</replaceable>;
-
-    zone-statistics <replaceable>boolean</replaceable>;
-    try-tcp-refresh <replaceable>boolean</replaceable>;
-    key-directory <replaceable>quoted_string</replaceable>;
-
-    nsec3-test-zone <replaceable>boolean</replaceable>;  // testing only
-
-    ixfr-base <replaceable>quoted_string</replaceable>; // obsolete
-    ixfr-tmp-file <replaceable>quoted_string</replaceable>; // obsolete
-    maintain-ixfr-base <replaceable>boolean</replaceable>; // obsolete
-    max-ixfr-log-size <replaceable>size</replaceable>; // obsolete
-    pubkey <replaceable>integer</replaceable> <replaceable>integer</replaceable> <replaceable>integer</replaceable> <replaceable>quoted_string</replaceable>; // obsolete
-
-};
-</literallayout>
-</refsection>
-
-<refsection><info>
-<title>
 FILES
-</title>
-</info>
+=====
 
-    <para><filename>/etc/named.conf</filename>
-    </para>
+`/etc/named.conf`
 
-</refsection>
-
-<refsection><info>
-<title>
 SEE ALSO
-</title>
-</info>
+========
 
-    <para><citerefentry>
-    <refentrytitle>named</refentrytitle><manvolnum>8</manvolnum>
-      </citerefentry>,
-      <citerefentry>
-    <refentrytitle>named-checkconf</refentrytitle><manvolnum>8</manvolnum>
-      </citerefentry>,
-      <citerefentry>
-    <refentrytitle>rndc</refentrytitle><manvolnum>8</manvolnum>
-      </citerefentry>,
-      <citetitle>BIND 9 Administrator Reference Manual</citetitle>.
-    </para>
-
-</refsection>
-
-</refentry>
+named8, named-checkconf8, rndc8, BIND 9 Administrator Reference Manual.
