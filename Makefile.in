@@ -18,7 +18,7 @@ MANPAGES =	isc-config.sh.1
 
 HTMLPAGES =	isc-config.sh.html
 
-MANOBJS =	README ${MANPAGES} ${HTMLPAGES}
+MANOBJS =	README HISTORY OPTIONS ${MANPAGES} ${HTMLPAGES}
 
 @BIND9_MAKE_RULES@
 
@@ -90,7 +90,15 @@ test-force:
 	exit $$status
 
 README: README.md
-	${PANDOC} --email-obfuscation=none -s -t html README.md | \
+	${PANDOC} --email-obfuscation=none -s -t html $< | \
+		${W3M} -dump -cols 75 -O ascii -T text/html > $@
+
+HISTORY: HISTORY.md
+	${PANDOC} --email-obfuscation=none -s -t html $< | \
+		${W3M} -dump -cols 75 -O ascii -T text/html > $@
+
+OPTIONS: OPTIONS.md
+	${PANDOC} --email-obfuscation=none -s -t html $< | \
 		${W3M} -dump -cols 75 -O ascii -T text/html > $@
 
 FAQ: FAQ.xml

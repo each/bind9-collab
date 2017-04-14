@@ -42,14 +42,17 @@ For a summary of features introduced in major releases of BIND, see the
 file HISTORY.
 
 For a detailed list of changes made throughout the history of BIND 9, see
-the file CHANGES.
+the file CHANGES. See below for details on the CHANGES file format.
 
 For up-to-date release notes and errata, see http://www.isc.org/software/
 bind9/releasenotes
 
 Reporting bugs and and getting help
 
-Bug reports should be sent to bind9-bugs@isc.org
+General bug reports can be sent to bind9-bugs@isc.org
+
+Please report assertion failure errors and suspected security issues to
+security-officer@isc.org.
 
 Feature requests can be sent to bind-suggest@isc.org
 
@@ -90,10 +93,8 @@ on many versions of Linux and UNIX, including RedHat, Fedora, Debian,
 Ubuntu, SuSE, Slackware, FreeBSD, NetBSD, OpenBSD, Mac OS X, Solaris,
 HP-UX, AIX, SCO OpenServer, and OpenWRT.
 
-BIND is also available for Windows XP, 2003, 2008, and higher. (Older
-versions of Windows, including Windows NT and Windows 2000, are not
-supported.) See win32utils/readme1st.txt for details on building for
-Windows systems.
+BIND is also available for Windows XP, 2003, 2008, and higher. See
+win32utils/readme1st.txt for details on building for Windows systems.
 
 To build on a UNIX or Linux system, use:
 
@@ -120,7 +121,7 @@ STD_CINCLUDES  where add-on thread or IPv6 support is, for example.
                Defaults to empty string.
                Any additional preprocessor symbols you want defined.
 STD_CDEFINES   Defaults to empty string. For a list of possible settings,
-               see below.
+               see the file OPTIONS.
 LDFLAGS        Linker flags. Defaults to empty string.
 BUILD_CC       Needed when cross-compiling: the native C compiler to use
                when building for the target system.
@@ -130,6 +131,8 @@ BUILD_LDFLAGS
 BUILD_LIBS
 
 Compile-time options
+
+To see a full list of configuration options, run configure --help.
 
 On most platforms, BIND 9 is built with multithreading support, allowing
 it to take advantage of multiple CPUs. You can configure this by
@@ -192,31 +195,6 @@ compatibility with BIND 8, --sysconfdir defaults to /etc and
 --localstatedir defaults to /var if no --prefix option is given. If there
 is a --prefix option, sysconfdir defaults to $prefix/etc and localstatedir
 defaults to $prefix/var.
-
-To see additional configuration options, run configure --help.
-
-Setting the STD_CDEFINES environment variable before running configure can
-be used to enable certain code options that are not explicitly defined in
-configure. Some of these settings are:
-
-Setting                   Description
-                          Don't ovewrite memory when allocating or freeing
--DISC_MEM_FILL=0          it; this improves performance but makes
-                          debugging more difficult.
-                          Don't track memory allocations by file and line
--DISC_MEM_TRACKLINES=0    number; this improves performance but makes
-                          debugging more difficult.
--DISC_FACILITY=LOG_LOCAL0 Change the default syslog facility for named
--DNS_CLIENT_DROPPORT=0    Disable dropping queries from particular
-                          well-known ports:
--DCHECK_SIBLING=0         Don't check sibling glue in named-checkzone
--DCHECK_LOCAL=0           Don't check out-of-zone addresses in
-                          named-checkzone
--DNS_RUN_PID_DIR=0        Create default PID files in ${localstatedir}/run
-                          rather than ${localstatedir}/run/{named,lwresd}/
-                          Enable DNSSEC signature chasing support in dig.
--DDIG_SIGCHASE=1          (Note: This feature is deprecated. Use delv
-                          instead.)
 
 Automated testing
 

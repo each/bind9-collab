@@ -39,18 +39,22 @@ ongoing maintenance and improvement.  BIND is open source software
 licenced under the terms of the Mozilla Public License, version 2.0.
 
 For a summary of features introduced in major releases of BIND, see
-the file `HISTORY`.
+the file [HISTORY](HISTORY.md).
 
 For a detailed list of changes made throughout the history of BIND 9, see
-the file `CHANGES`.
+the file [CHANGES](CHANGES). See [below](#changes) for details on the
+`CHANGES` file format.
 
 For up-to-date release notes and errata, see
 [http://www.isc.org/software/bind9/releasenotes](http://www.isc.org/software/bind9/releasenotes)
 
 ### <a name="help"/> Reporting bugs and and getting help
 
-Bug reports should be sent to
+General bug reports can be sent to
 [bind9-bugs@isc.org](mailto:bind9-bugs@isc.org)
+
+Please report assertion failure errors and suspected security issues to
+[security-officer@isc.org](mailto:security-officer@isc.org).
 
 Feature requests can be sent to
 [bind-suggest@isc.org](mailto:bind-suggest@isc.org)
@@ -92,10 +96,8 @@ many versions of Linux and UNIX, including RedHat, Fedora, Debian, Ubuntu,
 SuSE, Slackware, FreeBSD, NetBSD, OpenBSD, Mac OS X, Solaris, HP-UX, AIX,
 SCO OpenServer, and OpenWRT. 
 
-BIND is also available for Windows XP, 2003, 2008, and higher. (Older
-versions of Windows, including Windows NT and Windows 2000, are not
-supported.) See `win32utils/readme1st.txt` for details on building for
-Windows systems.
+BIND is also available for Windows XP, 2003, 2008, and higher.  See
+`win32utils/readme1st.txt` for details on building for Windows systems.
 
 To build on a UNIX or Linux system, use:
 
@@ -116,7 +118,7 @@ affect compilation:
 |`CC`|The C compiler to use.  `configure` tries to figure out the right one for supported systems.|
 |`CFLAGS`|C compiler flags.  Defaults to include -g and/or -O2 as supported by the compiler.  Please include '-g' if you need to set `CFLAGS`. |
 |`STD_CINCLUDES`|System header file directories.  Can be used to specify where add-on thread or IPv6 support is, for example.  Defaults to empty string.|
-|`STD_CDEFINES`|Any additional preprocessor symbols you want defined.  Defaults to empty string. For a list of possible settings, see below.|
+|`STD_CDEFINES`|Any additional preprocessor symbols you want defined.  Defaults to empty string. For a list of possible settings, see the file [OPTIONS](OPTIONS.md).|
 |`LDFLAGS`|Linker flags. Defaults to empty string.|
 |`BUILD_CC`|Needed when cross-compiling: the native C compiler to use when building for the target system.|
 |`BUILD_CFLAGS`|Optional, used for cross-compiling|
@@ -125,6 +127,8 @@ affect compilation:
 |`BUILD_LIBS`||
 
 #### <a name="opts"/> Compile-time options
+
+To see a full list of configuration options, run `configure --help`.
 
 On most platforms, BIND 9 is built with multithreading support, allowing it
 to take advantage of multiple CPUs.  You can configure this by specifying
@@ -189,23 +193,6 @@ compatibility with BIND 8, `--sysconfdir` defaults to `/etc` and
 `--localstatedir` defaults to `/var` if no `--prefix` option is given.  If
 there is a `--prefix` option, sysconfdir defaults to `$prefix/etc` and
 localstatedir defaults to `$prefix/var`.
-
-To see additional configuration options, run `configure --help`.
-
-Setting the `STD_CDEFINES` environment variable before running `configure`
-can be used to enable certain code options that are not explicitly defined
-in `configure`. Some of these settings are:
-
-|Setting                             |Description |
-|-----------------------------------|----------------------------------------|
-|`-DISC_MEM_FILL=0`|Don't ovewrite memory when allocating or freeing it; this improves performance but makes debugging more difficult.|
-|`-DISC_MEM_TRACKLINES=0`|Don't track memory allocations by file and line number; this improves performance but makes debugging more difficult.|
-|<nobr>`-DISC_FACILITY=LOG_LOCAL0`</nobr>|Change the default syslog facility for `named`|
-|`-DNS_CLIENT_DROPPORT=0`|Disable dropping queries from particular well-known ports:|
-|`-DCHECK_SIBLING=0`|Don't check sibling glue in `named-checkzone`|
-|`-DCHECK_LOCAL=0`|Don't check out-of-zone addresses in `named-checkzone`|
-|`-DNS_RUN_PID_DIR=0`|Create default PID files in `${localstatedir}/run` rather than `${localstatedir}/run/{named,lwresd}/`|
-|`-DDIG_SIGCHASE=1`|Enable DNSSEC signature chasing support in `dig`.  (Note: This feature is deprecated. Use `delv` instead.)|
 
 ### <a name="testing"/> Automated testing
 
