@@ -59,11 +59,14 @@ Please report assertion failure errors and suspected security issues to
 Feature requests can be sent to
 [bind-suggest@isc.org](mailto:bind-suggest@isc.org).
 
-To join or view the archives of the __BIND Users__ mailing list, visit
+Professional support and training for BIND are available from
+ISC at [https://www.isc.org/support](https://www.isc.org/support).
+
+To join the __BIND Users__ mailing list, or view the archives, visit
 [https://lists.isc.org/mailman/listinfo/bind-users](https://lists.isc.org/mailman/listinfo/bind-users).
 
-If you're planning on making changes to the BIND 9 source code, you may
-also want to join the __BIND Workers__ mailing list, at
+If you're planning on making changes to the BIND 9 source code, you
+may also want to join the __BIND Workers__ mailing list, at
 [https://lists.isc.org/mailman/listinfo/bind-workers](https://lists.isc.org/mailman/listinfo/bind-workers).
 
 ### <a name="contrib"/> Contributing to BIND

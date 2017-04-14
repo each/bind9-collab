@@ -56,8 +56,11 @@ security-officer@isc.org.
 
 Feature requests can be sent to bind-suggest@isc.org.
 
-To join or view the archives of the BIND Users mailing list, visit https:/
-/lists.isc.org/mailman/listinfo/bind-users.
+Professional support and training for BIND are available from ISC at
+https://www.isc.org/support.
+
+To join the BIND Users mailing list, or view the archives, visit https://
+lists.isc.org/mailman/listinfo/bind-users.
 
 If you're planning on making changes to the BIND 9 source code, you may
 also want to join the BIND Workers mailing list, at https://lists.isc.org/
