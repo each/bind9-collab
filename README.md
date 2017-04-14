@@ -71,8 +71,21 @@ may also want to join the __BIND Workers__ mailing list, at
 
 ### <a name="contrib"/> Contributing to BIND
 
-Information on source access, coding style and developer guidelines
-can be found at [http://www.isc.org/git/](http://www.isc.org/git/)
+A public git repository for BIND is maintained at
+[http://www.isc.org/git/](http://www.isc.org/git/), and also on Github
+at [https://github.com/isc-projects](https://github.com/isc-projects).
+
+Information for BIND contributors can be found in the following files:
+- General information: [doc/dev/contrib.md](doc/dev/contrib.md)
+- BIND 9 code style: [doc/dev/style.md](doc/dev/style.md)
+- BIND architecture and developer guide: [doc/dev/dev.md](doc/dev/dev.md)
+
+Patches for BIND may be submitted either as Github pull requests
+or via email.  When submitting a patch via email, please prepend the
+subject header with "`[PATCH]`" so it will be easier for us to find. 
+If your patch introduces a new feature in BIND, please submit it to
+[bind-suggest@isc.org](mailto:bind-suggest@isc.org); if it fixes a bug,
+please submit it to [bind9-bugs@isc.org](mailto:bind9-bugs@isc.org).
 
 ### <a name="features"/> BIND 9.12 features
 

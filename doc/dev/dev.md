@@ -27,7 +27,7 @@
     * [Adding a new RR type](#rrtype)
     * [Task and timer model](#tasks)
 
-### <a name="reviews"</a>The code review process
+### <a name="reviews"></a>The code review process
 
 Every line of code comitted to BIND has been reviewed by ISC engineers
 first.
@@ -334,8 +334,8 @@ creating a memory context.  Similar functions `dns_test_begin()` and
 
 #### Namespace
 
-See the [namespace](style.html#public_namespace) discussion in the
-[BIND coding style](style.html) document.
+See the [namespace](style.md#public_namespace) discussion in the
+[BIND coding style](style.md) document.
 
 #### <a name="dbc"></a>Design by contract
 

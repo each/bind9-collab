@@ -125,13 +125,13 @@ preferably the current top of the `master` branch.  Diffs may be
 generated using either `git format-patch` or `git diff`.
 
 Those wanting to write code for BIND may be interested
-in the [developer information](dev.html) page, which includes
+in the [developer information](dev.md) page, which includes
 information about BIND design and coding practices, including
 discussion of internal APIs and overall system architecture.
 (This is a work in progress, and still quite preliminary.)
 
 Every patch submitted will be reviewed by ISC engineers following
-our [code review process](dev.html#reviews) before it is merged.
+our [code review process](dev.md#reviews) before it is merged.
 
 It may take considerable time to review patch submissions, especially
 if they don't meet ISC style and quality guidelines.  If the patch
@@ -141,14 +141,14 @@ time to get to it.
 
 To ensure your patch is acted on as promptly as possible, please:
 
-* Try to adhere to the [BIND 9 coding style](style.html).
+* Try to adhere to the [BIND 9 coding style](style.md).
 * Run `make` `check` to ensure your change hasn't caused any
   functional regressions.
 * Document your work, both in the patch itself and in the
   accompanying email.
 * In patches that make non-trivial functional changes, include system
   tests if possible; when introducing or substantially altering a
-  library API, include unit tests. See [Testing](dev.html#testing)
+  library API, include unit tests. See [Testing](dev.md#testing)
   for more information.
 
 ##### Changes to `configure`
@@ -195,5 +195,5 @@ testers including `queryperf` and `perftcpdns`; and drivers and modules for
 DLZ.
 
 If you have code with a BSD-compatible license that you would like us to
-includ in `contrib`, please send it to `bind-suggest@isc.org`, with
+include in `contrib`, please send it to `bind-suggest@isc.org`, with
 "`[CONTRIB]`" in the subject header.
