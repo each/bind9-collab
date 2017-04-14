@@ -106,9 +106,7 @@ MANPAGES =	named.8 lwresd.8 named.conf.5
 
 HTMLPAGES =	named.html lwresd.html named.conf.html
 
-MDPAGES =	named.md lwresd.md named.conf.md
-
-MANOBJS =	${MANPAGES} ${HTMLPAGES} ${MDPAGES}
+MANOBJS =	${MANPAGES} ${HTMLPAGES}
 
 @BIND9_MAKE_RULES@
 

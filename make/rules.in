@@ -320,15 +320,11 @@ MKSYMTBL_PROGRAM =	@MKSYMTBL_PROGRAM@
 ALWAYS_MAKE_SYMTABLE =	@ALWAYS_MAKE_SYMTABLE@
 
 ###
-### DocBook -> markdown
 ### DocBook -> HTML
 ### DocBook -> man page
 ###
 
-.SUFFIXES: .docbook .html .md .1 .2 .3 .4 .5 .6 .7 .8
-
-.docbook.md:
-	${PANDOC} --email-obfuscation=none -s -f docbook -t markdown_github $< > $@
+.SUFFIXES: .docbook .html .1 .2 .3 .4 .5 .6 .7 .8
 
 .docbook.html:
 	${XSLTPROC} -o $@ ${top_srcdir}/doc/xsl/isc-docbook-html.xsl $<
