@@ -6,7 +6,7 @@
  - file, You can obtain one at http://mozilla.org/MPL/2.0/.
 --->
 ## BIND Source Access and Contributor Guidelines
-*May 8, 2014*
+*Apr 14, 2017*
 
 ### Contents
 
