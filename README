@@ -38,8 +38,8 @@ is responsible for its ongoing maintenance and improvement. BIND is open
 source software licenced under the terms of the Mozilla Public License,
 version 2.0.
 
-For a summary of features introduced in major releases of BIND, see the
-file HISTORY.
+For a summary of features introduced in past major releases of BIND, see
+the file HISTORY.
 
 For a detailed list of changes made throughout the history of BIND 9, see
 the file CHANGES. See below for details on the CHANGES file format.
@@ -49,19 +49,19 @@ bind9/releasenotes
 
 Reporting bugs and and getting help
 
-General bug reports can be sent to bind9-bugs@isc.org
+General bug reports can be sent to bind9-bugs@isc.org.
 
 Please report assertion failure errors and suspected security issues to
 security-officer@isc.org.
 
-Feature requests can be sent to bind-suggest@isc.org
+Feature requests can be sent to bind-suggest@isc.org.
 
 To join or view the archives of the BIND Users mailing list, visit https:/
-/lists.isc.org/mailman/listinfo/bind-users
+/lists.isc.org/mailman/listinfo/bind-users.
 
 If you're planning on making changes to the BIND 9 source code, you may
 also want to join the BIND Workers mailing list, at https://lists.isc.org/
-mailman/listinfo/bind-workers
+mailman/listinfo/bind-workers.
 
 Contributing to BIND
 

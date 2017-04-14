@@ -38,12 +38,12 @@ Internet infrastructure, developed BIND 9 and is responsible for its
 ongoing maintenance and improvement.  BIND is open source software
 licenced under the terms of the Mozilla Public License, version 2.0.
 
-For a summary of features introduced in major releases of BIND, see
-the file [HISTORY](HISTORY.md).
+For a summary of features introduced in past major releases of BIND,
+see the file [HISTORY](HISTORY.md).
 
 For a detailed list of changes made throughout the history of BIND 9, see
 the file [CHANGES](CHANGES). See [below](#changes) for details on the
-`CHANGES` file format.
+CHANGES file format.
 
 For up-to-date release notes and errata, see
 [http://www.isc.org/software/bind9/releasenotes](http://www.isc.org/software/bind9/releasenotes)
@@ -51,20 +51,20 @@ For up-to-date release notes and errata, see
 ### <a name="help"/> Reporting bugs and and getting help
 
 General bug reports can be sent to
-[bind9-bugs@isc.org](mailto:bind9-bugs@isc.org)
+[bind9-bugs@isc.org](mailto:bind9-bugs@isc.org).
 
 Please report assertion failure errors and suspected security issues to
 [security-officer@isc.org](mailto:security-officer@isc.org).
 
 Feature requests can be sent to
-[bind-suggest@isc.org](mailto:bind-suggest@isc.org)
+[bind-suggest@isc.org](mailto:bind-suggest@isc.org).
 
 To join or view the archives of the __BIND Users__ mailing list, visit
-[https://lists.isc.org/mailman/listinfo/bind-users](https://lists.isc.org/mailman/listinfo/bind-users)
+[https://lists.isc.org/mailman/listinfo/bind-users](https://lists.isc.org/mailman/listinfo/bind-users).
 
 If you're planning on making changes to the BIND 9 source code, you may
 also want to join the __BIND Workers__ mailing list, at
-[https://lists.isc.org/mailman/listinfo/bind-workers](https://lists.isc.org/mailman/listinfo/bind-workers)
+[https://lists.isc.org/mailman/listinfo/bind-workers](https://lists.isc.org/mailman/listinfo/bind-workers).
 
 ### <a name="contrib"/> Contributing to BIND
 
