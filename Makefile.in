@@ -101,13 +101,7 @@ OPTIONS: OPTIONS.md
 	${PANDOC} --email-obfuscation=none -s -t html $< | \
 		${W3M} -dump -cols 75 -O ascii -T text/html > $@
 
-FAQ: FAQ.xml
-	${XSLTPROC} doc/xsl/isc-docbook-text.xsl FAQ.xml | \
-	LC_ALL=C ${W3M} -T text/html -dump -cols 72 >$@.tmp
-	mv $@.tmp $@
-
 unit::
 	sh ${top_srcdir}/unit/unittest.sh
 
 clean::
-	rm -f FAQ.tmp
