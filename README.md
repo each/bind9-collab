@@ -50,14 +50,21 @@ For up-to-date release notes and errata, see
 
 ### <a name="help"/> Reporting bugs and getting help
 
-General bug reports can be sent to
-[bind9-bugs@isc.org](mailto:bind9-bugs@isc.org).
-
 Please report assertion failure errors and suspected security issues to
 [security-officer@isc.org](mailto:security-officer@isc.org).
 
+General bug reports can be sent to
+[bind9-bugs@isc.org](mailto:bind9-bugs@isc.org).
+
 Feature requests can be sent to
 [bind-suggest@isc.org](mailto:bind-suggest@isc.org).
+
+Please note that, while ISC's ticketing system is not currently publicly
+readable, this may change in the future.  Please do not include information
+in bug reports that you consider to be confidential. For example, when
+sending the contents of your configuration file, it is advisable to obscure
+key secrets; this can be done automatically by using `named-checkconf
+-px`.
 
 Professional support and training for BIND are available from
 ISC at [https://www.isc.org/support](https://www.isc.org/support).
